@@ -20,14 +20,11 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 
-# Copy file .jar từ stage build
-COPY --from=builder /app/target/*.jar app.jar
+# Copy file JAR đầy đủ dependencies (fat JAR)
+COPY --from=builder /app/target/*-jar-with-dependencies.jar app.jar
 
-# Copy file .env nếu bạn cần dùng dotenv trong container
-COPY .env .
-
-# Mở port cho Socket server (nếu có)
-EXPOSE 9999
+# Mở port cho Socket server (chỉnh theo code)
+EXPOSE 2025
 
 # Lệnh chạy chương trình Java
 ENTRYPOINT ["java", "-jar", "app.jar"]

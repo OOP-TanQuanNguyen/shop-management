@@ -1,29 +1,37 @@
 package edu.ptithcm;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
+
+import edu.ptithcm.protocols.DTTP;
 
 public class Server {
-    public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(9999)) {
-            System.out.println("Server listening on port 9999...");
 
+    public static void main(String[] args) {
+        int port = 2025;
+        System.out.println("[SERVER] Starting DTTP server on port " + port);
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getInetAddress());
+                System.out.println("[SERVER] New client connected: " + clientSocket.getInetAddress());
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true);
+                // Tạo session DTTP cho client này
+                DTTP session = new DTTP(clientSocket);
 
-                String msg = reader.readLine();
-                System.out.println("Received: " + msg);
+                // Khi client gửi "ping"
+                session.on("ping", data -> {
+                    System.out.println("[SERVER] Received: " + data);
+                    try {
+                        session.send("pong", Map.of("msg", "Pong from server!"),"OK","ConCac");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
 
-                writer.println("Server received: " + msg);
-
+                // Bắt đầu lắng nghe bằng thread pool
+                session.listen();
             }
         } catch (IOException e) {
             e.printStackTrace();
