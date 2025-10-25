@@ -9,62 +9,66 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class DTTP {
+
     private static int MAX_THREAD = 50;
     private DTTPconnection conn;
     private boolean running = false;
-    private final Map<String,Consumer<Map<String,Object>>> routes = new HashMap<>();
+    private final Map<String, Consumer<Map<String, Object>>> routes = new HashMap<>();
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(DTTP.MAX_THREAD);
+
     //client
-    public DTTP(String host,int port) throws IOException{
-        this.conn =  new DTTPconnection(new Socket(host,port));
+    public DTTP(String host, int port) throws IOException {
+        this.conn = new DTTPconnection(new Socket(host, port));
     }
+
     //server
     public DTTP(Socket socket) throws IOException {
-        this.conn =  new DTTPconnection(socket);
+        this.conn = new DTTPconnection(socket);
     }
 
-
-    public void on(String type,Consumer<Map<String,Object>> handler){
+    public void on(String type, Consumer<Map<String, Object>> handler) {
         this.routes.put(type, handler);
     }
-    
 
-    public void send(String type,Map<String,Object> data,String status,String message) throws IOException{
-        DTTPmsg msg = new DTTPmsg(type,data,status,message);
+    public void send(String type, Map<String, Object> data, String status, String message) throws IOException {
+        DTTPmsg msg = new DTTPmsg(type, data, status, message);
         conn.send(msg.toJson());
     }
 
-    public void listen(){
+    public void listen() {
         this.running = true;
-        threadPool.execute(()->{
-            while (running){
+        threadPool.execute(() -> {
+            while (running) {
                 try {
                     String json = this.conn.readJson();
-                    if (json == null) continue;
-
-                    // Chuyển JSON → đối tượng message
-                    DTTPmsg msg = DTTPmsg.fromJson(json);
-                    Consumer<Map<String,Object>> handler = routes.get(msg.getType());
-
-                    if (handler != null){
-                        // Xử lý message trong pool (song song)
-                        threadPool.execute(()-> handler.accept(msg.getData()));
+                    if (json == null) {
+                        continue;
                     }
-                    else{
+
+                    DTTPmsg msg = DTTPmsg.fromJson(json);
+                    Consumer<Map<String, Object>> handler = routes.get(msg.getType());
+
+                    if (handler != null) {
+                        threadPool.execute(() -> handler.accept(msg.getData()));
+                    } else {
                         System.out.println("[⚠] No handler for type: " + msg.getType());
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    this.stop();
+                    if (running) {
+                        System.out.println("[⚠] Connection lost or closed: " + e.getMessage());
+                    }
+                    this.stop(); // ✅ Đảm bảo ngắt kết nối an toàn
                     break;
                 }
             }
         });
     }
-    public void stop(){
-        this.running = false;
-        conn.close();
-    }
-    
-}
 
+    public void stop() {
+        this.running = false;
+        if (conn != null) {
+            conn.close();
+        }
+    }
+
+}
