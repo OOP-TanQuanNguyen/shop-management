@@ -1,37 +1,27 @@
 package edu.ptithcm;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Map;
 
 import edu.ptithcm.protocols.DTTP;
+import edu.ptithcm.routes.RouteManager;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.io.IOException;
 
 public class Server {
-
     public static void main(String[] args) {
-        int port = 2025;
-        System.out.println("[SERVER] Starting DTTP server on port " + port);
+        try (ServerSocket serverSocket = new ServerSocket(2025)) {
+            System.out.println("[SERVER] Đang chạy trên cổng 2025...");
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("[SERVER] New client connected: " + clientSocket.getInetAddress());
+                System.out.println("[SERVER] Client mới: " + clientSocket.getInetAddress());
 
-                DTTP session = new DTTP(clientSocket);
-
-                session.on("ping", data -> {
-                    System.out.println("[SERVER] Received: " + data);
-                    try {
-                        session.send("pong", Map.of("msg", "Pong from server!"),"OK","ConCac");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-                session.listen();
+                DTTP server = new DTTP(clientSocket);
+                RouteManager.registerRoutes(server);
+                server.listen();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
+

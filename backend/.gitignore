@@ -1,0 +1,15 @@
+# Maven / Java build
+target/
+*.class
+
+# Thư mục test
+src/test/
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
