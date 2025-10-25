@@ -17,10 +17,8 @@ public class Server {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("[SERVER] New client connected: " + clientSocket.getInetAddress());
 
-                // Tạo session DTTP cho client này
                 DTTP session = new DTTP(clientSocket);
 
-                // Khi client gửi "ping"
                 session.on("ping", data -> {
                     System.out.println("[SERVER] Received: " + data);
                     try {
@@ -30,7 +28,6 @@ public class Server {
                     }
                 });
 
-                // Bắt đầu lắng nghe bằng thread pool
                 session.listen();
             }
         } catch (IOException e) {
