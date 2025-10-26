@@ -2,7 +2,6 @@ package edu.ptithcm.frontend.services;
 
 import edu.ptithcm.frontend.protocols.DTTP;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -15,9 +14,10 @@ public class LoginService {
         this.callback = callback;
         DTTP temp = null;
         try {
+            // Thay đổi PORT nếu Server của bạn chạy PORT khác (ví dụ: 12345)
             temp = new DTTP("localhost", 2025);
             temp.on("LOGIN_RESPONSE", callback);
-            temp.listen();
+            temp.listen(); // Khởi động lắng nghe Server
             System.out.println("[INFO] ket noi server thành công.");
         } catch (IOException e) {
             System.out.println("[WARN] Không the ket noi server. kich hoat che do offline.");
@@ -27,20 +27,30 @@ public class LoginService {
 
     public void sendLogin(String username, String password) throws IOException {
         if (client == null) {
-            // Chế độ DEMO OFFLINE: Giả lập đăng nhập thành công với vai trò ADMIN
-            Map<String, Object> demoData = Map.of(
-                    "status", "OK",
-                    "message", "Đăng nhập DEMO OFFLINE thành công!",
-                    "role", "ADMIN"
-            );
-            callback.accept(demoData);
+            // ⭐️ ĐÃ SỬA: Chế độ DEMO OFFLINE: Kiểm tra username/password
+            if ("admin".equals(username) && "123".equals(password)) {
+                Map<String, Object> demoData = Map.of(
+                        "status", "OK",
+                        "message", "Đăng nhập DEMO OFFLINE thành công!",
+                        "role", "ADMIN"
+                );
+                callback.accept(demoData);
+            } else {
+                Map<String, Object> errorData = Map.of(
+                        "status", "ERROR",
+                        "message", "Lỗi DEMO: Tài khoản hoặc mật khẩu không hợp lệ.",
+                        "role", "ERROR"
+                );
+                callback.accept(errorData);
+            }
             return;
         }
 
         // Logic đăng nhập Online thông thường
-        Map<String, Object> data = new HashMap<>();
-        data.put("username", username);
-        data.put("password", password);
+        Map<String, Object> data = Map.of(
+                "username", username,
+                "password", password
+        );
         client.send("LOGIN", data, "REQUEST", "Yêu cầu đăng nhập");
     }
 
