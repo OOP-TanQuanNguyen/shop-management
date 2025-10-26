@@ -8,7 +8,7 @@ import edu.ptithcm.frontend.protocols.DTTP;
 public class App {
     public static void main(String[] args) {
         try {
-            System.out.println("🟢 [CLIENT] Connecting to server on  10.10.30.144:2025...");
+            System.out.println("🟢 [CLIENT] Connecting to server on  localhost:2025...");
 
             // Kết nối đến server (địa chỉ + cổng)
             DTTP client = new DTTP("localhost", 2025);
