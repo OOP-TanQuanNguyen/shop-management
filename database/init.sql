@@ -39,7 +39,7 @@ CREATE TABLE employee (
     password VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     phone CHAR(10),
-    role VARCHAR(50),
+    role ENUM('ADMIN', 'STAFF') DEFAULT 'STAFF',
     start_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_at TIMESTAMP NULL,
     status VARCHAR(50),

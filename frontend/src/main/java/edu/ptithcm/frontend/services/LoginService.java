@@ -1,9 +1,10 @@
 package edu.ptithcm.frontend.services;
 
-import edu.ptithcm.frontend.protocols.DTTP;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
+
+import edu.ptithcm.frontend.protocols.DTTP;
 
 public class LoginService {
 
@@ -27,7 +28,6 @@ public class LoginService {
 
     public void sendLogin(String username, String password) throws IOException {
         if (client == null) {
-            // ⭐️ ĐÃ SỬA: Chế độ DEMO OFFLINE: Kiểm tra username/password
             if ("admin".equals(username) && "123".equals(password)) {
                 Map<String, Object> demoData = Map.of(
                         "status", "OK",

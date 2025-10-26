@@ -1,26 +1,32 @@
 package edu.ptithcm.routes;
-
-import edu.ptithcm.protocols.DTTP;
-import edu.ptithcm.controller.LoginController;
 import java.io.IOException;
 import java.util.Map;
 
+import edu.ptithcm.controller.LoginController;
+import edu.ptithcm.protocols.DTTP;
+
 public class RouteManager {
-    public static void registerRoutes(DTTP server) {
-        server.on("LOGIN", (Map<String, Object> data) -> {
-            Map<String, Object> result = LoginController.handleLogin(data);
+    private DTTP server;
 
+    public RouteManager(DTTP server) {
+        this.server = server;
+    }
+
+    public void LoginRoute() {
+        this.server.on("LOGIN", (Map<String, Object> data) -> {
             try {
-                String status = (String) result.getOrDefault("status", "ERROR");
-                String message = (String) result.getOrDefault("message", "Lỗi không xác định");
+                Map<String,Object> response = LoginController.handleLogin(data);
+                @SuppressWarnings("unchecked")
+                Map<String,Object> dataMap = (Map<String,Object>) response.get("data");
 
-                // Dữ liệu trả về (nếu có)
-                Map<String, Object> payload = result.containsKey("username")
-                        ? Map.of("username", result.get("username"))
-                        : null;
-
-                server.send("LOGIN_RESPONSE", payload, status, message);
-
+                System.out.println("Sending response for LOGIN: " + response);
+                
+                this.server.send(
+                    (String) response.get("type"),
+                    dataMap,
+                    (String) response.get("status"),
+                    (String) response.get("message")
+                );
             } catch (IOException e) {
                 e.printStackTrace();
             }
