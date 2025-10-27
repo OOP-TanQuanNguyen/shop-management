@@ -14,7 +14,7 @@ public class LoginController {
         
         Map<String,Object> response = AuthenticationService.login(username, password);
         
-        response.put("TYPE", "LOGIN");
+        response.put("type", "LOGIN");
         if (response.get("status").equals("NOT_FOUND_USER")) {
             response.put("message", "Người dùng không tồn tại");
         }

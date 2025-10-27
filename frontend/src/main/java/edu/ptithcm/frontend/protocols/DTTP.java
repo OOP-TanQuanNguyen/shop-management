@@ -46,6 +46,7 @@ public class DTTP {
                     }
 
                     DTTPmsg msg = DTTPmsg.fromJson(json);
+                    System.out.println("[<==] Received: " + msg);
                     Consumer<Map<String, Object>> handler = routes.get(msg.getType());
 
                     if (handler != null) {
