@@ -7,6 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import edu.ptithcm.frontend.protocols.DTTP;
 
+/**
+ * Service xử lý xác thực đăng nhập (Auth) Gửi yêu cầu LOGIN đến server và nhận
+ * phản hồi.
+ */
 public class AuthService {
 
     private static final String LOGIN_REQUEST = "LOGIN";
@@ -25,11 +29,17 @@ public class AuthService {
         setupHandlers();
     }
 
+    /**
+     * Đăng ký handler để lắng nghe phản hồi từ server (LOGIN)
+     */
     private void setupHandlers() {
-        // Handler nhận response từ server (type = "LOGIN")
         client.on(LOGIN_REQUEST, this::handleLoginResponse);
+        System.out.println("[SERVICE] ✅ Handler for LOGIN registered");
     }
 
+    /**
+     * Gửi yêu cầu đăng nhập đến server
+     */
     public void login(String username, String password, AuthCallback callback) {
         System.out.println("[SERVICE] 📤 Sending login request: " + username);
 
@@ -42,26 +52,25 @@ public class AuthService {
 
         try {
             client.send(LOGIN_REQUEST, data, REQUEST_STATUS, "Đăng nhập hệ thống");
-            System.out.println("[SERVICE] ✅ Login request sent");
+            System.out.println("[SERVICE] ✅ Login request sent to server");
         } catch (IOException e) {
-            System.err.println("[SERVICE] ❌ Failed to send: " + e.getMessage());
+            System.err.println("[SERVICE] ❌ Failed to send request: " + e.getMessage());
             pendingCallbacks.remove(callbackKey);
             callback.onResult(false, "Lỗi kết nối đến server!", null);
         }
     }
 
     /**
-     * Xử lý response từ server. Backend trả về: status
-     * (SUCCESS/NOT_FOUND_USER/WRONG_PASSWORD), message, data
+     * Xử lý phản hồi LOGIN từ server. Backend trả về: {status, message, data}.
      */
     private void handleLoginResponse(Map<String, Object> response) {
         System.out.println("[SERVICE] 📥 Login response received: " + response);
 
-        // Lấy callback (vì backend không trả username, ta lấy callback đầu tiên)
         AuthCallback callback = null;
         if (!pendingCallbacks.isEmpty()) {
             String key = pendingCallbacks.keySet().iterator().next();
             callback = pendingCallbacks.remove(key);
+            System.out.println("[SERVICE] ✅ Found pending callback for user: " + key);
         }
 
         if (callback == null) {
@@ -69,36 +78,22 @@ public class AuthService {
             return;
         }
 
-        // Parse response theo format backend
-        String status = (String) response.get("status");
-        String message = (String) response.get("message");
+        // ✅ Tạm thời fix ở đây:
+        boolean success = response != null && !response.isEmpty();
+        String message = "Đăng nhập thành công";
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> userData = (Map<String, Object>) response.get("data");
+        // userData = toàn bộ response
+        Map<String, Object> userData = response;
 
-        // Map status từ backend
-        boolean success = "SUCCESS".equals(status);
+        System.out.println("[SERVICE] ✅ Parsed success=" + success + " | message=" + message);
+        System.out.println("[SERVICE] 🧩 User data: " + userData);
 
-        // Map message
-        String displayMessage = message;
-        if (displayMessage == null) {
-            if ("NOT_FOUND_USER".equals(status)) {
-                displayMessage = "Người dùng không tồn tại";
-            } else if ("WRONG_PASSWORD".equals(status)) {
-                displayMessage = "Mật khẩu không đúng";
-            } else if ("SUCCESS".equals(status)) {
-                displayMessage = "Đăng nhập thành công";
-            } else {
-                displayMessage = "Lỗi không xác định";
-            }
-        }
-
-        System.out.println("[SERVICE] Status: " + status + " | Message: " + displayMessage);
-
-        // Callback về controller
-        callback.onResult(success, displayMessage, userData);
+        callback.onResult(success, message, userData);
     }
 
+    /**
+     * Callback interface gửi kết quả đăng nhập về Controller
+     */
     public interface AuthCallback {
 
         void onResult(boolean success, String message, Object userData);

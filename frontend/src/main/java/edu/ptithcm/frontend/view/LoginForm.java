@@ -24,6 +24,7 @@ public class LoginForm extends JFrame {
             throw new IllegalArgumentException("LoginController cannot be null");
         }
         this.controller = controller;
+        controller.setLoginForm(this);
         initComponents();
     }
 
@@ -152,16 +153,16 @@ public class LoginForm extends JFrame {
             return;
         }
 
-        setButtonsEnabled(false);
+        setButtonsEnabled(false); // disable trong lúc gọi API
 
-        controller.login(username, password, (success, message) -> {
+        controller.login(username, password, (success, message, userData) -> {
             SwingUtilities.invokeLater(() -> {
-                setButtonsEnabled(true);
+                setButtonsEnabled(true); // enable lại
 
                 if (success) {
                     showSuccess(message);
-                    dispose();
-                    // TODO: Mở MainForm
+                    System.out.println("[LOGIN_FORM] User data: " + userData);
+                    // Controller sẽ mở giao diện tương ứng (admin/staff)
                 } else {
                     showError(message);
                     txtPassword.setText("");
@@ -169,7 +170,7 @@ public class LoginForm extends JFrame {
                 }
             });
         });
-    }
+    } // 👈 thêm ngoặc đóng này!
 
     private void setButtonsEnabled(boolean enabled) {
         btnLogin.setEnabled(enabled);
@@ -185,4 +186,5 @@ public class LoginForm extends JFrame {
     private void showSuccess(String message) {
         JOptionPane.showMessageDialog(this, message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
     }
+
 }
