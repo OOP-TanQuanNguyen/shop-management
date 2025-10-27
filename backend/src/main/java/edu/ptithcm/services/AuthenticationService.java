@@ -26,7 +26,7 @@ public class AuthenticationService {
         userData.put("username", employee.getUsername());
         userData.put("name", employee.getName());
         userData.put("role", employee.getRole());
-        userData.put("branch", employee.getBranch());
+        userData.put("branch", employee.getBranchId());
         userData.put("phone", employee.getPhone());
         userData.put("hireDate", employee.getHireDate());
         userData.put("status", employee.isStatus());

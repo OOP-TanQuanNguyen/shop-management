@@ -7,7 +7,7 @@ public class EmployeeModel {
         STAFF;
     }   
     private String id;
-    private int branch;
+    private int branchId;
     private String username;
     private String passwordHash;
     private String name;
@@ -19,7 +19,7 @@ public class EmployeeModel {
 
     public EmployeeModel(Builder builder) {
         this.id = builder.id;
-        this.branch = builder.branch_id;
+        this.branchId = builder.branchId;
         this.username = builder.username;
         this.passwordHash = builder.passwordHash;
         this.name = builder.name;
@@ -31,7 +31,7 @@ public class EmployeeModel {
     }
 
     public String getId() { return id; }
-    public int getBranchId() { return branch; }
+    public int getBranchId() { return branchId; }
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
     public String getName() { return name; }
@@ -43,7 +43,7 @@ public class EmployeeModel {
 
     public static class Builder {
         private String id = UUID.randomUUID().toString();
-        private int  branch_id;
+        private int  branchId;
         private String username;
         private String passwordHash;
         private String name;
@@ -52,10 +52,9 @@ public class EmployeeModel {
         private String hireDate;
         private String endDate;
         private boolean status;
-        private boolean autoHashPassword = false;
 
         public Builder id(String id) { this.id = id; return this; }
-        public Builder branch(int branch) { this.branch = branch; return this; }
+        public Builder branch(int branch) { this.branchId = branch; return this; }
         public Builder username(String username) { this.username = username; return this; }
         public Builder password(String password) { this.passwordHash = password; return this; }
         public Builder name(String name) { this.name = name; return this; }
