@@ -42,7 +42,7 @@ CREATE TABLE employee (
     role ENUM('ADMIN', 'STAFF') DEFAULT 'STAFF',
     start_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_at TIMESTAMP NULL,
-    status VARCHAR(50),
+    status BOOLEAN DEFAULT TRUE,
     CONSTRAINT fk_employee_branch FOREIGN KEY (branch_id)
         REFERENCES branch(branch_id)
         ON UPDATE CASCADE ON DELETE SET NULL
@@ -125,7 +125,7 @@ CREATE TABLE import_receipt (
     supplier_id CHAR(36),
     branch_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50),
+    status ENUM('PENDING', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
     note TEXT,
     CONSTRAINT fk_import_supplier FOREIGN KEY (supplier_id)
         REFERENCES supplier(supplier_id)
