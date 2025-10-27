@@ -11,7 +11,6 @@ public class AuthenticationService {
         Map<String, Object> response = new HashMap<>();
 
         EmployeeModel employee = EmployeeRepo.findByUsername(username);
-
         if (employee == null) {
             response.put("status", "NOT_FOUND_USER");
             return response;

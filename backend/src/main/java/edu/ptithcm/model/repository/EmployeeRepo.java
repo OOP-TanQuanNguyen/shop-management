@@ -40,4 +40,12 @@ public class EmployeeRepo {
         }
         return null;
     }
+
+    public static void createEmployee(EmployeeModel employee) {
+        try {
+            
+        } catch (Exception e) {
+
+        }
+    }
 }
