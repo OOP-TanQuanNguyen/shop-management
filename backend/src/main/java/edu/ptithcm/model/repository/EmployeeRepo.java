@@ -2,6 +2,7 @@ package edu.ptithcm.model.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 import edu.ptithcm.configs.Database;
 import edu.ptithcm.model.EmployeeModel;
@@ -11,6 +12,23 @@ public class EmployeeRepo {
 
     public static void createUser(EmployeeModel employee){
         
+    }
+
+    public static boolean checkEmployeeExists(String username){
+        String query = "SELECT COUNT(*) AS count FROM employee WHERE username = ?";
+        try(Connection connection = Database.getInstance().getConnection()){
+            PreparedStatement ps = connection.prepareStatement(query);
+            ps.setString(1, username);
+            try ( ResultSet rs = ps.executeQuery() ){
+                if(rs.next()){
+                    int count = rs.getInt("count");
+                    return count > 0;
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static EmployeeModel findByUsername(String username){
@@ -41,11 +59,26 @@ public class EmployeeRepo {
         return null;
     }
 
-    public static void createEmployee(EmployeeModel employee) {
-        try {
-            
-        } catch (Exception e) {
-
+    public static void createEmployee(List<EmployeeModel> employees){
+        String query = "INSERT INTO employee (employee_id,username, password, name, phone,role,branch_id) " +
+                       "VALUES (?, ?, ?, ?, ?, ?,?)";
+        try (
+            Connection conn = Database.getInstance().getConnection();
+            PreparedStatement ps = conn.prepareStatement(query)
+            ){
+                for(EmployeeModel emp : employees){
+                    ps.setString(1, emp.getId());
+                    ps.setString(2, emp.getUsername());
+                    ps.setString(3, emp.getPasswordHash());
+                    ps.setString(4, emp.getName());
+                    ps.setString(5, emp.getPhone());
+                    ps.setString(6, emp.getRole());
+                    ps.setInt(7, emp.getBranchId());
+                    ps.addBatch();
+            }
+            ps.executeBatch();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 }
