@@ -1,4 +1,5 @@
 package edu.ptithcm.services;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import edu.ptithcm.model.repository.EmployeeRepo;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class AuthenticationService {
-    public static Map<String, Object> login(String username, String password) {
+    public static Map<String, Object> login(String username, String password) throws SQLException{
         Map<String, Object> response = new HashMap<>();
 
         EmployeeModel employee = EmployeeRepo.findByUsername(username);

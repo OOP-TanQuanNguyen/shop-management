@@ -12,15 +12,20 @@ import edu.ptithcm.services.EmployeeService;
 public class Server {
     private static final int port = Config.AppConfig.SERVER_PORT;
     public static void main(String[] args) {
-        if(!EmployeeRepo.checkEmployeeExists("admin")) {
-            EmployeeService.createEmployee(
+        try{
+            boolean existed = !EmployeeRepo.checkEmployeeExists("admin");
+            if(existed) {
+                EmployeeService.createEmployee(
                 "admin",             
                 "admin123",          
                 "Administrator",     
                 "0000000000",        
                 "ADMIN"              
-            );
-            System.out.println("Admin account created with username: admin, password: admin123");
+                );
+                System.out.println("Admin account created with username: admin, password: admin123");
+            }
+        }catch(Exception e) {
+            e.printStackTrace();
         }
 
         try (ServerSocket serverSocket = new ServerSocket(Server.port)) {

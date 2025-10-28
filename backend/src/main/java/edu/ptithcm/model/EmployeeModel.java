@@ -7,7 +7,7 @@ public class EmployeeModel {
         STAFF;
     }   
     private String id;
-    private int branchId;
+    private Integer branchId;
     private String username;
     private String passwordHash;
     private String name;
@@ -16,6 +16,7 @@ public class EmployeeModel {
     private String hireDate;
     private String endDate;
     private boolean status;
+    private String branch;
 
     public EmployeeModel(Builder builder) {
         this.id = builder.id;
@@ -28,22 +29,24 @@ public class EmployeeModel {
         this.hireDate = builder.hireDate;
         this.endDate = builder.endDate;
         this.status = builder.status;
+        this.branch = builder.branch;
     }
 
-    public String getId() { return id; }
-    public int getBranchId() { return branchId; }
-    public String getUsername() { return username; }
-    public String getPasswordHash() { return passwordHash; }
-    public String getName() { return name; }
-    public String getPhone() { return phone; }
-    public String getRole() { return role; }
-    public String getHireDate() { return hireDate; }
-    public String getEndDate() { return endDate; }
-    public boolean isStatus() { return status; }
+    public String getId() { return this.id; }
+    public Integer getBranchId() { return this.branchId; }
+    public String getBranch(){return this.branch;}
+    public String getUsername() { return this.username; }
+    public String getPasswordHash() { return this.passwordHash; }
+    public String getName() { return this.name; }
+    public String getPhone() { return this.phone; }
+    public String getRole() { return this.role; }
+    public String getHireDate() { return this.hireDate; }
+    public String getEndDate() { return this.endDate; }
+    public boolean isStatus() { return this.status; }
 
     public static class Builder {
         private String id = UUID.randomUUID().toString();
-        private int  branchId;
+        private Integer  branchId;
         private String username;
         private String passwordHash;
         private String name;
@@ -52,9 +55,10 @@ public class EmployeeModel {
         private String hireDate;
         private String endDate;
         private boolean status;
+        private String branch;
 
         public Builder id(String id) { this.id = id; return this; }
-        public Builder branch(int branch) { this.branchId = branch; return this; }
+        public Builder branch(Integer branch) { this.branchId = branch; return this; }
         public Builder username(String username) { this.username = username; return this; }
         public Builder password(String password) { this.passwordHash = password; return this; }
         public Builder name(String name) { this.name = name; return this; }
@@ -63,6 +67,7 @@ public class EmployeeModel {
         public Builder hireDate(String hireDate) { this.hireDate = hireDate; return this; }
         public Builder endDate(String endDate) { this.endDate = endDate; return this; }
         public Builder status(boolean status) { this.status = status; return this; }
+        public Builder branch(String branch) { this.branch = branch; return this; }        
 
         public EmployeeModel build() {
             return new EmployeeModel(this);
@@ -81,15 +86,15 @@ public class EmployeeModel {
     @Override
     public String toString() {
         return "EmployeeModel {" +
-                "\n  id='" + id + '\'' +
-                ",\n  username='" + username + '\'' +
-                ",\n  passwordHash='" + passwordHash + '\'' +
-                ",\n  name='" + name + '\'' +
-                ",\n  phone='" + phone + '\'' +
-                ",\n  role=" + role +
-                ",\n  hireDate='" + hireDate + '\'' +
-                ",\n  endDate='" + endDate + '\'' +
-                ",\n  status=" + status +
+                "\n  id='" + this.id + '\'' +
+                ",\n  username='" + this.username + '\'' +
+                ",\n  passwordHash='" + this.passwordHash + '\'' +
+                ",\n  name='" + this.name + '\'' +
+                ",\n  phone='" + this.phone + '\'' +
+                ",\n  role=" + this.role +
+                ",\n  hireDate='" + this.hireDate + '\'' +
+                ",\n  endDate='" + this.endDate + '\'' +
+                ",\n  status=" + this.status +
                 "\n}";
     }
 

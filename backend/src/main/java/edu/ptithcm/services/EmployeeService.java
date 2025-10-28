@@ -1,5 +1,6 @@
 package edu.ptithcm.services;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import edu.ptithcm.model.EmployeeModel;
@@ -8,13 +9,11 @@ import edu.ptithcm.utils.CryptoUtil;
 
 public class EmployeeService {
     public static EmployeeModel createEmployee(String username, String rawPassword, String name, 
-                                               String phone, String role) {
+                                               String phone, String role) throws SQLException {
         if(EmployeeRepo.checkEmployeeExists(username)) {
             return null; 
         }
-
         String hashedPassword = CryptoUtil.md5(rawPassword);
-
         EmployeeModel employee;
         if ("ADMIN".equalsIgnoreCase(role)) {
             employee = new EmployeeModel.AdminBuilder()
@@ -38,7 +37,6 @@ public class EmployeeService {
         List<EmployeeModel> list = new ArrayList<>();
         list.add(employee);
         EmployeeRepo.createEmployee(list);
-
         return employee;
     }
 }
