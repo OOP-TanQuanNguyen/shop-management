@@ -1,5 +1,8 @@
 package edu.ptithcm.frontend.view;
 
+import edu.ptithcm.frontend.controllers.LoginController;
+import edu.ptithcm.frontend.protocols.DTTP;
+import edu.ptithcm.frontend.services.AuthService;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.*;
@@ -76,16 +79,13 @@ public class AdminForm extends JFrame {
         infoPanel.add(new JLabel("Số lượng:"));
         infoPanel.add(new JTextField());
 
-        // --- Nút chức năng ---
         JPanel buttonPanel = createButtonPanel();
 
-        // --- Gom thông tin + nút vào 1 panel ---
         JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(new Color(230, 255, 255));
         panelTop.add(infoPanel, BorderLayout.CENTER);
         panelTop.add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- Bảng dữ liệu ---
         String[] cols = {"Mã SP", "Tên SP", "Giá", "Số lượng"};
         Object[][] data = {
             {"SP001", "Bình sữa", "120,000", "50"},
@@ -104,7 +104,6 @@ public class AdminForm extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(new Color(230, 255, 255));
 
-        // --- Thông tin nhân viên ---
         JPanel infoPanel = new JPanel(new GridLayout(3, 4, 10, 10));
         infoPanel.setBorder(new EmptyBorder(15, 15, 10, 15));
         infoPanel.setBackground(new Color(230, 255, 255));
@@ -122,7 +121,6 @@ public class AdminForm extends JFrame {
 
         JPanel buttonPanel = createButtonPanel();
 
-        // --- Gom chung lại ---
         JPanel panelTop = new JPanel(new BorderLayout());
         panelTop.setBackground(new Color(230, 255, 255));
         panelTop.add(infoPanel, BorderLayout.CENTER);
@@ -194,9 +192,6 @@ public class AdminForm extends JFrame {
             b.setForeground(Color.WHITE);
             b.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
             b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        }
-
-        for (JButton b : buttons) {
             panel.add(b);
         }
         return panel;
@@ -216,7 +211,6 @@ public class AdminForm extends JFrame {
         header.setFont(new Font("Segoe UI", Font.BOLD, 14));
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
 
-        // Hover highlight
         table.addMouseMotionListener(new MouseAdapter() {
             int lastRow = -1;
 
@@ -230,8 +224,6 @@ public class AdminForm extends JFrame {
         });
 
         table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            int hoverRow = -1;
-
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
                     boolean isSelected, boolean hasFocus,
@@ -248,13 +240,20 @@ public class AdminForm extends JFrame {
         return table;
     }
 
+    // === ĐĂNG XUẤT ===
     private void handleLogout() {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc muốn đăng xuất?", "Xác nhận",
                 JOptionPane.YES_NO_OPTION);
+
         if (confirm == JOptionPane.YES_OPTION) {
-            dispose();
+            dispose(); // Đóng cửa sổ AdminForm
             JOptionPane.showMessageDialog(null, "Đã đăng xuất!");
+
+            // ✅ Gọi restartClient() thay vì tự tạo lại kết nối
+            java.awt.EventQueue.invokeLater(() -> {
+                edu.ptithcm.frontend.ClientMain.restartClient();
+            });
         }
     }
 }

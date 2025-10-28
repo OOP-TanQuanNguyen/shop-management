@@ -3,99 +3,83 @@ package edu.ptithcm.frontend.services;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import edu.ptithcm.frontend.protocols.DTTP;
 
 /**
- * Service xử lý xác thực đăng nhập (Auth) Gửi yêu cầu LOGIN đến server và nhận
- * phản hồi.
+ * Service xử lý logic đăng nhập (liên lạc với server) Không liên quan đến giao
+ * diện (View).
  */
 public class AuthService {
 
-    private static final String LOGIN_REQUEST = "LOGIN";
-    private static final String REQUEST_STATUS = "REQUEST";
+    private final DTTP dttp;
+    private LoginCallback loginCallback; // callback để báo kết quả về controller
 
-    private final DTTP client;
-    private final Map<String, AuthCallback> pendingCallbacks;
+    public AuthService(DTTP dttp) {
+        this.dttp = dttp;
+        System.out.println("[SERVICE] ✅ AuthService created & login handler registered");
 
-    public AuthService(DTTP client) {
-        if (client == null) {
-            throw new IllegalArgumentException("DTTP client cannot be null");
-        }
-        this.client = client;
-        this.pendingCallbacks = new ConcurrentHashMap<>();
-
-        setupHandlers();
+        // Đăng ký handler khi server phản hồi LOGIN
+        this.dttp.on("LOGIN", this::handleLoginResponse);
     }
 
     /**
-     * Đăng ký handler để lắng nghe phản hồi từ server (LOGIN)
+     * Interface callback báo kết quả về controller
      */
-    private void setupHandlers() {
-        client.on(LOGIN_REQUEST, this::handleLoginResponse);
-        System.out.println("[SERVICE] ✅ Handler for LOGIN registered");
+    @FunctionalInterface
+    public interface LoginCallback {
+
+        void onResult(boolean success, String message, Map<String, Object> data);
     }
 
     /**
-     * Gửi yêu cầu đăng nhập đến server
+     * Đăng nhập – gửi request lên server
      */
-    public void login(String username, String password, AuthCallback callback) {
-        System.out.println("[SERVICE] 📤 Sending login request: " + username);
-
-        String callbackKey = username;
-        pendingCallbacks.put(callbackKey, callback);
-
+    public void login(String username, String password, LoginCallback callback) {
+        this.loginCallback = callback;
         Map<String, Object> data = new HashMap<>();
         data.put("username", username);
         data.put("password", password);
 
         try {
-            client.send(LOGIN_REQUEST, data, REQUEST_STATUS, "Đăng nhập hệ thống");
+            System.out.println("[SERVICE] 🚀 Sending login request: " + username);
+            dttp.send("LOGIN", data, "REQUEST", "Yêu cầu đăng nhập");
             System.out.println("[SERVICE] ✅ Login request sent to server");
         } catch (IOException e) {
-            System.err.println("[SERVICE] ❌ Failed to send request: " + e.getMessage());
-            pendingCallbacks.remove(callbackKey);
-            callback.onResult(false, "Lỗi kết nối đến server!", null);
+            System.err.println("[SERVICE] ❌ Lỗi khi gửi request: " + e.getMessage());
+            callback.onResult(false, "Không thể gửi yêu cầu đăng nhập đến server", null);
         }
     }
 
     /**
-     * Xử lý phản hồi LOGIN từ server. Backend trả về: {status, message, data}.
+     * Xử lý phản hồi từ server
      */
     private void handleLoginResponse(Map<String, Object> response) {
-        System.out.println("[SERVICE] 📥 Login response received: " + response);
+        try {
+            System.out.println("[SERVICE] 📥 Login response received: " + response);
 
-        AuthCallback callback = null;
-        if (!pendingCallbacks.isEmpty()) {
-            String key = pendingCallbacks.keySet().iterator().next();
-            callback = pendingCallbacks.remove(key);
-            System.out.println("[SERVICE] ✅ Found pending callback for user: " + key);
+            // ✅ Server gửi về dạng: {hireDate=..., role=..., username=..., status=false, ...}
+            // Không nên ép kiểu sai như lỗi cũ (Boolean -> String)
+            // Ở đây không lấy "status" trong data, mà lấy từ phản hồi ngoài DTTPmsg (status, message)
+            // → nên ta cần tách từ response chính (Map data của DTTPmsg)
+            Map<String, Object> data = new HashMap<>(response);
+
+            // Tùy vào cách server phản hồi, giả sử DTTPmsg.status chứa SUCCESS/FAILURE,
+            // thì bạn nên kiểm tra trong tầng DTTP hoặc message — ở đây ta xử lý cơ bản
+            Object roleObj = data.get("role");
+            boolean success = roleObj != null; // có role nghĩa là đăng nhập thành công
+
+            if (loginCallback != null) {
+                loginCallback.onResult(success,
+                        success ? "Đăng nhập thành công" : "Sai tài khoản hoặc mật khẩu",
+                        data);
+            }
+        } catch (Exception e) {
+            System.err.println("[SERVICE] ⚠️ Lỗi xử lý phản hồi đăng nhập: " + e.getMessage());
+            e.printStackTrace();
+            if (loginCallback != null) {
+                loginCallback.onResult(false, "Lỗi xử lý phản hồi đăng nhập", null);
+            }
         }
-
-        if (callback == null) {
-            System.out.println("[SERVICE] ⚠️ No callback found for response");
-            return;
-        }
-
-        // ✅ Tạm thời fix ở đây:
-        boolean success = response != null && !response.isEmpty();
-        String message = "Đăng nhập thành công";
-
-        // userData = toàn bộ response
-        Map<String, Object> userData = response;
-
-        System.out.println("[SERVICE] ✅ Parsed success=" + success + " | message=" + message);
-        System.out.println("[SERVICE] 🧩 User data: " + userData);
-
-        callback.onResult(success, message, userData);
-    }
-
-    /**
-     * Callback interface gửi kết quả đăng nhập về Controller
-     */
-    public interface AuthCallback {
-
-        void onResult(boolean success, String message, Object userData);
     }
 }
