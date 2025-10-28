@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import edu.ptithcm.configs.Database;
 import edu.ptithcm.model.EmployeeModel;
@@ -61,10 +62,6 @@ public class EmployeeRepo {
         return null;
     }
 
-    /**
-     * Batch insert nhân viên
-     * Nếu branchId null hoặc <=0 → setNull để tránh lỗi FK
-     */
     public static void createEmployee(List<EmployeeModel> employees) throws SQLException {
         String query = "INSERT INTO employee (employee_id, username, password, name, phone, role, branch_id)" 
                         +"VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -104,4 +101,38 @@ public class EmployeeRepo {
             throw e; // ném lỗi lên cho tầng service xử lý
         }
     }
+    // cập nhật thông tin nhân viên
+    public static void updateEmployee(String employee_id, Map<String, Object> fields) throws SQLException {
+    
+    }
+    // xoá nhân viên (xóa hoàn toàn)
+    public static void removeEmployee(String employee_id) throws SQLException {
+        
+    }
+
+    // lấy danh sách tất cả nhân viên
+    public static List<EmployeeModel> getAllEmployees(int limit) throws SQLException {
+        return null;
+    }
+
+    // lấy danh sách tất cả nhân viên còn làm việc
+    public static List<EmployeeModel> getAllEmployeesActive(int limit) throws SQLException {
+        return null;
+    }
+
+    // lấy danh sách tất cả  nhân viên không còn làm việc
+    public static List<EmployeeModel> getAllEmployeesUnactive(int limit) throws SQLException {
+        return null;
+    }
+
+    //search employee by name, username, phone
+    public static List<EmployeeModel> searchEmployees(String keyword) throws SQLException {
+        return null;
+    }
+
+    // filter employee by role, branch, status
+    public static List<EmployeeModel> filterEmployees(Map<String, Object> filters) throws SQLException {
+        return null;
+    }
+
 }
