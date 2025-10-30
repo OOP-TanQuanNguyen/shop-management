@@ -6,11 +6,13 @@ import java.net.Socket;
 import edu.ptithcm.configs.Config;
 import edu.ptithcm.model.repository.EmployeeRepo;
 import edu.ptithcm.protocols.DTTP;
+import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.routes.RouteManager;
 import edu.ptithcm.services.EmployeeService;
 
 public class Server {
     private static final int port = Config.AppConfig.SERVER_PORT;
+    private static final DTTPStateManager manager= new DTTPStateManager();
     public static void main(String[] args) {
         try{
             boolean existed = !EmployeeRepo.checkEmployeeExists("admin");
@@ -35,7 +37,7 @@ public class Server {
                 System.out.println("[SERVER] Client mới: " + clientSocket.getInetAddress());
                 DTTP server = new DTTP(clientSocket);
             
-                RouteManager routeManager = new RouteManager(server);
+                RouteManager routeManager = new RouteManager(server,Server.manager);
                 routeManager.LoginRoute();   
                 server.listen();
             }
