@@ -34,9 +34,6 @@ public class App {
                 AuthReducer.register(Store.getInstance());
                 client = new DTTP("127.0.0.1", 2025);
                 client.listen();
-                client.setOnDisconnect(()->{
-                    App.handleDisconnectServer();
-                });
                 authService = new AuthService(client);
                 openLoginForm();
                 Store.getInstance().subcribe(App::handleStateChange);
@@ -67,9 +64,6 @@ public class App {
         currentView.setVisible(true);
     }
 
-    private static void handleDisconnectServer(){
-        currentView.dispose();
-    }
 
     /** Theo dõi state trong Store để điều hướng UI */
     private static void handleStateChange(AppState state) {
