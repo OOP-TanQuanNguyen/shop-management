@@ -3,7 +3,6 @@ package edu.ptithcm.views.admin;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -11,15 +10,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
+import edu.ptithcm.models.UserModel;
 
 public class AdminForm extends JFrame {
     private final JTabbedPane tabPane = new JTabbedPane();
     private JButton btnLogout = new JButton(" 🚪 Đăng xuất");
 
-    public AdminForm(Map<String, Object> userData) {
+    public AdminForm(UserModel userData) {
         setTitle("🏢 Hệ thống quản trị mini market");
         setSize(1000, 650);
         setLocationRelativeTo(null);
@@ -57,8 +57,4 @@ public class AdminForm extends JFrame {
     public JButton getLogoutButton(){
         return this.btnLogout;
     } 
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new AdminForm(Map.of("username", "admin")).setVisible(true));
-    }
 }

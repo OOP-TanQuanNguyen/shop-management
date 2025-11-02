@@ -30,24 +30,13 @@ public class UserModel {
     public String getUsername(){
         return this.username;
     }
-
-    public Map<String, Object> toMap() {
-        Map<String, Object> map = new java.util.HashMap<>();
-        map.put("id", id);
-        map.put("branch_id", branchId);
-        map.put("username", username);
-        map.put("name", name);
-        map.put("phone", phone);
-        map.put("role", role);
-        map.put("hireDate", hireDate);
-        map.put("endDate", endDate);
-        map.put("status", status);
-        map.put("branch", branch);
-        return map;
+    public String getRole(){
+        return this.role;
     }
 
-
-
+    public String getBranch(){
+        return this.branch;
+    }
     public static UserModel fromMap(Map<String, Object> data) {
         return new Builder()
                 .id((String) data.get("id"))

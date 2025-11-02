@@ -1,4 +1,4 @@
-package edu.ptithcm.controllers.login;
+package edu.ptithcm.controllers.auth;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
