@@ -13,7 +13,6 @@ public class DTTP {
     private static final String SHARED_KEY = "1234567890123456"; // 🔐 khóa AES chung
     private final DTTPconnection conn;
     private boolean running = false;
-    private Runnable onDisconnect;
     private final Map<String, Consumer<DTTPArgs>> routes = new HashMap<>();
     private static final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD);
 
@@ -45,23 +44,15 @@ public class DTTP {
 
         /** Gửi phản hồi lại client tương ứng */
         public void reply(String type, Map<String,Object> data, String status, String message) throws IOException {
-            DTTPmsg msg = new DTTPmsg(type, data, status, message);
-            String enc = DTTPEncryptor.encrypt(msg.toJson(), SHARED_KEY);
-            conn.send(enc);
-        }
-
-        public DTTPconnection getConnection(){
-            return this.conn;
+                DTTPmsg msg = new DTTPmsg(type, data, status, message);
+                String enc = DTTPEncryptor.encrypt(msg.toJson(), SHARED_KEY);
+                conn.send(enc);
         }
     }
 
     /** Đăng ký handler */
     public void on(String type, Consumer<DTTPArgs> handler) {
         routes.put(type, handler);
-    }
-
-    public void setOnDisconect(Runnable callback){
-        this.onDisconnect = callback;
     }
 
     /** Gửi message (dùng chung key) */
@@ -93,7 +84,7 @@ public class DTTP {
                 } catch (IOException e) {
                     System.out.println("[DISCONNECTED] " + conn.getAddress());
                     stop();
-                    this.onDisconnect.run();
+                    break;
                 }
             }
         });

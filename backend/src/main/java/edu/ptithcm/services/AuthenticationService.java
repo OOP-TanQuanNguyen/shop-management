@@ -4,14 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.ptithcm.model.EmployeeModel;
-import edu.ptithcm.model.repository.EmployeeRepo;
+import edu.ptithcm.model.repository.EmployeeRepositoryMySQL;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class AuthenticationService {
+    public static EmployeeRepositoryMySQL employeeRepositoryMySQL = new EmployeeRepositoryMySQL();
     public static Map<String, Object> login(String username, String password) throws SQLException{
         Map<String, Object> response = new HashMap<>();
 
-        EmployeeModel employee = EmployeeRepo.findByUsername(username);
+        EmployeeModel employee = employeeRepositoryMySQL.findByUsername(username);
         if (employee == null) {
             response.put("status", "NOT_FOUND_USER");
             return response;

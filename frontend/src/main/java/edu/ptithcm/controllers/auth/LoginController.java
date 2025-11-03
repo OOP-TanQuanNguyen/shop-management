@@ -1,4 +1,4 @@
-package edu.ptithcm.controllers.login;
+package edu.ptithcm.controllers.auth;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -41,11 +41,17 @@ public class LoginController {
         }
     }
 
-    private void handleState(AppState state){
+    private void handleState(AppState state) {
         Boolean isAuth = (Boolean) state.get("isAuthenticated");
+        Object messageObj = state.get("loginMessage");
+
         SwingUtilities.invokeLater(() -> {
-            if (Boolean.FALSE.equals(isAuth)) {
+            // Nếu đăng nhập thất bại
+            if (Boolean.FALSE.equals(isAuth) && messageObj instanceof String msg && !msg.isEmpty()) {
                 view.resetInputPassword();
+                AppMessageBox.showError(msg); // hoặc JOptionPane.showMessageDialog(view, msg)
+                // Reset để không show lại nhiều lần
+                state.set("loginMessage", null);
             }
         });
     }

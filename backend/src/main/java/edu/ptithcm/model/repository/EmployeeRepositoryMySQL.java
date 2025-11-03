@@ -7,15 +7,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import edu.ptithcm.configs.Database;
+import edu.ptithcm.configs.databases.Database;
 import edu.ptithcm.model.EmployeeModel;
 
-public class EmployeeRepo {
-
-    /**
-     * Kiểm tra username đã tồn tại chưa
-     */
-    public static boolean checkEmployeeExists(String username) throws SQLException {
+public class EmployeeRepositoryMySQL implements EmployeeRepository {
+    @Override
+    public boolean checkEmployeeExists(String username) throws SQLException{
         String query = "SELECT COUNT(*) AS count FROM employee WHERE username = ?";
         try (
             Connection connection = Database.getInstance().getConnection();
@@ -31,10 +28,8 @@ public class EmployeeRepo {
         return false;
     }
 
-    /**
-     * Tìm nhân viên theo username
-     */
-    public static EmployeeModel findByUsername(String username) throws SQLException {
+    @Override
+    public EmployeeModel findByUsername(String username) throws SQLException {
         String query = "SELECT b.name AS branch, e.username, e.password, e.name, e.phone,e.role, e.start_at, e.status"
             +" FROM employee AS e"
             +" LEFT JOIN branch AS b ON e.branch_id = b.branch_id"
@@ -62,7 +57,8 @@ public class EmployeeRepo {
         return null;
     }
 
-    public static void createEmployee(List<EmployeeModel> employees) throws SQLException {
+    @Override
+    public void createEmployee(List<EmployeeModel> employees) throws SQLException {
         String query = "INSERT INTO employee (employee_id, username, password, name, phone, role, branch_id)" 
                         +"VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (
@@ -70,7 +66,6 @@ public class EmployeeRepo {
             PreparedStatement ps = conn.prepareStatement(query)
         ) {
             conn.setAutoCommit(false); // dùng transaction để rollback nếu batch lỗi
-
             for (EmployeeModel emp : employees) {
                 ps.setString(1, emp.getId());
                 ps.setString(2, emp.getUsername());
@@ -84,7 +79,6 @@ public class EmployeeRepo {
                 } else {
                     ps.setNull(7, java.sql.Types.INTEGER); // cho phép null
                 }
-
                 ps.addBatch();
             }
 
@@ -102,36 +96,36 @@ public class EmployeeRepo {
         }
     }
     // cập nhật thông tin nhân viên
-    public static void updateEmployee(String employee_id, Map<String, Object> fields) throws SQLException {
+    public void updateEmployee(String employee_id, Map<String, Object> fields) throws SQLException {
     
     }
     // xoá nhân viên (xóa hoàn toàn)
-    public static void removeEmployee(String employee_id) throws SQLException {
+    public void removeEmployee(String employee_id) throws SQLException {
         
     }
 
     // lấy danh sách tất cả nhân viên
-    public static List<EmployeeModel> getAllEmployees(int limit) throws SQLException {
+    public List<EmployeeModel> getAllEmployees(int limit) throws SQLException {
         return null;
     }
 
     // lấy danh sách tất cả nhân viên còn làm việc
-    public static List<EmployeeModel> getAllEmployeesActive(int limit) throws SQLException {
+    public List<EmployeeModel> getAllEmployeesActive(int limit) throws SQLException {
         return null;
     }
 
     // lấy danh sách tất cả  nhân viên không còn làm việc
-    public static List<EmployeeModel> getAllEmployeesUnactive(int limit) throws SQLException {
+    public List<EmployeeModel> getAllEmployeesUnactive(int limit) throws SQLException {
         return null;
     }
 
     //search employee by name, username, phone
-    public static List<EmployeeModel> searchEmployees(String keyword) throws SQLException {
+    public List<EmployeeModel> searchEmployees(String keyword) throws SQLException {
         return null;
     }
 
     // filter employee by role, branch, status
-    public static List<EmployeeModel> filterEmployees(Map<String, Object> filters) throws SQLException {
+    public List<EmployeeModel> filterEmployees(Map<String, Object> filters) throws SQLException {
         return null;
     }
 

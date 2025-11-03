@@ -1,16 +1,19 @@
 package edu.ptithcm.services;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.ptithcm.model.EmployeeModel;
-import edu.ptithcm.model.repository.EmployeeRepo;
+import edu.ptithcm.model.repository.EmployeeRepositoryMySQL;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class EmployeeService {
+    public static final EmployeeRepositoryMySQL employeeRepositoryMySQL = new EmployeeRepositoryMySQL();
+
     public static EmployeeModel createEmployee(String username, String rawPassword, String name, 
                                                String phone, String role) throws SQLException {
-        if(EmployeeRepo.checkEmployeeExists(username)) {
+        if(employeeRepositoryMySQL.checkEmployeeExists(username)) {
             return null; 
         }
         String hashedPassword = CryptoUtil.md5(rawPassword);
@@ -36,7 +39,7 @@ public class EmployeeService {
 
         List<EmployeeModel> list = new ArrayList<>();
         list.add(employee);
-        EmployeeRepo.createEmployee(list);
+        employeeRepositoryMySQL.createEmployee(list);
         return employee;
     }
 }

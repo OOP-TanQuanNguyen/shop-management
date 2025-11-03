@@ -19,10 +19,8 @@ public class DTTPconnection {
     }
 
     public void send(String text) throws IOException {
-        System.out.println("Text (DTTPConnection) : " + text);
         out.write(text + "\n");
         out.flush();
-        System.out.println("✅ SENT SUCCESSFULLY to " + getAddress());
     }
 
     public String readJson() throws IOException {

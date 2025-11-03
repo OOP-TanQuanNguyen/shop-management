@@ -18,6 +18,12 @@ public class RouteManager {
     public void LoginRoute() {
         this.server.on("LOGIN", args -> {
             try {
+                if (this.manager.isOnline((String)args.data.get("username"))){
+                    DTTP oldConnection = this.manager.getConn((String)args.data.get("username"));
+                    oldConnection.send("FORCE_KICK", null, "ERROR", "có thằng đăng nhập nơi khác!");
+                    this.manager.removeConnection(oldConnection);
+                }
+
                 Map<String,Object> response = LoginController.handleLogin(args.data);
 
                 if (response == null) {
@@ -36,7 +42,7 @@ public class RouteManager {
 
                 manager.addUser(
                     (String) dataMap.get("username"),
-                    this.server.getConnection(),
+                    this.server,
                     dataMap.get("branch_id") != null ? ((Number)dataMap.get("branch_id")).intValue() : 0,
                     (String) dataMap.get("role")
                 );
@@ -57,6 +63,11 @@ public class RouteManager {
                     args.reply("LOGIN", null, "ERROR", "Lỗi nội bộ server: " + ex.getMessage());
                 } catch (IOException ignored) {}
             }
+        });
+
+
+        this.server.on("LOGOUT",args -> {
+            this.manager.removeConnection(server);
         });
     }
 }

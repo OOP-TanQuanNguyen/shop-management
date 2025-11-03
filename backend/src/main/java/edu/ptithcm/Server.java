@@ -4,41 +4,33 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import edu.ptithcm.configs.Config;
-import edu.ptithcm.model.repository.EmployeeRepo;
+import edu.ptithcm.configs.databases.Database;
+import edu.ptithcm.middleware.SystemMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.routes.RouteManager;
-import edu.ptithcm.services.EmployeeService;
 
 public class Server {
     private static final int port = Config.AppConfig.SERVER_PORT;
     private static final DTTPStateManager manager= new DTTPStateManager();
     public static void main(String[] args) {
-        try{
-            boolean existed = !EmployeeRepo.checkEmployeeExists("admin");
-            if(existed) {
-                EmployeeService.createEmployee(
-                "admin",             
-                "admin123",          
-                "Administrator",     
-                "0000000000",        
-                "ADMIN"              
-                );
-                System.out.println("Admin account created with username: admin, password: admin123");
-            }
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
+        // Database
+        Database.setDefaultType("MYSQL");
+        Database.getInstance().init();
 
+        //server
         try (ServerSocket serverSocket = new ServerSocket(Server.port)) {
             System.out.println("[SERVER] is running in " + port + "....");
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("[SERVER] Client mới: " + clientSocket.getInetAddress());
+                System.out.println("[SERVER] Client mới: " + clientSocket.getInetAddress() + "| port = "+clientSocket.getPort());
                 DTTP server = new DTTP(clientSocket);
-            
+                SystemMiddleWare.replyClientCheck(server);
                 RouteManager routeManager = new RouteManager(server,Server.manager);
-                routeManager.LoginRoute();   
+                server.setOnDisconect(() -> {
+                    manager.removeConnection(server);
+                });
+                routeManager.LoginRoute();
                 server.listen();
             }
         } catch (IOException e) {

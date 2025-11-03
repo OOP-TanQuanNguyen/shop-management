@@ -1,5 +1,7 @@
 package edu.ptithcm.app;
 
+import java.io.IOException;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -7,13 +9,15 @@ import javax.swing.SwingUtilities;
 import edu.ptithcm.app.reducers.AuthReducer;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.controllers.admin.AdminController;
-import edu.ptithcm.controllers.login.LoginController;
+import edu.ptithcm.controllers.auth.LoginController;
+import edu.ptithcm.controllers.pos.POSController;
+import edu.ptithcm.middleware.SystemMiddleWare;
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.protocols.DTTP;
-import edu.ptithcm.services.admin.AdminService;
 import edu.ptithcm.services.authentication.AuthService;
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.login.LoginForm;
+import edu.ptithcm.views.pos.POSForm;
 
 /**
  * App: Điểm khởi động toàn bộ chương trình
@@ -25,21 +29,24 @@ public class App {
     private static JFrame currentView; // form hiện tại
     private static DTTP client;        // kết nối socket
     private static AuthService authService; // service dùng chung
-    private static AdminService adminService;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                // 1️⃣ Đăng ký reducer
                 AuthReducer.register(Store.getInstance());
                 client = new DTTP("127.0.0.1", 2025);
                 client.listen();
+
+                //middleware
+                SystemMiddleWare.start(client);
+                SystemMiddleWare.handleDifferenceLogin(client);
+
                 authService = new AuthService(client);
                 openLoginForm();
                 Store.getInstance().subcribe(App::handleStateChange);
 
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "❌ Không thể kết nối server: " + e.getMessage());
+                JOptionPane.showMessageDialog(null, " Không thể kết nối server: " + e.getMessage());
             }
         });
     }
@@ -58,9 +65,18 @@ public class App {
     private static void openAdminForm(UserModel user) {
         if (currentView != null) currentView.dispose();
 
-        AdminForm adminView = new AdminForm(user.toMap());
-        new AdminController(adminView,adminService);
+        AdminForm adminView = new AdminForm(user);
+        new AdminController(adminView);
         currentView = adminView;
+        currentView.setVisible(true);
+    }
+
+    private static void openStaffForm(UserModel user){
+        if (currentView != null) currentView.dispose();
+        
+        POSForm posForm = new POSForm(user);
+        new POSController(posForm);
+        currentView = posForm;
         currentView.setVisible(true);
     }
 
@@ -70,15 +86,46 @@ public class App {
         System.out.println("[DEBUG] Opening AdminForm controller initialized");
         Boolean isAuth = (Boolean) state.get("isAuthenticated");
         Boolean isLogout = (Boolean) state.get("isLogout");
+        Boolean isLossConnectionServer = (Boolean) state.get("isLossConnectionServer");
+        Boolean isDoubleConnection = (Boolean)state.get("isDoubleConnection");
         Object userObj = state.get("user");
 
         SwingUtilities.invokeLater(() -> {
             if (Boolean.TRUE.equals(isAuth) && userObj instanceof UserModel user) {
-                openAdminForm(user);
+                System.out.println(user.getRole());
+                if (user.getRole().equals("ADMIN")){
+                    openAdminForm(user);
+                }
+                else{
+                    openStaffForm(user);
+                }
             }
             if (Boolean.TRUE.equals(isLogout)){
+                try {
+                    client.send("LOGOUT", null, "REQUEST", "message");
+                }catch(IOException e) {
+                    e.printStackTrace();   
+                }
                 openLoginForm();
-                Store.getInstance().getAppState().set("isLogout", false);
+
+                Store store = Store.getInstance();
+                store.getAppState().set("user", null);
+                store.getAppState().set("isAuthenticated", false);
+                store.getAppState().set("isLogout", false);
+            }
+            if (Boolean.TRUE.equals(isLossConnectionServer)){
+                if (!(currentView instanceof LoginForm)){
+                    currentView.dispose();
+                    openLoginForm();
+                }
+            }
+
+            if (Boolean.TRUE.equals(isDoubleConnection)){
+                if (!(currentView instanceof LoginForm)){
+                    currentView.dispose();
+                    openLoginForm();
+                    Store.getInstance().getAppState().set("isDoubleConnection",false);
+                }
             }
         });
     }

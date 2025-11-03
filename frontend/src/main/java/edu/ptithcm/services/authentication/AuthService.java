@@ -43,7 +43,7 @@ public class AuthService {
 
                 store.dispatch(AuthAction.LOGIN_SUCCESS, user);
             } else {
-                store.dispatch(AuthAction.LOGIN_FAIL, null);
+                store.dispatch(AuthAction.LOGIN_FAIL, args.message);
             }
         });
     }

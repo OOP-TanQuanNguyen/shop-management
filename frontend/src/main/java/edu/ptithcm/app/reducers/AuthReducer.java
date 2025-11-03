@@ -1,6 +1,7 @@
 package edu.ptithcm.app.reducers;
 
 import edu.ptithcm.app.actions.AuthAction;
+import edu.ptithcm.app.actions.SystemAction;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.UserModel;
 
@@ -14,10 +15,19 @@ public class AuthReducer {
 
         store.registerReducer(AuthAction.LOGIN_FAIL, payload -> {
             store.getAppState().set("isAuthenticated", false);
+            store.getAppState().set("loginMessage", payload);
         });
 
         store.registerReducer(AuthAction.LOGOUT, payload -> {
             store.getAppState().set("isLogout", true);
+        });
+
+        store.registerReducer(SystemAction.LOSS_CONNECTION_SERVER, payload -> {
+            store.getAppState().set("isLossConnectionServer",true);
+        });
+
+        store.registerReducer(SystemAction.DOUBLE_CONNECTION, payload -> {
+            store.getAppState().set("isDoubleConnection",true);
         });
     }
 }
