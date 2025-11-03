@@ -24,13 +24,18 @@ public class Server {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("[SERVER] Client mới: " + clientSocket.getInetAddress() + "| port = "+clientSocket.getPort());
+                
                 DTTP server = new DTTP(clientSocket);
+
                 SystemMiddleWare.replyClientCheck(server);
+
                 RouteManager routeManager = new RouteManager(server,Server.manager);
+                routeManager.registerRoutes();
+
                 server.setOnDisconect(() -> {
                     manager.removeConnection(server);
                 });
-                routeManager.LoginRoute();
+                
                 server.listen();
             }
         } catch (IOException e) {
