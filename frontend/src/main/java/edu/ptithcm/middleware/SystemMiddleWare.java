@@ -8,7 +8,10 @@ import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.protocols.DTTP;
+<<<<<<< HEAD
 import edu.ptithcm.views.components.AppMessageBox;
+=======
+>>>>>>> 179bce8e7583fd747eda0e28b5de8d2397de3efc
 
 public class SystemMiddleWare {
     private static final long PING_INTERVAL = 5000;   // 5 giây gửi 1 lần
@@ -56,6 +59,7 @@ public class SystemMiddleWare {
             e.printStackTrace();
         }
     }
+<<<<<<< HEAD
 
     public static void handleDifferenceLogin(DTTP client){
         client.on("FORCE_KICK",args -> {
@@ -65,4 +69,6 @@ public class SystemMiddleWare {
             Store.getInstance().dispatch("DOUBLE_CONNECTION", args.message);
         });
     }
+=======
+>>>>>>> 179bce8e7583fd747eda0e28b5de8d2397de3efc
 }

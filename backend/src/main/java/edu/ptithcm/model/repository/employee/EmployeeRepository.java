@@ -1,4 +1,4 @@
-package edu.ptithcm.model.repository;
+package edu.ptithcm.model.repository.employee;
 
 import java.sql.SQLException;
 import java.util.List;

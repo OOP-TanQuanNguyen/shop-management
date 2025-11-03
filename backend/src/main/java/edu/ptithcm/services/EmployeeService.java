@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ptithcm.model.EmployeeModel;
-import edu.ptithcm.model.repository.EmployeeRepositoryMySQL;
+import edu.ptithcm.model.repository.employee.EmployeeRepositoryMySQL;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class EmployeeService {
