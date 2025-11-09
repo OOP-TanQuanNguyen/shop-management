@@ -25,12 +25,9 @@ public class AuthReducer {
         store.registerReducer(SystemAction.LOSS_CONNECTION_SERVER, payload -> {
             store.getAppState().set("isLossConnectionServer",true);
         });
-<<<<<<< HEAD
 
         store.registerReducer(SystemAction.DOUBLE_CONNECTION, payload -> {
             store.getAppState().set("isDoubleConnection",true);
         });
-=======
->>>>>>> 179bce8e7583fd747eda0e28b5de8d2397de3efc
     }
 }

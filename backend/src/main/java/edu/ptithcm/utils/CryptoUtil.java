@@ -3,6 +3,8 @@ package edu.ptithcm.utils;
 import java.security.MessageDigest;
 
 public class CryptoUtil {
+    private CryptoUtil(){}
+
     public static String md5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -16,6 +18,10 @@ public class CryptoUtil {
     }
 
     public static boolean verifyPassword(String plain, String hash) {
-        return md5(plain).equals(hash);
+        String plainHash = md5(plain);
+        if (plainHash == null || hash == null) {
+            return false;
+        }
+        return plainHash.equals(hash);
     }
 }

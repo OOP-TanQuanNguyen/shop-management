@@ -1,40 +1,58 @@
 package edu.ptithcm.services;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
+import java.sql.SQLException;
+
+import edu.ptithcm.dto.response.ResponseDTO;
+import edu.ptithcm.dto.response.UserLoginInfo;
 import edu.ptithcm.model.EmployeeModel;
-import edu.ptithcm.model.repository.employee.EmployeeRepositoryMySQL;
+import edu.ptithcm.repository.Repository;
+import edu.ptithcm.repository.employee.EmployeeRepository;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class AuthenticationService {
-    public static EmployeeRepositoryMySQL employeeRepositoryMySQL = new EmployeeRepositoryMySQL();
-    public static Map<String, Object> login(String username, String password) throws SQLException{
-        Map<String, Object> response = new HashMap<>();
-
-        EmployeeModel employee = employeeRepositoryMySQL.findByUsername(username);
+    private static final EmployeeRepository employeeRepository = Repository.employee();
+    
+    public static ResponseDTO<UserLoginInfo> login(String username, String password) 
+            throws SQLException {
+        
+        EmployeeModel employee = employeeRepository.findByUsername(username);
+        
+        // User not found
         if (employee == null) {
-            response.put("status", "NOT_FOUND_USER");
-            return response;
+            return new ResponseDTO.Builder<UserLoginInfo>()
+                        .type("LOGIN")
+                        .status("NOT_FOUND_USER")
+                        .message("User không tồn tại")
+                        .data(null)
+                        .build();
         }
+        
+        // Wrong password
         boolean ok = CryptoUtil.verifyPassword(password, employee.getPasswordHash());   
         if (!ok) {
-            response.put("status", "WRONG_PASSWORD");
-            return response;
+            return new ResponseDTO.Builder<UserLoginInfo>()
+                        .type("LOGIN")
+                        .status("WRONG_PASSWORD")
+                        .message("Mật khẩu không chính xác!")
+                        .data(null)
+                        .build();
         } 
         
-        response.put("status", "SUCCESS");
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("username", employee.getUsername());
-        userData.put("name", employee.getName());
-        userData.put("role", employee.getRole());
-        userData.put("branch_id", employee.getBranchId());
-        userData.put("branch", employee.getBranch());
-        userData.put("phone", employee.getPhone());
-        userData.put("hireDate", employee.getHireDate());
-        userData.put("status", employee.isStatus());
-        response.put("data", userData);
-
-        return response;
+        // Success
+        UserLoginInfo userInfo = new UserLoginInfo(
+            employee.getId(),
+            employee.getUsername(),
+            employee.getName(),
+            employee.getRole(),
+            employee.getBranchId(),
+            employee.getBranch()
+        );
+        
+        return new ResponseDTO.Builder<UserLoginInfo>()
+                    .type("LOGIN")
+                    .status("SUCCESS")
+                    .message("Đăng nhập thành công!")
+                    .data(userInfo)
+                    .build();
     }
 }

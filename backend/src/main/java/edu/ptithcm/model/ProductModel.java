@@ -3,14 +3,14 @@ package edu.ptithcm.model;
 import java.util.Date;
 
 public class ProductModel {
-    private String product_id;
-    private String name;
-    private String category_id;
-    private String category;
-    private double cost_price;
-    private double sell_price;
-    private Date expiry_date;
-    private Boolean is_active;
+    private final String product_id;
+    private final String name;
+    private final String category_id;
+    private final String category;
+    private final double cost_price;
+    private final double sell_price;
+    private final Date expiry_date;
+    private final Boolean is_active;
 
     private ProductModel(Builder builder){
         this.product_id = builder.product_id;

@@ -5,6 +5,10 @@ import java.io.IOException;
 import edu.ptithcm.protocols.DTTP;
 
 public class SystemMiddleWare {
+
+    private SystemMiddleWare() {
+    }
+    
     public static void replyClientCheck(DTTP server){
         server.on("PING", args -> {
             try {

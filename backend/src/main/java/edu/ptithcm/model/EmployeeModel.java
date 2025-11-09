@@ -1,11 +1,14 @@
 package edu.ptithcm.model;
+
 import java.util.UUID;
 
 public class EmployeeModel {
+
     private enum ROLE {
         ADMIN,
-        STAFF;
-    }   
+        STAFF
+    }
+
     private String id;
     private Integer branchId;
     private String username;
@@ -18,6 +21,10 @@ public class EmployeeModel {
     private boolean status;
     private String branch;
 
+    // 🔹 Constructor rỗng cho ORM / mapper
+    public EmployeeModel() {}
+
+    // 🔹 Constructor từ Builder
     public EmployeeModel(Builder builder) {
         this.id = builder.id;
         this.branchId = builder.branchId;
@@ -32,9 +39,12 @@ public class EmployeeModel {
         this.branch = builder.branch;
     }
 
+    // ===========================
+    // 🔹 GETTERS
+    // ===========================
     public String getId() { return this.id; }
     public Integer getBranchId() { return this.branchId; }
-    public String getBranch(){return this.branch;}
+    public String getBranch() { return this.branch; }
     public String getUsername() { return this.username; }
     public String getPasswordHash() { return this.passwordHash; }
     public String getName() { return this.name; }
@@ -44,9 +54,24 @@ public class EmployeeModel {
     public String getEndDate() { return this.endDate; }
     public boolean isStatus() { return this.status; }
 
+    // ===========================
+    // 🔹 SETTERS (để ORM và Service cập nhật)
+    // ===========================
+    public void setId(String id) { this.id = id; }
+    public void setBranchId(Integer branchId) { this.branchId = branchId; }
+    public void setBranch(String branch) { this.branch = branch; }
+    public void setUsername(String username) { this.username = username; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setName(String name) { this.name = name; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public void setRole(String role) { this.role = role; }
+    public void setHireDate(String hireDate) { this.hireDate = hireDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public void setStatus(boolean status) { this.status = status; }
+
     public static class Builder {
         private String id = UUID.randomUUID().toString();
-        private Integer  branchId;
+        private Integer branchId;
         private String username;
         private String passwordHash;
         private String name;
@@ -58,7 +83,7 @@ public class EmployeeModel {
         private String branch;
 
         public Builder id(String id) { this.id = id; return this; }
-        public Builder branch(Integer branch) { this.branchId = branch; return this; }
+        public Builder branchId(Integer branch) { this.branchId = branch; return this; }
         public Builder username(String username) { this.username = username; return this; }
         public Builder password(String password) { this.passwordHash = password; return this; }
         public Builder name(String name) { this.name = name; return this; }
@@ -67,58 +92,34 @@ public class EmployeeModel {
         public Builder hireDate(String hireDate) { this.hireDate = hireDate; return this; }
         public Builder endDate(String endDate) { this.endDate = endDate; return this; }
         public Builder status(boolean status) { this.status = status; return this; }
-        public Builder branch(String branch) { this.branch = branch; return this; }        
+        public Builder branch(String branch) { this.branch = branch; return this; }
 
         public EmployeeModel build() {
             return new EmployeeModel(this);
         }
     }
 
+    // 🔹 Builder riêng cho admin
     public static class AdminBuilder extends Builder {
         public AdminBuilder() {
             this.role(ROLE.ADMIN.toString());
         }
     }
 
-
-
-
     @Override
     public String toString() {
         return "EmployeeModel {" +
                 "\n  id='" + this.id + '\'' +
+                ",\n  branchId=" + this.branchId +
                 ",\n  username='" + this.username + '\'' +
                 ",\n  passwordHash='" + this.passwordHash + '\'' +
                 ",\n  name='" + this.name + '\'' +
                 ",\n  phone='" + this.phone + '\'' +
-                ",\n  role=" + this.role +
+                ",\n  role='" + this.role + '\'' +
                 ",\n  hireDate='" + this.hireDate + '\'' +
                 ",\n  endDate='" + this.endDate + '\'' +
                 ",\n  status=" + this.status +
+                ",\n  branch='" + this.branch + '\'' +
                 "\n}";
     }
-
-    public static void main(String[] args) {
-        EmployeeModel emp = new EmployeeModel.Builder()
-                .username("johndoe")
-                .password("hashed_password")
-                .name("John Doe")
-                .phone("0123456789")
-                .hireDate("2024-01-01")
-                .status(true)
-                .build();
-
-        EmployeeModel admin = new AdminBuilder()
-                .username("adminuser")
-                .password("hashed_admin_password")
-                .name("Admin User")
-                .phone("0987654321")
-                .hireDate("2024-01-01")
-                .status(true)
-                .build();
-
-        System.out.println("Staff :  " + emp); // Output: STAFF
-        System.out.println("Admin: " + admin); // Output: ADMIN
-    }
-
 }

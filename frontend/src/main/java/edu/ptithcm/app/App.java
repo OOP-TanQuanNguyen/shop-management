@@ -39,10 +39,7 @@ public class App {
 
                 //middleware
                 SystemMiddleWare.start(client);
-<<<<<<< HEAD
                 SystemMiddleWare.handleDifferenceLogin(client);
-=======
->>>>>>> 179bce8e7583fd747eda0e28b5de8d2397de3efc
 
                 authService = new AuthService(client);
                 openLoginForm();
@@ -90,10 +87,7 @@ public class App {
         Boolean isAuth = (Boolean) state.get("isAuthenticated");
         Boolean isLogout = (Boolean) state.get("isLogout");
         Boolean isLossConnectionServer = (Boolean) state.get("isLossConnectionServer");
-<<<<<<< HEAD
         Boolean isDoubleConnection = (Boolean)state.get("isDoubleConnection");
-=======
->>>>>>> 179bce8e7583fd747eda0e28b5de8d2397de3efc
         Object userObj = state.get("user");
 
         SwingUtilities.invokeLater(() -> {

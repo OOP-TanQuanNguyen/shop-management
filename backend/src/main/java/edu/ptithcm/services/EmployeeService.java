@@ -1,93 +1,171 @@
 package edu.ptithcm.services;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import edu.ptithcm.dto.request.employee.EmployeeRequestDTO;
+import edu.ptithcm.dto.response.EmployeeInfo;
+import edu.ptithcm.dto.response.ResponseDTO;
 import edu.ptithcm.model.EmployeeModel;
-import edu.ptithcm.model.repository.employee.EmployeeRepositoryMySQL;
-import edu.ptithcm.utils.CryptoUtil;
-import edu.ptithcm.dto.EmployeeDTO;
+import edu.ptithcm.repository.Repository;
+import edu.ptithcm.repository.employee.EmployeeRepository;
 
 public class EmployeeService {
-    public static final EmployeeRepositoryMySQL employeeRepositoryMySQL = new EmployeeRepositoryMySQL();
+    private static final EmployeeRepository employeeRepo = Repository.employee();
 
-    public EmployeeDTO createEmployee(String username, String rawPassword, String name, 
-                                      String phone, String role) throws SQLException {
-        if(employeeRepositoryMySQL.checkEmployeeExists(username)) {
-            return null; 
+    public ResponseDTO<List<EmployeeInfo>> getAllEmployees() {
+        try {
+            List<EmployeeModel> list = employeeRepo.getAllEmployees(1000);
+            return successList("EMPLOYEE_GET_ALL", "Lấy toàn bộ nhân viên", mapList(list));
+        } catch (SQLException e) {
+            return errorList("EMPLOYEE_GET_ALL", e);
         }
-        String hashedPassword = CryptoUtil.md5(rawPassword);
-        EmployeeModel employee;
-        if ("ADMIN".equalsIgnoreCase(role)) {
-            employee = new EmployeeModel.AdminBuilder()
-                            .username(username)
-                            .password(hashedPassword)
-                            .name(name)
-                            .phone(phone)
-                            .status(true)
-                            .build();
-        } else {
-            employee = new EmployeeModel.Builder()
-                            .username(username)
-                            .password(hashedPassword)
-                            .name(name)
-                            .phone(phone)
-                            .role("STAFF")
-                            .status(true)
-                            .build();
+    }
+
+    public ResponseDTO<List<EmployeeInfo>> getActiveEmployees() {
+        try {
+            List<EmployeeModel> list = employeeRepo.getAllEmployeesActive(1000);
+            return successList("EMPLOYEE_GET_ACTIVE", "Lấy nhân viên đang hoạt động", mapList(list));
+        } catch (SQLException e) {
+            return errorList("EMPLOYEE_GET_ACTIVE", e);
         }
-
-        // Lưu vào database
-        employeeRepositoryMySQL.createEmployee(List.of(employee));
-
-        // Trả về DTO
-        return EmployeeDTO.fromModel(employee);
-    }
-    
-    // Cập nhật thông tin nhân viên
-    public void updateEmployee(String employeeId, Map<String,Object> fields) throws SQLException {
-        if(employeeId == null || fields == null || fields.isEmpty()) return;
-        employeeRepositoryMySQL.updateEmployee(employeeId, fields);
     }
 
-    // Xóa nhân viên
-    public void removeEmployee(String employeeId) throws SQLException {
-        if(employeeId == null) return;
-        employeeRepositoryMySQL.removeEmployee(employeeId);
+    public ResponseDTO<EmployeeInfo> createEmployee(EmployeeRequestDTO req) {
+        if (!req.validForCreate())
+            return invalid("EMPLOYEE_CREATE", "Thiếu thông tin bắt buộc!");
+
+        try {
+
+            EmployeeModel model = new EmployeeModel.Builder()
+                    .username(req.getUsername())
+                    .name(req.getName())
+                    .phone(req.getPhone())
+                    .role(req.getRole())
+                    .branchId(req.getBranchId())
+                    .status(req.getStatus())
+                    .build();
+
+            employeeRepo.createEmployee(List.of(model));
+
+            return success("EMPLOYEE_CREATE", "Thêm nhân viên thành công", toInfo(model));
+        } catch (SQLException e) {
+            return error("EMPLOYEE_CREATE", e);
+        }
     }
 
-    // Lấy danh sách tất cả nhân viên (Model)
-    public List<EmployeeDTO> getAllEmployees(int limit) throws SQLException {
-        List<EmployeeModel> models = employeeRepositoryMySQL.getAllEmployees(limit);
-        return models.stream().map(EmployeeDTO::fromModel).collect(Collectors.toList());
+    public ResponseDTO<EmployeeInfo> updateEmployee(EmployeeRequestDTO req) {
+        if (!req.validForUpdate())
+            return invalid("EMPLOYEE_UPDATE", "Thiếu ID hoặc dữ liệu cập nhật!");
+
+        try {
+            Map<String, Object> fields = new HashMap<>();
+            if (req.getName() != null) fields.put("name", req.getName());
+            if (req.getPhone() != null) fields.put("phone", req.getPhone());
+            if (req.getRole() != null) fields.put("role", req.getRole());
+            if (req.getBranchId() != null) fields.put("branch_id", req.getBranchId());
+            if (req.getStatus() != null) fields.put("status", req.getStatus());
+
+            employeeRepo.updateEmployee(req.getId(), fields);
+            return success("EMPLOYEE_UPDATE", "Cập nhật nhân viên thành công", null);
+        } catch (SQLException e) {
+            return error("EMPLOYEE_UPDATE", e);
+        }
     }
 
-    public List<EmployeeDTO> getAllEmployeesActive(int limit) throws SQLException {
-        List<EmployeeModel> models = employeeRepositoryMySQL.getAllEmployeesActive(limit);
-        return models.stream().map(EmployeeDTO::fromModel).collect(Collectors.toList());
+    public ResponseDTO<EmployeeInfo> deleteEmployee(EmployeeRequestDTO req) {
+        if (req.getId() == null)
+            return invalid("EMPLOYEE_DELETE", "Thiếu ID nhân viên!");
+
+        try {
+            employeeRepo.removeEmployee(req.getId());
+            return success("EMPLOYEE_DELETE", "Xóa nhân viên thành công!", null);
+        } catch (SQLException e) {
+            return error("EMPLOYEE_DELETE", e);
+        }
     }
 
-    public List<EmployeeDTO> getAllEmployeesUnactive(int limit) throws SQLException {
-        List<EmployeeModel> models = employeeRepositoryMySQL.getAllEmployeesUnactive(limit);
-        return models.stream().map(EmployeeDTO::fromModel).collect(Collectors.toList());
+    public ResponseDTO<List<EmployeeInfo>> filterEmployees(Map<String, Object> filters) {
+        try {
+            List<EmployeeModel> list = employeeRepo.filterEmployees(filters);
+            return successList("EMPLOYEE_FILTER", "Lọc dữ liệu thành công", mapList(list));
+        } catch (SQLException e) {
+            return errorList("EMPLOYEE_FILTER", e);
+        }
     }
 
-
-    // Tìm kiếm/filter nhân viên theo từ khóa
-    public List<EmployeeDTO> searchEmployees(String keyword) throws SQLException {
-        List<EmployeeModel> models = employeeRepositoryMySQL.searchEmployees(keyword);
-        return models.stream().map(EmployeeDTO::fromModel).collect(Collectors.toList());
+    public ResponseDTO<List<EmployeeInfo>> searchEmployees(String keyword) {
+        try {
+            List<EmployeeModel> list = employeeRepo.searchEmployees(keyword);
+            return successList("EMPLOYEE_SEARCH", "Tìm kiếm thành công", mapList(list));
+        } catch (SQLException e) {
+            return errorList("EMPLOYEE_SEARCH", e);
+        }
+    }
+    private List<EmployeeInfo> mapList(List<EmployeeModel> models) {
+        if (models == null) return Collections.emptyList();
+        return models.stream().map(this::toInfo).collect(Collectors.toList());
     }
 
-    // Filter theo map filters + limit
-    public List<EmployeeDTO> filterEmployees(Map<String,Object> filters, int limit) throws SQLException {
-        List<EmployeeModel> models = employeeRepositoryMySQL.filterEmployees(filters);
-        return models.stream()
-                     .limit(limit)
-                     .map(EmployeeDTO::fromModel)
-                     .collect(Collectors.toList());
+    private EmployeeInfo toInfo(EmployeeModel e) {
+        return new EmployeeInfo(
+            e.getId(),
+            e.getUsername(),
+            e.getName(),
+            e.getPhone(),
+            e.getRole(),
+            e.getBranchId(),
+            e.getBranch(),
+            e.isStatus()
+        );
+    }
+
+    private ResponseDTO<EmployeeInfo> success(String type, String msg, EmployeeInfo data) {
+        return new ResponseDTO.Builder<EmployeeInfo>()
+                .type(type)
+                .status("SUCCESS")
+                .message(msg)
+                .data(data)
+                .build();
+    }
+
+    private ResponseDTO<EmployeeInfo> invalid(String type, String msg) {
+        return new ResponseDTO.Builder<EmployeeInfo>()
+                .type(type)
+                .status("INVALID")
+                .message(msg)
+                .data(null)
+                .build();
+    }
+
+    private ResponseDTO<EmployeeInfo> error(String type, Exception e) {
+        return new ResponseDTO.Builder<EmployeeInfo>()
+                .type(type)
+                .status("ERROR")
+                .message(e.getMessage())
+                .data(null)
+                .build();
+    }
+
+    private ResponseDTO<List<EmployeeInfo>> successList(String type, String msg, List<EmployeeInfo> data) {
+        return new ResponseDTO.Builder<List<EmployeeInfo>>()
+                .type(type)
+                .status("SUCCESS")
+                .message(msg)
+                .data(data)
+                .build();
+    }
+
+    private ResponseDTO<List<EmployeeInfo>> errorList(String type, Exception e) {
+        return new ResponseDTO.Builder<List<EmployeeInfo>>()
+                .type(type)
+                .status("ERROR")
+                .message(e.getMessage())
+                .data(null)
+                .build();
     }
 }

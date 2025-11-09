@@ -36,8 +36,6 @@ public class AuthService {
                     .branchId(branchId)
                     .phone((String) data.get("phone"))
                     .role((String) data.get("role"))
-                    .hireDate((String) data.get("hire"))
-                    .status((boolean) data.get("status"))
                     .username((String) data.get("username"))
                     .build();
 

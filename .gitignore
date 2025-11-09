@@ -6,11 +6,17 @@ mvnw
 mvnw.cmd
 
 .vscode/
-
+*.py
+*.html
+trivy-report.json
+trivy-report.md
+apache-jmeter-5.6.3.tgz
 .idea/
 *.iml
 *.iws
 out/
+.scannerwork/
+sonar-project.properties
 
 .classpath
 .project
@@ -46,3 +52,5 @@ test-output/
 coverage/
 jacoco.exec
 dttp-benchmar/
+dttp-loadtest/
+apache-jmeter-5.6.3/

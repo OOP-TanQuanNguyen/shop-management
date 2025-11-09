@@ -71,15 +71,13 @@ public class DTTP {
         conn.send(enc);
     }
 
-    /** Lắng nghe dữ liệu đến */
     public void listen() {
         running = true;
         threadPool.execute(() -> {
             while (running) {
                 try {
                     String enc = conn.readJson();
-                    if (enc == null) continue;
-
+                    if (enc == null || enc.trim().isEmpty()) continue;
                     String json = DTTPEncryptor.decrypt(enc, SHARED_KEY);
                     DTTPmsg msg = DTTPmsg.fromJson(json);
 

@@ -1,4 +1,4 @@
-package edu.ptithcm.model.repository.employee;
+package edu.ptithcm.repository.employee;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,12 +14,22 @@ import edu.ptithcm.model.EmployeeModel;
 
 
 public class EmployeeRepositoryMySQL implements EmployeeRepository {
+    public static EmployeeRepository instance;
+    private EmployeeRepositoryMySQL(){
 
+    }
     private static final String BASE_SELECT =
-        "SELECT e.employee_id, e.username, e.name, e.phone, e.role, " +
+        "SELECT e.employee_id,e.password,e.username, e.name, e.phone, e.role, " +
         "b.name AS branch_name, e.start_at, e.end_at, e.status " +
         "FROM employee AS e " +
         "LEFT JOIN branch AS b ON e.branch_id = b.branch_id ";
+ 
+    public static EmployeeRepository getInstance(){
+        if  (EmployeeRepositoryMySQL.instance == null){
+            EmployeeRepositoryMySQL.instance = new EmployeeRepositoryMySQL();
+        }
+        return EmployeeRepositoryMySQL.instance;
+    }
 
     @Override
     public boolean checkEmployeeExists(String username) throws SQLException {
@@ -144,6 +154,7 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
         return employees;
     }
 
+    @Override
     public List<EmployeeModel> getAllEmployeesActive(int limit) throws SQLException {
         List<EmployeeModel> employees = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE e.status = TRUE ORDER BY e.start_at DESC LIMIT ?";
@@ -162,6 +173,7 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
         return employees;
     }
 
+    @Override
     public List<EmployeeModel> getAllEmployeesUnactive(int limit) throws SQLException {
         List<EmployeeModel> employees = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE e.status = FALSE ORDER BY e.end_at DESC LIMIT ?";
@@ -180,6 +192,7 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
         return employees;
     }
 
+    @Override
     public List<EmployeeModel> searchEmployees(String keyword) throws SQLException {
         List<EmployeeModel> employees = new ArrayList<>();
         String sql = BASE_SELECT +
@@ -203,6 +216,7 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
         return employees;
     }
 
+    @Override
     public List<EmployeeModel> filterEmployees(Map<String, Object> filters) throws SQLException {
         List<EmployeeModel> employees = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + "WHERE 1=1 ");
@@ -244,6 +258,7 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
                 .id(rs.getString("employee_id"))
                 .username(rs.getString("username"))
                 .name(rs.getString("name"))
+                .password(rs.getString("password"))
                 .phone(rs.getString("phone"))
                 .role(rs.getString("role"))
                 .branch(rs.getString("branch_name"))
