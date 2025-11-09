@@ -9,12 +9,12 @@ public class EmployeeInfo {
     private final String name;
     private final String phone;
     private final String role;
-    private final int branchId;
+    private final Integer branchId;
     private final String branch;
     private final boolean status;
 
     public EmployeeInfo(String id, String username, String name, String phone,
-                        String role, int branchId, String branch, boolean status) {
+                        String role, Integer branchId, String branch, boolean status) {
         this.id = id;
         this.username = username;
         this.name = name;

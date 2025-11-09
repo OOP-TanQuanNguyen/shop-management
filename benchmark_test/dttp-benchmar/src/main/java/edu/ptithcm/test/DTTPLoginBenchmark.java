@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 
 import com.google.common.util.concurrent.RateLimiter;
 
-import edu.ptithcm.protocols.DTTP;
-import edu.ptithcm.protocols.DTTP.DTTPArgs;
+import edu.ptithcm.test.protocols.DTTP;
+import edu.ptithcm.test.protocols.DTTP.DTTPArgs;
 
 /**
  * Benchmark thực tế mô phỏng LOGIN qua DTTP protocol.

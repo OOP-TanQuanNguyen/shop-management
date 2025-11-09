@@ -83,7 +83,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <mainClass>edu.ptithcm.test.DTTPLoginBenchmark</mainClass>
+          <mainClass>edu.ptithcm.test.EmployeeRouteTest</mainClass>
         </configuration>
       </plugin>
 

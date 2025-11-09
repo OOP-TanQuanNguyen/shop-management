@@ -5,6 +5,7 @@ import java.util.Map;
 public class EmployeeRequestDTO {
     private final String id;
     private final String username;
+    private final String password;
     private final String name;
     private final String phone;
     private final String role;
@@ -14,6 +15,7 @@ public class EmployeeRequestDTO {
     public EmployeeRequestDTO(Map<String, Object> data) {
         this.id = (String)data.get("id");
         this.username = (String) data.get("username");
+        this.password = (String) data.get("password");
         this.name = (String) data.get("name");
         this.phone = (String) data.get("phone");
         this.role = (String) data.get("role");
@@ -22,7 +24,7 @@ public class EmployeeRequestDTO {
     }
 
     public boolean validForCreate() {
-        return username != null && name != null && role != null && branchId != null;
+        return username != null && password != null && name != null && role != null;
     }
 
     public boolean validForUpdate() {
@@ -31,6 +33,7 @@ public class EmployeeRequestDTO {
 
     public String getId() { return id; }
     public String getUsername() { return username; }
+    public String getPassword() {return this.password; }
     public String getName() { return name; }
     public String getPhone() { return phone; }
     public String getRole() { return role; }

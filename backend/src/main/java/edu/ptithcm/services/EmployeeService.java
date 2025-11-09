@@ -13,6 +13,7 @@ import edu.ptithcm.dto.response.ResponseDTO;
 import edu.ptithcm.model.EmployeeModel;
 import edu.ptithcm.repository.Repository;
 import edu.ptithcm.repository.employee.EmployeeRepository;
+import edu.ptithcm.utils.CryptoUtil;
 
 public class EmployeeService {
     private static final EmployeeRepository employeeRepo = Repository.employee();
@@ -43,6 +44,7 @@ public class EmployeeService {
 
             EmployeeModel model = new EmployeeModel.Builder()
                     .username(req.getUsername())
+                    .password(CryptoUtil.md5(req.getPassword()))
                     .name(req.getName())
                     .phone(req.getPhone())
                     .role(req.getRole())
@@ -51,6 +53,8 @@ public class EmployeeService {
                     .build();
 
             employeeRepo.createEmployee(List.of(model));
+
+            System.out.println("Tạo user thành công!");
 
             return success("EMPLOYEE_CREATE", "Thêm nhân viên thành công", toInfo(model));
         } catch (SQLException e) {

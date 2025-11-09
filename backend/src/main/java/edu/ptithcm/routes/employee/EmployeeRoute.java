@@ -121,7 +121,6 @@ public class EmployeeRoute {
             try {
                 if (!hasPermission("ADMIN", args,"EMPLOYEE_FILTER")) return;
 
-                @SuppressWarnings("unchecked")
                 Map<String, Object> filters = (Map<String, Object>) args.data;
                 ResponseDTO<List<EmployeeInfo>> response = controller.filterEmployees(filters);
                 List<Map<String, Object>> employees = null;
@@ -149,7 +148,15 @@ public class EmployeeRoute {
     // ============================================================
     private boolean hasPermission(String requiredRole, DTTP.DTTPArgs args,String type) throws IOException {
         String username = manager.getUsername(server);
+
+        if (username == null){
+            args.reply(type, null, "UNAUTHORIZED", "Bạn cần đăng nhập thực hiện thao tác này!");
+            return false;
+        }
+
         String userRole = (String) manager.getUserMeta(username).get("role");
+
+        System.out.println("UserRole : "+userRole);
 
         if (userRole == null || !userRole.equalsIgnoreCase(requiredRole)) {
             args.reply(type, null, "UNAUTHORIZED", "Bạn không có quyền thực hiện thao tác này!");
