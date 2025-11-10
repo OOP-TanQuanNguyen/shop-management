@@ -1,83 +1,96 @@
 package edu.ptithcm.model;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class ProductModel {
-    private final String product_id;
-    private final String name;
-    private final String category_id;
-    private final String category;
-    private final double cost_price;
-    private final double sell_price;
-    private final Date expiry_date;
-    private final Boolean is_active;
 
-    private ProductModel(Builder builder){
-        this.product_id = builder.product_id;
+    private String productId;
+    private String name;
+    private String categoryId;
+    private String category;
+    private double costPrice;
+    private double sellPrice;
+    private Date expiryDate;
+    private Boolean isActive;
+
+    // 🔹 Constructor rỗng cho ORM / mapper
+    public ProductModel() {}
+
+    // 🔹 Constructor từ Builder
+    public ProductModel(Builder builder) {
+        this.productId = builder.productId;
         this.name = builder.name;
-        this.category_id = builder.category_id;
+        this.categoryId = builder.categoryId;
         this.category = builder.category;
-        this.cost_price = builder.cost_price;
-        this.sell_price = builder.sell_price;
-        this.expiry_date = builder.expiry_date;
-        this.is_active = builder.is_active;
+        this.costPrice = builder.costPrice;
+        this.sellPrice = builder.sellPrice;
+        this.expiryDate = builder.expiryDate;
+        this.isActive = builder.isActive;
     }
 
+    // ===========================
+    // 🔹 GETTERS
+    // ===========================
+    public String getProductId() { return productId; }
+    public String getName() { return name; }
+    public String getCategoryId() { return categoryId; }
+    public String getCategory() { return category; }
+    public double getCostPrice() { return costPrice; }
+    public double getSellPrice() { return sellPrice; }
+    public Date getExpiryDate() { return expiryDate; }
+    public Boolean getIsActive() { return isActive; }
 
-    public static class Builder{
-        private String product_id;
+    // ===========================
+    // 🔹 SETTERS
+    // ===========================
+    public void setProductId(String productId) { this.productId = productId; }
+    public void setName(String name) { this.name = name; }
+    public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
+    public void setCategory(String category) { this.category = category; }
+    public void setCostPrice(double costPrice) { this.costPrice = costPrice; }
+    public void setSellPrice(double sellPrice) { this.sellPrice = sellPrice; }
+    public void setExpiryDate(Date expiryDate) { this.expiryDate = expiryDate; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    // ===========================
+    // 🔹 BUILDER
+    // ===========================
+    public static class Builder {
+        private String productId = UUID.randomUUID().toString();
         private String name;
-        private String category_id;
+        private String categoryId;
         private String category;
-        private double cost_price;
-        private double sell_price;
-        private Date expiry_date;
-        private Boolean is_active;
+        private double costPrice;
+        private double sellPrice;
+        private Date expiryDate;
+        private Boolean isActive = true;
 
-        public Builder product_id(String product_id){
-            this.product_id = product_id;
-            return this;
-        }
-        public Builder name(String name){
-            this.name = name;
-            return this;
-        }
-        
-        public Builder category_id(String category_id){
-            this.category_id = category_id;
-            return this;
-        }
-        
-        public Builder category(String category){
-            this.category = category;
-            return this;
-        }
-        
-        public Builder sell_price(double sell_price){
-            this.sell_price = sell_price;
-            return this;
-        }
-        
-        public Builder cost_price(double cost_price){
-            this.cost_price = cost_price;
-            return this;
-        }
+        public Builder productId(String productId) { this.productId = productId; return this; }
+        public Builder name(String name) { this.name = name; return this; }
+        public Builder categoryId(String categoryId) { this.categoryId = categoryId; return this; }
+        public Builder category(String category) { this.category = category; return this; }
+        public Builder costPrice(double costPrice) { this.costPrice = costPrice; return this; }
+        public Builder sellPrice(double sellPrice) { this.sellPrice = sellPrice; return this; }
+        public Builder expiryDate(Date expiryDate) { this.expiryDate = expiryDate; return this; }
+        public Builder isActive(Boolean isActive) { this.isActive = isActive; return this; }
 
-        public Builder expiry_date(Date expiry_date){
-            this.expiry_date = expiry_date;
-            return this;
-        }
-
-
-        public Builder is_active(boolean is_active){
-            this.is_active = is_active;
-            return this;
-        }
-
-        public ProductModel build(){
+        public ProductModel build() {
             return new ProductModel(this);
         }
-
     }
 
+    @Override
+    public String toString() {
+        return "ProductModel {" +
+                "\n  productId='" + productId + '\'' +
+                ",\n  name='" + name + '\'' +
+                ",\n  categoryId='" + categoryId + '\'' +
+                ",\n  category='" + category + '\'' +
+                ",\n  costPrice=" + costPrice +
+                ",\n  sellPrice=" + sellPrice +
+                ",\n  expiryDate=" + expiryDate +
+                ",\n  isActive=" + isActive +
+                "\n}";
+    }
 }
