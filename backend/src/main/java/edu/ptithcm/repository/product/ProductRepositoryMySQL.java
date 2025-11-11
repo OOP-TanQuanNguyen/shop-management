@@ -76,6 +76,52 @@ public class ProductRepositoryMySQL extends BaseRepository implements ProductRep
         }
     }
 
+    // 🟡 THÊM MỚI: update sản phẩm
+    @Override
+    public void update(ProductModel p) throws SQLException {
+        String sql = "UPDATE product SET name=?, category_id=?, cost_price=?, sell_price=?, expiry_date=?, is_active=? " +
+                     "WHERE product_id=?";
+        Connection conn = getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            ps.setString(1, p.getName());
+            ps.setString(2, p.getCategoryId());
+            ps.setDouble(3, p.getCostPrice());
+            ps.setDouble(4, p.getSellPrice());
+            if (p.getExpiryDate() != null) ps.setDate(5, p.getExpiryDate());
+            else ps.setNull(5, Types.DATE);
+            ps.setBoolean(6, p.isActive());
+            ps.setString(7, p.getId());
+            ps.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            safeRollback(conn);
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+            closeConnection(conn);
+        }
+    }
+
+    // 🟡 THÊM MỚI: xóa sản phẩm
+    @Override
+    public void remove(String id) throws SQLException {
+        String sql = "DELETE FROM product WHERE product_id=?";
+        Connection conn = getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            conn.setAutoCommit(false);
+            ps.setString(1, id);
+            ps.executeUpdate();
+            conn.commit();
+        } catch (SQLException e) {
+            safeRollback(conn);
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
+            closeConnection(conn);
+        }
+    }
+
     @Override
     public List<ProductModel> getAll(int limit) throws SQLException {
         List<ProductModel> list = new ArrayList<>();
@@ -133,6 +179,7 @@ public class ProductRepositoryMySQL extends BaseRepository implements ProductRep
 
     private ProductModel map(ResultSet rs) throws SQLException {
         return new ProductModel.Builder()
+            .id(rs.getString("product_id"))
             .name(rs.getString("name"))
             .categoryId(rs.getString("category_id"))
             .category(rs.getString("category"))

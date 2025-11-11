@@ -45,6 +45,7 @@ public class ProductModel {
         private Date expiryDate;
         private boolean isActive = true;
 
+        public Builder id(String id){this.id = id;return this;}
         public Builder name(String n) { this.name = n; return this; }
         public Builder categoryId(String c) { this.categoryId = c; return this; }
         public Builder category(String c) { this.category = c; return this; }
