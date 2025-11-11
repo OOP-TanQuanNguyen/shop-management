@@ -1,83 +1,61 @@
 package edu.ptithcm.model;
 
-import java.util.Date;
+import java.sql.Date;
+import java.util.UUID;
 
 public class ProductModel {
-    private final String product_id;
-    private final String name;
-    private final String category_id;
-    private final String category;
-    private final double cost_price;
-    private final double sell_price;
-    private final Date expiry_date;
-    private final Boolean is_active;
+    private String id;
+    private String name;
+    private String categoryId;
+    private String category;
+    private double costPrice;
+    private double sellPrice;
+    private Date expiryDate;
+    private boolean isActive;
 
-    private ProductModel(Builder builder){
-        this.product_id = builder.product_id;
-        this.name = builder.name;
-        this.category_id = builder.category_id;
-        this.category = builder.category;
-        this.cost_price = builder.cost_price;
-        this.sell_price = builder.sell_price;
-        this.expiry_date = builder.expiry_date;
-        this.is_active = builder.is_active;
+    public ProductModel() {}
+
+    private ProductModel(Builder b) {
+        this.id = b.id;
+        this.name = b.name;
+        this.categoryId = b.categoryId;
+        this.category = b.category;
+        this.costPrice = b.costPrice;
+        this.sellPrice = b.sellPrice;
+        this.expiryDate = b.expiryDate;
+        this.isActive = b.isActive;
     }
 
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getCategoryId() { return categoryId; }
+    public String getCategory() { return category; }
+    public double getCostPrice() { return costPrice; }
+    public double getSellPrice() { return sellPrice; }
+    public Date getExpiryDate() { return expiryDate; }
+    public boolean isActive() { return isActive; }
 
-    public static class Builder{
-        private String product_id;
+    public static class Builder {
+        private String id = UUID.randomUUID().toString();
         private String name;
-        private String category_id;
+        private String categoryId;
         private String category;
-        private double cost_price;
-        private double sell_price;
-        private Date expiry_date;
-        private Boolean is_active;
+        private double costPrice;
+        private double sellPrice;
+        private Date expiryDate;
+        private boolean isActive = true;
 
-        public Builder product_id(String product_id){
-            this.product_id = product_id;
-            return this;
-        }
-        public Builder name(String name){
-            this.name = name;
-            return this;
-        }
-        
-        public Builder category_id(String category_id){
-            this.category_id = category_id;
-            return this;
-        }
-        
-        public Builder category(String category){
-            this.category = category;
-            return this;
-        }
-        
-        public Builder sell_price(double sell_price){
-            this.sell_price = sell_price;
-            return this;
-        }
-        
-        public Builder cost_price(double cost_price){
-            this.cost_price = cost_price;
-            return this;
-        }
+        public Builder name(String n) { this.name = n; return this; }
+        public Builder categoryId(String c) { this.categoryId = c; return this; }
+        public Builder category(String c) { this.category = c; return this; }
+        public Builder costPrice(double c) { this.costPrice = c; return this; }
+        public Builder sellPrice(double s) { this.sellPrice = s; return this; }
+        public Builder expiryDate(Date e) { this.expiryDate = e; return this; }
+        public Builder isActive(boolean a) { this.isActive = a; return this; }
 
-        public Builder expiry_date(Date expiry_date){
-            this.expiry_date = expiry_date;
-            return this;
-        }
-
-
-        public Builder is_active(boolean is_active){
-            this.is_active = is_active;
-            return this;
-        }
-
-        public ProductModel build(){
-            return new ProductModel(this);
-        }
-
+        public ProductModel build() { return new ProductModel(this); }
     }
 
+    @Override
+    public String toString() { return name + " (" + sellPrice + ")"; }
 }

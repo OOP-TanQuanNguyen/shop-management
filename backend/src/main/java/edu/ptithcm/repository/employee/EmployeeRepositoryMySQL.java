@@ -9,35 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import edu.ptithcm.configs.databases.Database;
 import edu.ptithcm.model.EmployeeModel;
+import edu.ptithcm.repository.BaseRepository;
 
+public class EmployeeRepositoryMySQL extends BaseRepository implements EmployeeRepository {
 
-public class EmployeeRepositoryMySQL implements EmployeeRepository {
-    public static EmployeeRepository instance;
-    private EmployeeRepositoryMySQL(){
+    private static EmployeeRepositoryMySQL instance;
 
-    }
     private static final String BASE_SELECT =
-        "SELECT e.employee_id,e.password,e.username, e.name, e.phone, e.role, " +
+        "SELECT e.employee_id, e.username, e.password, e.name, e.phone, e.role, " +
         "b.name AS branch_name, e.start_at, e.end_at, e.status " +
         "FROM employee AS e " +
         "LEFT JOIN branch AS b ON e.branch_id = b.branch_id ";
- 
-    public static EmployeeRepository getInstance(){
-        if  (EmployeeRepositoryMySQL.instance == null){
-            EmployeeRepositoryMySQL.instance = new EmployeeRepositoryMySQL();
-        }
-        return EmployeeRepositoryMySQL.instance;
+
+    private EmployeeRepositoryMySQL() {}
+
+    public static EmployeeRepositoryMySQL getInstance() {
+        if (instance == null) instance = new EmployeeRepositoryMySQL();
+        return instance;
     }
 
     @Override
     public boolean checkEmployeeExists(String username) throws SQLException {
         String sql = "SELECT 1 FROM employee WHERE username = ? LIMIT 1";
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -48,15 +44,11 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
     @Override
     public EmployeeModel findByUsername(String username) throws SQLException {
         String sql = BASE_SELECT + "WHERE e.username = ? LIMIT 1";
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapEmployee(rs);
-                }
+                if (rs.next()) return mapEmployee(rs);
             }
         }
         return null;
@@ -64,22 +56,21 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
 
     @Override
     public void createEmployee(List<EmployeeModel> employees) throws SQLException {
-        String sql = "INSERT INTO employee (employee_id, username, password, name, phone, role, branch_id) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        Connection conn = Database.getInstance().getConnection();
+        String sql = "INSERT INTO employee (employee_id, username, password, name, phone, role, branch_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        Connection conn = getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             conn.setAutoCommit(false);
 
-            for (EmployeeModel emp : employees) {
-                ps.setString(1, emp.getId());
-                ps.setString(2, emp.getUsername());
-                ps.setString(3, emp.getPasswordHash());
-                ps.setString(4, emp.getName());
-                ps.setString(5, emp.getPhone());
-                ps.setString(6, emp.getRole());
-                if (emp.getBranchId() != null)
-                    ps.setInt(7, emp.getBranchId());
+            for (EmployeeModel e : employees) {
+                ps.setString(1, e.getId());
+                ps.setString(2, e.getUsername());
+                ps.setString(3, e.getPasswordHash());
+                ps.setString(4, e.getName());
+                ps.setString(5, e.getPhone());
+                ps.setString(6, e.getRole());
+                if (e.getBranchId() != null)
+                    ps.setInt(7, e.getBranchId());
                 else
                     ps.setNull(7, Types.INTEGER);
                 ps.addBatch();
@@ -88,140 +79,114 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
             ps.executeBatch();
             conn.commit();
 
-        } catch (SQLException e) {
-            conn.rollback();
-            throw e;
+        } catch (SQLException ex) {
+            safeRollback(conn);
+            throw ex;
         } finally {
             conn.setAutoCommit(true);
-            conn.close();
+            closeConnection(conn);
         }
     }
 
     @Override
-    public void updateEmployee(String employee_id, Map<String, Object> fields) throws SQLException {
+    public void updateEmployee(String employeeId, Map<String, Object> fields) throws SQLException {
         if (fields == null || fields.isEmpty()) return;
 
         StringBuilder sql = new StringBuilder("UPDATE employee SET ");
         List<Object> values = new ArrayList<>();
 
-        for (String key : fields.keySet()) {
-            sql.append(key).append(" = ?, ");
-            values.add(fields.get(key));
+        for (Map.Entry<String, Object> e : fields.entrySet()) {
+            sql.append(e.getKey()).append(" = ?, ");
+            values.add(e.getValue());
         }
-        sql.setLength(sql.length() - 2); // remove last comma
+        sql.setLength(sql.length() - 2);
         sql.append(" WHERE employee_id = ?");
 
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql.toString())
-        ) {
-            for (int i = 0; i < values.size(); i++) {
-                ps.setObject(i + 1, values.get(i));
-            }
-            ps.setString(values.size() + 1, employee_id);
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < values.size(); i++) ps.setObject(i + 1, values.get(i));
+            ps.setString(values.size() + 1, employeeId);
             ps.executeUpdate();
         }
     }
 
     @Override
-    public void removeEmployee(String employee_id) throws SQLException {
+    public void removeEmployee(String employeeId) throws SQLException {
         String sql = "DELETE FROM employee WHERE employee_id = ?";
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
-            ps.setString(1, employee_id);
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, employeeId);
             ps.executeUpdate();
         }
     }
 
     @Override
     public List<EmployeeModel> getAllEmployees(int limit) throws SQLException {
-        List<EmployeeModel> employees = new ArrayList<>();
+        List<EmployeeModel> list = new ArrayList<>();
         String sql = BASE_SELECT + "ORDER BY e.start_at DESC LIMIT ?";
-
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    employees.add(mapEmployee(rs));
-                }
+                while (rs.next()) list.add(mapEmployee(rs));
             }
         }
-        return employees;
+        return list;
     }
 
     @Override
     public List<EmployeeModel> getAllEmployeesActive(int limit) throws SQLException {
-        List<EmployeeModel> employees = new ArrayList<>();
+        List<EmployeeModel> list = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE e.status = TRUE ORDER BY e.start_at DESC LIMIT ?";
-
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    employees.add(mapEmployee(rs));
-                }
+                while (rs.next()) list.add(mapEmployee(rs));
             }
         }
-        return employees;
+        return list;
     }
 
     @Override
     public List<EmployeeModel> getAllEmployeesUnactive(int limit) throws SQLException {
-        List<EmployeeModel> employees = new ArrayList<>();
+        List<EmployeeModel> list = new ArrayList<>();
         String sql = BASE_SELECT + "WHERE e.status = FALSE ORDER BY e.end_at DESC LIMIT ?";
-
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    employees.add(mapEmployee(rs));
-                }
+                while (rs.next()) list.add(mapEmployee(rs));
             }
         }
-        return employees;
+        return list;
     }
 
     @Override
     public List<EmployeeModel> searchEmployees(String keyword) throws SQLException {
-        List<EmployeeModel> employees = new ArrayList<>();
+        List<EmployeeModel> list = new ArrayList<>();
         String sql = BASE_SELECT +
             "WHERE e.username LIKE ? OR e.name LIKE ? OR e.phone LIKE ? ORDER BY e.start_at DESC";
 
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)
-        ) {
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             String like = "%" + keyword + "%";
             ps.setString(1, like);
             ps.setString(2, like);
             ps.setString(3, like);
-
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    employees.add(mapEmployee(rs));
-                }
+                while (rs.next()) list.add(mapEmployee(rs));
             }
         }
-        return employees;
+        return list;
     }
 
     @Override
     public List<EmployeeModel> filterEmployees(Map<String, Object> filters) throws SQLException {
-        List<EmployeeModel> employees = new ArrayList<>();
         StringBuilder sql = new StringBuilder(BASE_SELECT + "WHERE 1=1 ");
-
         List<Object> params = new ArrayList<>();
+
         if (filters.containsKey("role")) {
             sql.append("AND e.role = ? ");
             params.add(filters.get("role"));
@@ -237,32 +202,29 @@ public class EmployeeRepositoryMySQL implements EmployeeRepository {
 
         sql.append("ORDER BY e.start_at DESC");
 
-        try (
-            Connection conn = Database.getInstance().getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql.toString())
-        ) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+        List<EmployeeModel> list = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    employees.add(mapEmployee(rs));
-                }
+                while (rs.next()) list.add(mapEmployee(rs));
             }
         }
-        return employees;
+        return list;
     }
 
+    // 🔹 Mapper
     private EmployeeModel mapEmployee(ResultSet rs) throws SQLException {
         return new EmployeeModel.Builder()
                 .id(rs.getString("employee_id"))
                 .username(rs.getString("username"))
-                .name(rs.getString("name"))
                 .password(rs.getString("password"))
+                .name(rs.getString("name"))
                 .phone(rs.getString("phone"))
                 .role(rs.getString("role"))
                 .branch(rs.getString("branch_name"))
                 .hireDate(rs.getString("start_at"))
+                .endDate(rs.getString("end_at"))
                 .status(rs.getBoolean("status"))
                 .build();
     }

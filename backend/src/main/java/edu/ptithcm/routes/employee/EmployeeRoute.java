@@ -60,7 +60,7 @@ public class EmployeeRoute {
 
                 args.reply(response.getType(), payload, response.getStatus(), response.getMessage());
 
-            } catch (Exception e) {
+            }catch (Exception e) {
                 replyError(args, "EMPLOYEE_GET_ACTIVE", e);
             }
         });
@@ -172,6 +172,6 @@ public class EmployeeRoute {
         try {
             args.reply(event, null, "ERROR", "Lỗi server: " + e.getMessage());
         }catch (IOException ignored) {}
-        e.printStackTrace();
+            System.err.println("Lỗi");
     }
 }

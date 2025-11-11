@@ -27,11 +27,6 @@ public class DTTPconnection {
 
     public String readJson() throws IOException {
         String line = in.readLine();
-        // if (line == null) {
-        //     System.out.println("[DEBUG] readLine() trả về null (client đóng kết nối)");
-        // } else {
-        //     System.out.println("[DEBUG] Nhận được: " + line);
-        // }
         return line;
     }
 

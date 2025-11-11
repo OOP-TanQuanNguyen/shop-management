@@ -1,15 +1,15 @@
-CREATE DATABASE IF NOT EXISTS mini_market CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS mini_market
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE mini_market;
+
+-- ======================
+-- 1. DANH MỤC & SẢN PHẨM
+-- ======================
 CREATE TABLE category (
     category_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     name VARCHAR(255) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
-CREATE TABLE supplier (
-    supplier_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    name VARCHAR(255) NOT NULL,
-    phone CHAR(10),
-    address VARCHAR(255)
-) ENGINE=InnoDB;
+
 CREATE TABLE product (
     product_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     name VARCHAR(255) NOT NULL,
@@ -24,6 +24,10 @@ CREATE TABLE product (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT chk_product_price CHECK (cost_price >= 0 AND sell_price >= cost_price)
 ) ENGINE=InnoDB;
+
+-- ======================
+-- 2. CHI NHÁNH & NHÂN SỰ
+-- ======================
 CREATE TABLE branch (
     branch_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -32,6 +36,7 @@ CREATE TABLE branch (
     open_date DATE DEFAULT (CURDATE()),
     is_active BOOLEAN DEFAULT TRUE
 ) ENGINE=InnoDB;
+
 CREATE TABLE employee (
     employee_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     branch_id INT,
@@ -47,6 +52,7 @@ CREATE TABLE employee (
         REFERENCES branch(branch_id)
         ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
 CREATE TABLE shift (
     shift_id INT AUTO_INCREMENT PRIMARY KEY,
     name CHAR(10),
@@ -54,6 +60,7 @@ CREATE TABLE shift (
     end_time TIME,
     CONSTRAINT chk_shift_time CHECK (start_time < end_time)
 ) ENGINE=InnoDB;
+
 CREATE TABLE shift_assignment (
     shift_id INT,
     employee_id CHAR(36),
@@ -69,22 +76,27 @@ CREATE TABLE shift_assignment (
         REFERENCES branch(branch_id)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- ======================
+-- 3. KHÁCH HÀNG & BÁN HÀNG
+-- ======================
 CREATE TABLE customer (
     customer_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     name VARCHAR(255) NOT NULL,
     phone CHAR(10),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+
 CREATE TABLE loyalty (
     loyalty_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     customer_id CHAR(36) UNIQUE,
-    total_points INT DEFAULT 0,
+    total_points INT DEFAULT 0 CHECK (total_points >= 0),
     last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_loyalty_customer FOREIGN KEY (customer_id)
         REFERENCES customer(customer_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT chk_loyalty_points CHECK (total_points >= 0)
+        ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 CREATE TABLE invoice (
     invoice_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     employee_id CHAR(36),
@@ -105,11 +117,12 @@ CREATE TABLE invoice (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT chk_invoice_total CHECK (total >= 0 AND discount >= 0 AND total >= discount)
 ) ENGINE=InnoDB;
+
 CREATE TABLE invoice_detail (
     product_id CHAR(36),
     invoice_id CHAR(36),
-    quantity INT NOT NULL,
-    unit_price DECIMAL(12,2) NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+    unit_price DECIMAL(12,2) NOT NULL CHECK (unit_price > 0),
     total DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
     PRIMARY KEY (product_id, invoice_id),
     CONSTRAINT fk_invoicedetail_product FOREIGN KEY (product_id)
@@ -117,42 +130,17 @@ CREATE TABLE invoice_detail (
         ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_invoicedetail_invoice FOREIGN KEY (invoice_id)
         REFERENCES invoice(invoice_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT chk_invoicedetail_values CHECK (quantity > 0 AND unit_price > 0)
+        ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
-CREATE TABLE import_receipt (
-    import_id CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    supplier_id CHAR(36),
-    branch_id INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status ENUM('PENDING', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
-    note TEXT,
-    CONSTRAINT fk_import_supplier FOREIGN KEY (supplier_id)
-        REFERENCES supplier(supplier_id)
-        ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT fk_import_branch FOREIGN KEY (branch_id)
-        REFERENCES branch(branch_id)
-        ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB;
-CREATE TABLE import_detail (
-    product_id CHAR(36),
-    import_id CHAR(36),
-    quantity INT NOT NULL,
-    import_price DECIMAL(12,2) NOT NULL,
-    PRIMARY KEY (product_id, import_id),
-    CONSTRAINT fk_importdetail_product FOREIGN KEY (product_id)
-        REFERENCES product(product_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_importdetail_import FOREIGN KEY (import_id)
-        REFERENCES import_receipt(import_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT chk_importdetail_values CHECK (quantity > 0 AND import_price > 0)
-) ENGINE=InnoDB;
+
+-- ======================
+-- 4. TỒN KHO
+-- ======================
 CREATE TABLE inventory (
     inventory_id INT AUTO_INCREMENT PRIMARY KEY,
-    branch_id INT,
-    product_id CHAR(36),
-    quantity INT DEFAULT 0,
+    branch_id INT NOT NULL,
+    product_id CHAR(36) NOT NULL,
+    quantity INT DEFAULT 0 CHECK (quantity >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_inventory_branch FOREIGN KEY (branch_id)
@@ -160,6 +148,5 @@ CREATE TABLE inventory (
         ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_inventory_product FOREIGN KEY (product_id)
         REFERENCES product(product_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT chk_inventory_quantity CHECK (quantity >= 0)
+        ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;

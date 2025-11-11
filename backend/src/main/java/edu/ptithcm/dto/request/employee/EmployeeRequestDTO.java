@@ -18,7 +18,7 @@ public class EmployeeRequestDTO {
         this.password = (String) data.get("password");
         this.name = (String) data.get("name");
         this.phone = (String) data.get("phone");
-        this.role = (String) data.get("role");
+        this.role = (String) data.get("role") == null ? "STAFF":"ADMIN";
         this.branchId = data.get("branchId") != null ? (Integer) data.get("branchId") : null;
         this.status = data.get("status") != null ? (Boolean)data.get("status") : true;
     }

@@ -39,9 +39,6 @@ public class EmployeeModel {
         this.branch = builder.branch;
     }
 
-    // ===========================
-    // 🔹 GETTERS
-    // ===========================
     public String getId() { return this.id; }
     public Integer getBranchId() { return this.branchId; }
     public String getBranch() { return this.branch; }
@@ -53,21 +50,6 @@ public class EmployeeModel {
     public String getHireDate() { return this.hireDate; }
     public String getEndDate() { return this.endDate; }
     public boolean isStatus() { return this.status; }
-
-    // ===========================
-    // 🔹 SETTERS (để ORM và Service cập nhật)
-    // ===========================
-    public void setId(String id) { this.id = id; }
-    public void setBranchId(Integer branchId) { this.branchId = branchId; }
-    public void setBranch(String branch) { this.branch = branch; }
-    public void setUsername(String username) { this.username = username; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public void setName(String name) { this.name = name; }
-    public void setPhone(String phone) { this.phone = phone; }
-    public void setRole(String role) { this.role = role; }
-    public void setHireDate(String hireDate) { this.hireDate = hireDate; }
-    public void setEndDate(String endDate) { this.endDate = endDate; }
-    public void setStatus(boolean status) { this.status = status; }
 
     public static class Builder {
         private String id = UUID.randomUUID().toString();
@@ -99,7 +81,6 @@ public class EmployeeModel {
         }
     }
 
-    // 🔹 Builder riêng cho admin
     public static class AdminBuilder extends Builder {
         public AdminBuilder() {
             this.role(ROLE.ADMIN.toString());
