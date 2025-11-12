@@ -17,7 +17,6 @@ public class ProductController {
             Map<String, Object> map = (Map<String, Object>) data;
             ProductRequestDTO req = new ProductRequestDTO(map);
 
-            // 👉 Rã các trường
             String name = req.getName();
             String categoryId = req.getCategoryId();
             double costPrice = req.getCostPrice();
@@ -25,13 +24,12 @@ public class ProductController {
             java.sql.Date expiryDate = req.getExpiryDate();
             Boolean isActive = req.getIsActive();
 
-            // 👉 Gọi service (service KHÔNG ép kiểu nữa)
             return service.createProduct(name, categoryId, costPrice, sellPrice, expiryDate, isActive);
         } catch (Exception e) {
             return new ResponseDTO.Builder<ProductInfo>()
                     .type("PRODUCT_CREATE")
-                    .status("ERROR")
-                    .message("Lỗi parse dữ liệu: " + e.getMessage())
+                    .status(ResponseDTO.STATUS.ERROR.getValue())
+                    .message("Lỗi Server ")
                     .data(null)
                     .build();
         }
@@ -55,8 +53,8 @@ public class ProductController {
         } catch (Exception e) {
             return new ResponseDTO.Builder<ProductInfo>()
                     .type("PRODUCT_UPDATE")
-                    .status("ERROR")
-                    .message("Lỗi parse dữ liệu: " + e.getMessage())
+                    .status(ResponseDTO.STATUS.ERROR.getValue())
+                    .message("Lỗi server")
                     .data(null)
                     .build();
         }
@@ -71,8 +69,8 @@ public class ProductController {
         } catch (Exception e) {
             return new ResponseDTO.Builder<ProductInfo>()
                     .type("PRODUCT_DELETE")
-                    .status("ERROR")
-                    .message("Lỗi parse dữ liệu: " + e.getMessage())
+                    .status(ResponseDTO.STATUS.ERROR.getValue())
+                    .message("Lỗi server")
                     .data(null)
                     .build();
         }
@@ -91,8 +89,8 @@ public class ProductController {
         } catch (Exception e) {
             return new ResponseDTO.Builder<ProductInfo>()
                     .type("PRODUCT_GET_BY_ID")
-                    .status("ERROR")
-                    .message("Lỗi parse dữ liệu: " + e.getMessage())
+                    .status(ResponseDTO.STATUS.ERROR.getValue())
+                    .message("Lỗi server")
                     .data(null)
                     .build();
         }

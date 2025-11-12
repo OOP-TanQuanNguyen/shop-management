@@ -157,7 +157,7 @@ public class EmployeeService {
 
     private ResponseDTO<EmployeeInfo> success(String type, String msg, EmployeeInfo data) {
         return new ResponseDTO.Builder<EmployeeInfo>()
-                .type(type).status("SUCCESS").message(msg).data(data).build();
+                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
     }
 
     private ResponseDTO<EmployeeInfo> invalid(String type, String msg) {
@@ -172,7 +172,7 @@ public class EmployeeService {
 
     private ResponseDTO<List<EmployeeInfo>> successList(String type, String msg, List<EmployeeInfo> data) {
         return new ResponseDTO.Builder<List<EmployeeInfo>>()
-                .type(type).status("SUCCESS").message(msg).data(data).build();
+                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
     }
 
     private ResponseDTO<List<EmployeeInfo>> errorList(String type, Exception e) {

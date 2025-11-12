@@ -18,6 +18,22 @@ public class ResponseDTO<T> {
     public String getMessage() { return this.message; }
     public T getData() { return this.data; }
 
+    public enum STATUS {
+        ERROR("ERROR"),
+        SUCCESS("SUCCESS"),
+        INVALID("INVALID");
+
+        private final String value;
+
+        STATUS(String value) { this.value = value; }
+
+        public String getValue() { return value; }
+
+        @Override
+        public String toString() { return value; }
+    }
+
+
     public static class Builder<T> {
         private String type;
         private String status;

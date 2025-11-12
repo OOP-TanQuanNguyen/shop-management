@@ -120,26 +120,26 @@ public class ProductService {
 
     private ResponseDTO<ProductInfo> success(String type, String msg, ProductInfo data) {
         return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status("SUCCESS").message(msg).data(data).build();
+                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
     }
 
     private ResponseDTO<ProductInfo> invalid(String type, String msg) {
         return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status("INVALID").message(msg).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.INVALID.getValue()).message(msg).data(null).build();
     }
 
     private ResponseDTO<ProductInfo> error(String type, Exception e) {
         return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status("ERROR").message(e.getMessage()).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
     }
 
     private ResponseDTO<List<ProductInfo>> successList(String type, String msg, List<ProductInfo> data) {
         return new ResponseDTO.Builder<List<ProductInfo>>()
-                .type(type).status("SUCCESS").message(msg).data(data).build();
+                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
     }
 
     private ResponseDTO<List<ProductInfo>> errorList(String type, Exception e) {
         return new ResponseDTO.Builder<List<ProductInfo>>()
-                .type(type).status("ERROR").message(e.getMessage()).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
     }
 }
