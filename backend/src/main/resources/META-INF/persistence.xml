@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="ShopManagementPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Liệt kê các entity -->
+       <class>edu.ptithcm.model.CategoryModel</class>
+        <class>edu.ptithcm.model.ProductModel</class>
+        <class>edu.ptithcm.model.BranchModel</class>
+        <class>edu.ptithcm.model.EmployeeModel</class>
+        <class>edu.ptithcm.model.ShiftModel</class>
+        <class>edu.ptithcm.model.ShiftAssignmentModel</class>
+        <class>edu.ptithcm.model.CustomerModel</class>
+        <class>edu.ptithcm.model.LoyaltyModel</class>
+        <class>edu.ptithcm.model.InvoiceModel</class>
+        <class>edu.ptithcm.model.InvoiceDetailModel</class>
+        <class>edu.ptithcm.model.InventoryModel</class>
+
+
+        <properties>
+
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://mysql:3306/mini_market?createDatabaseIfNotExist=true&amp;useSSL=false&amp;allowPublicKeyRetrieval=true"/>
+            <property name="jakarta.persistence.jdbc.user" value="app_user"/>
+            <property name="jakarta.persistence.jdbc.password" value="app_pass"/>
+
+            <!-- Hibernate -->
+            <property name="hibernate.hbm2ddl.auto" value="update"/>  <!-- create / update / validate / none -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+
+            <!-- HikariCP tích hợp -->
+            <property name="hibernate.hikari.minimumIdle" value="2"/>
+            <property name="hibernate.hikari.maximumPoolSize" value="10"/>
+            <property name="hibernate.hikari.idleTimeout" value="30000"/>
+        </properties>
+    </persistence-unit>
+</persistence>

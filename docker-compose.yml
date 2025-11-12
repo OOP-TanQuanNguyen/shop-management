@@ -6,14 +6,13 @@ services:
     container_name: mini_market_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: mini_market
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_pass
     ports:
       - "3306:3306"
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql_data:/var/lib/mysql
     networks:
       - mini_market_network
@@ -29,18 +28,22 @@ services:
       dockerfile: Dockerfile
     container_name: mini_market_backend
     restart: unless-stopped
-    ports:
-      - "${BACKEND_PORT:-8080}:2025"
     depends_on:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: ${DB_USER}
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      # Cho ORM đọc cấu hình DB
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: mini_market
+      DB_USER: app_user
+      DB_PASSWORD: app_pass
+    ports:
+      - "2025:2025"  # Port cho DTTP server
     networks:
       - mini_market_network
+    stdin_open: true
+    tty: true
 
 volumes:
   mysql_data:

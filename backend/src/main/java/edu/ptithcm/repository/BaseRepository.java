@@ -1,26 +1,44 @@
 package edu.ptithcm.repository;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import java.util.List;
+import java.util.function.Function;
+import edu.ptithcm.configs.databases.HibernateUtil;
 
-import edu.ptithcm.configs.databases.Database;
+public abstract class BaseRepository<T> {
 
-public abstract class BaseRepository {
-    protected Connection getConnection() throws SQLException {
-        return Database.getInstance().getConnection();
-    }
-
-    protected void safeRollback(Connection conn) {
-        if (conn != null) {
-            try { conn.rollback(); }
-            catch (SQLException e) { System.err.println("[DB] Rollback failed: " + e.getMessage()); }
+    protected <R> R execute(Function<Session, R> action) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getInstance().getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            R result = action.apply(session);
+            tx.commit();
+            return result;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
         }
     }
 
-    protected void closeConnection(Connection conn) {
-        if (conn != null) {
-            try { conn.close(); }
-            catch (SQLException e) { System.err.println("[DB] Close failed: " + e.getMessage()); }
+    protected void executeVoid(Function<Session, Void> action) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getInstance().getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            action.apply(session);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            throw e;
         }
+    }
+
+    protected List<T> queryList(String hql, Class<T> clazz, Function<Query<T>, Void> configurator) {
+        return execute(session -> {
+            Query<T> query = session.createQuery(hql, clazz);
+            configurator.apply(query);
+            return query.list();
+        });
     }
 }

@@ -12,10 +12,11 @@ import edu.ptithcm.protocols.DTTPStateManager;
 public class LoginRoute {
     private final DTTP server;
     private final DTTPStateManager manager;
-
+    private final LoginController controller;
     public LoginRoute(DTTP server, DTTPStateManager manager) {
         this.server = server;
         this.manager = manager;
+        this.controller = LoginController.getInstance();
     }
 
     public void register() {
@@ -31,7 +32,7 @@ public class LoginRoute {
 
                 LoginRequestDTO request = new LoginRequestDTO(username, password);
 
-                ResponseDTO<UserLoginInfo> response = LoginController.handleLogin(request);
+                ResponseDTO<UserLoginInfo> response = controller.handleLogin(request);
 
                 if (response.getData() == null) {
                     args.reply(response.getType(), null, (String)response.getStatus(),response.getMessage());

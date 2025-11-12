@@ -10,7 +10,7 @@ public class ReplyUtils {
     public static void replyError(DTTP.DTTPArgs args, String eventType, Exception e) {
         try {
             args.reply(eventType, null, "ERROR", "Lỗi server: " + e.getMessage());
-        } catch (IOException ignored) {
+        }catch(IOException ignored) {
             System.err.println("Lỗi");
         }
     }
