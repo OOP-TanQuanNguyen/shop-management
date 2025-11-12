@@ -5,18 +5,24 @@ import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.services.admin.EmployeeService;
 import edu.ptithcm.views.admin.EmployeePanel;
+import edu.ptithcm.views.admin.dialogs.EmployeeAddDialog;
+import edu.ptithcm.views.admin.dialogs.EmployeeEditDialog;
+import edu.ptithcm.views.admin.dialogs.EmployeeDeleteConfirmDialog;
 import edu.ptithcm.views.components.AppMessageBox;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
- * Controller FE điều phối giữa View (EmployeePanel) và Service
- * (EmployeeService). - Gửi yêu cầu CRUD đến BE qua DTTP. - Nhận dữ liệu từ
- * Store và cập nhật UI. - KHÔNG tạo giao diện, chỉ xử lý logic và điều phối.
+ * Controller điều phối giữa EmployeePanel và EmployeeService. KHÔNG chứa code
+ * Swing - tất cả UI logic ở View layer.
  */
 public class EmployeeController {
+
+    private static final Logger logger = Logger.getLogger(EmployeeController.class.getName());
 
     private final EmployeePanel view;
     private final EmployeeService service;
@@ -26,18 +32,13 @@ public class EmployeeController {
         this.view = view;
         this.service = service;
 
-        // Đăng ký event listener
         registerEvents();
-
-        // Theo dõi thay đổi từ Store
         store.subcribe(this::onStateChanged);
-
-        // Lấy danh sách ban đầu
         loadEmployees();
     }
 
     // ============================================================
-    // Gắn sự kiện từ các nút trong View
+    // Event Registration
     // ============================================================
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
@@ -47,139 +48,102 @@ public class EmployeeController {
     }
 
     // ============================================================
-    // Load dữ liệu
+    // Data Loading
     // ============================================================
     private void loadEmployees() {
         try {
             service.getAllEmployees();
         } catch (IOException e) {
+            logger.severe("Failed to load employees: " + e.getMessage());
             AppMessageBox.showError("Không thể tải danh sách nhân viên: " + e.getMessage());
         }
     }
 
     // ============================================================
-    // Các handler xử lý tương tác
+    // Event Handlers
     // ============================================================
     private void handleAdd() {
-        // TODO: Mở dialog thêm nhân viên
-        // Ví dụ: EmployeeAddDialog dialog = new EmployeeAddDialog(view);
-        // if (dialog.showDialog()) {
-        //     EmployeeData data = dialog.getData();
-        //     createEmployee(data);
-        // }
+        // Mở dialog thêm nhân viên
+        EmployeeAddDialog dialog = new EmployeeAddDialog(getParentFrame());
+        dialog.showDialog();
 
-        // Tạm thời dùng code cũ để test
-        JTextField txtUsername = new JTextField();
-        JTextField txtPassword = new JTextField();
-        JTextField txtName = new JTextField();
-        JTextField txtPhone = new JTextField();
-        JTextField txtRole = new JTextField();
-
-        Object[] fields = {
-            "Tên đăng nhập:", txtUsername,
-            "Mật khẩu:", txtPassword,
-            "Tên nhân viên:", txtName,
-            "Số điện thoại:", txtPhone,
-            "Chức vụ:", txtRole
-        };
-
-        int result = JOptionPane.showConfirmDialog(view, fields, "Thêm nhân viên", JOptionPane.OK_CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
+        // Nếu user confirm, gọi service
+        if (dialog.isConfirmed()) {
             createEmployee(
-                    txtUsername.getText().trim(),
-                    txtPassword.getText().trim(),
-                    txtName.getText().trim(),
-                    txtPhone.getText().trim(),
-                    txtRole.getText().trim()
+                    dialog.getUsername(),
+                    dialog.getPassword(),
+                    dialog.getEmployeeName(),
+                    dialog.getPhone(),
+                    dialog.getRole()
             );
         }
     }
 
     private void handleEdit() {
-        JTable table = view.getTable();
-        int row = table.getSelectedRow();
+        // Lấy dòng được chọn
+        int row = view.getTable().getSelectedRow();
 
         if (row == -1) {
             AppMessageBox.showWarning("Vui lòng chọn nhân viên để sửa!");
             return;
         }
 
-        // TODO: Mở dialog sửa nhân viên với dữ liệu từ row
-        // Ví dụ: EmployeeEditDialog dialog = new EmployeeEditDialog(view, employeeData);
-        // if (dialog.showDialog()) {
-        //     EmployeeData data = dialog.getData();
-        //     updateEmployee(data);
-        // }
-        // Tạm thời dùng code cũ
-        String id = String.valueOf(table.getValueAt(row, 0));
-        String oldName = String.valueOf(table.getValueAt(row, 1));
-        String oldRole = String.valueOf(table.getValueAt(row, 3));
-        String oldPhone = String.valueOf(table.getValueAt(row, 4));
-        String oldStatus = String.valueOf(table.getValueAt(row, 6));
+        // Lấy dữ liệu từ table
+        String id = String.valueOf(view.getTable().getValueAt(row, 0));
+        String name = String.valueOf(view.getTable().getValueAt(row, 1));
+        String role = String.valueOf(view.getTable().getValueAt(row, 3));
+        String phone = String.valueOf(view.getTable().getValueAt(row, 4));
+        String statusText = String.valueOf(view.getTable().getValueAt(row, 6));
+        boolean status = "Đang làm việc".equals(statusText);
 
-        JTextField txtName = new JTextField(oldName);
-        JTextField txtPhone = new JTextField(oldPhone);
-        JTextField txtRole = new JTextField(oldRole);
-        JCheckBox chkStatus = new JCheckBox("Đang làm việc", "Đang làm việc".equals(oldStatus));
+        // Mở dialog sửa
+        EmployeeEditDialog dialog = new EmployeeEditDialog(getParentFrame(), id, name, phone, role, status);
+        dialog.showDialog();
 
-        Object[] fields = {
-            "Tên nhân viên:", txtName,
-            "Số điện thoại:", txtPhone,
-            "Chức vụ:", txtRole,
-            "Trạng thái:", chkStatus
-        };
-
-        int result = JOptionPane.showConfirmDialog(view, fields, "Cập nhật nhân viên", JOptionPane.OK_CANCEL_OPTION);
-
-        if (result == JOptionPane.OK_OPTION) {
+        // Nếu user confirm, gọi service
+        if (dialog.isConfirmed()) {
             updateEmployee(
-                    id,
-                    txtName.getText().trim(),
-                    txtPhone.getText().trim(),
-                    txtRole.getText().trim(),
-                    chkStatus.isSelected()
+                    dialog.getEmployeeId(),
+                    dialog.getEmployeeName(),
+                    dialog.getPhone(),
+                    dialog.getRole(),
+                    dialog.getStatus()
             );
         }
     }
 
     private void handleDelete() {
-        JTable table = view.getTable();
-        int row = table.getSelectedRow();
+        // Lấy dòng được chọn
+        int row = view.getTable().getSelectedRow();
 
         if (row == -1) {
             AppMessageBox.showWarning("Vui lòng chọn nhân viên để xóa!");
             return;
         }
 
-        String id = String.valueOf(table.getValueAt(row, 0));
-        String name = String.valueOf(table.getValueAt(row, 1));
+        // Lấy thông tin nhân viên
+        String id = String.valueOf(view.getTable().getValueAt(row, 0));
+        String name = String.valueOf(view.getTable().getValueAt(row, 1));
 
-        int confirm = JOptionPane.showConfirmDialog(
-                view,
-                "Bạn có chắc muốn xóa nhân viên: " + name + "?",
-                "Xác nhận xóa",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+        // Mở dialog xác nhận
+        EmployeeDeleteConfirmDialog dialog = new EmployeeDeleteConfirmDialog(getParentFrame(), name);
+        dialog.showDialog();
 
-        if (confirm == JOptionPane.YES_OPTION) {
+        // Nếu user confirm, gọi service
+        if (dialog.isConfirmed()) {
             deleteEmployee(id);
         }
     }
 
     // ============================================================
-    // Business Logic - Gọi Service
+    // Business Logic
     // ============================================================
     private void createEmployee(String username, String password, String name, String phone, String role) {
-        if (username.isEmpty() || password.isEmpty() || name.isEmpty() || role.isEmpty()) {
-            AppMessageBox.showWarning("Vui lòng điền đầy đủ thông tin bắt buộc!");
-            return;
-        }
-
         try {
             service.createEmployee(username, password, name, phone, role);
+            logger.info("Create employee request sent for: " + username);
         } catch (IOException e) {
+            logger.severe("Failed to create employee: " + e.getMessage());
             AppMessageBox.showError("Lỗi khi thêm nhân viên: " + e.getMessage());
         }
     }
@@ -187,7 +151,9 @@ public class EmployeeController {
     private void updateEmployee(String id, String name, String phone, String role, Boolean status) {
         try {
             service.updateEmployee(id, name, phone, role, status);
+            logger.info("Update employee request sent for ID: " + id);
         } catch (IOException e) {
+            logger.severe("Failed to update employee: " + e.getMessage());
             AppMessageBox.showError("Lỗi khi cập nhật: " + e.getMessage());
         }
     }
@@ -195,49 +161,61 @@ public class EmployeeController {
     private void deleteEmployee(String id) {
         try {
             service.deleteEmployee(id);
+            logger.info("Delete employee request sent for ID: " + id);
         } catch (IOException e) {
+            logger.severe("Failed to delete employee: " + e.getMessage());
             AppMessageBox.showError("Lỗi khi xóa nhân viên: " + e.getMessage());
         }
     }
 
     // ============================================================
-    // Nhận dữ liệu mới từ Store và cập nhật UI
+    // State Change Handler
     // ============================================================
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
-            // Cập nhật danh sách nhân viên
-            Object empListObj = state.get("Employees");
-            if (empListObj instanceof List<?>) {
-                @SuppressWarnings("unchecked")
-                List<UserModel> list = (List<UserModel>) empListObj;
-                view.updateTable(list);
-            }
-
-            // Hiển thị thông báo (nếu có)
-            Object msg = state.get("EmployeeMessage");
-            if (msg instanceof String) {
-                String message = (String) msg;
-                if (!message.isEmpty()) {
-                    if (message.contains("thành công")) {
-                        AppMessageBox.showSuccess(message);
-                    } else {
-                        AppMessageBox.showInfo(message);
-                    }
-                }
-            }
-
-            // Hiển thị lỗi (nếu có)
-            Object err = state.get("EmployeeError");
-            if (err instanceof String) {
-                String error = (String) err;
-                if (!error.isEmpty()) {
-                    AppMessageBox.showError(error);
-                }
-            }
-
-            // Reset messages sau khi hiển thị
-            state.set("EmployeeMessage", "");
-            state.set("EmployeeError", "");
+            updateEmployeeList(state);
+            showMessages(state);
+            clearMessages(state);
         });
+    }
+
+    private void updateEmployeeList(AppState state) {
+        Object empListObj = state.get("Employees");
+        if (empListObj instanceof List<?> list) {
+            @SuppressWarnings("unchecked")
+            List<UserModel> employees = (List<UserModel>) list;
+            view.updateTable(employees);
+            logger.info("Employee list updated: " + employees.size() + " items");
+        }
+    }
+
+    private void showMessages(AppState state) {
+        // Show success/info message
+        Object msg = state.get("EmployeeMessage");
+        if (msg instanceof String message && !message.isEmpty()) {
+            if (message.contains("thành công")) {
+                AppMessageBox.showSuccess(message);
+            } else {
+                AppMessageBox.showInfo(message);
+            }
+        }
+
+        // Show error message
+        Object err = state.get("EmployeeError");
+        if (err instanceof String error && !error.isEmpty()) {
+            AppMessageBox.showError(error);
+        }
+    }
+
+    private void clearMessages(AppState state) {
+        state.set("EmployeeMessage", "");
+        state.set("EmployeeError", "");
+    }
+
+    // ============================================================
+    // Helper
+    // ============================================================
+    private Frame getParentFrame() {
+        return (Frame) SwingUtilities.getWindowAncestor(view);
     }
 }
