@@ -3,6 +3,7 @@ package edu.ptithcm.models;
 import java.util.Map;
 
 public class UserModel {
+
     private String id;
     private Integer branchId;
     private String username;
@@ -27,16 +28,49 @@ public class UserModel {
         this.branch = builder.branch;
     }
 
-    public String getUsername(){
+    // ===================================
+    // BỔ SUNG CÁC GETTER CÒN THIẾU Ở ĐÂY
+    // ===================================
+    public String getId() {
+        return this.id;
+    }
+
+    public Integer getBranchId() {
+        return this.branchId;
+    }
+
+    public String getUsername() {
         return this.username;
     }
-    public String getRole(){
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getPhone() {
+        return this.phone;
+    }
+
+    public String getRole() {
         return this.role;
     }
 
-    public String getBranch(){
+    public String getHireDate() {
+        return this.hireDate;
+    }
+
+    public String getEndDate() {
+        return this.endDate;
+    }
+
+    public Boolean getStatus() {
+        return this.status;
+    }
+
+    public String getBranch() {
         return this.branch;
     }
+
     public static UserModel fromMap(Map<String, Object> data) {
         return new Builder()
                 .id((String) data.get("id"))
@@ -53,8 +87,9 @@ public class UserModel {
                 .build();
     }
 
-
     public static class Builder {
+
+        // ... (Nội dung Builder không thay đổi)
         private String id;
         private Integer branchId;
         private String username;
@@ -66,16 +101,55 @@ public class UserModel {
         private Boolean status;
         private String branch;
 
-        public Builder id(String id) { this.id = id; return this; }
-        public Builder branchId(Integer branchId) { this.branchId = branchId; return this; }
-        public Builder username(String username) { this.username = username; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder phone(String phone) { this.phone = phone; return this; }
-        public Builder role(String role) { this.role = role; return this; }
-        public Builder hireDate(String hireDate) { this.hireDate = hireDate; return this; }
-        public Builder endDate(String endDate) { this.endDate = endDate; return this; }
-        public Builder status(Boolean status) { this.status = status; return this; }
-        public Builder branch(String branch) { this.branch = branch; return this; }
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder branchId(Integer branchId) {
+            this.branchId = branchId;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder phone(String phone) {
+            this.phone = phone;
+            return this;
+        }
+
+        public Builder role(String role) {
+            this.role = role;
+            return this;
+        }
+
+        public Builder hireDate(String hireDate) {
+            this.hireDate = hireDate;
+            return this;
+        }
+
+        public Builder endDate(String endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+        public Builder status(Boolean status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder branch(String branch) {
+            this.branch = branch;
+            return this;
+        }
 
         public UserModel build() {
             return new UserModel(this);
