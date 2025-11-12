@@ -162,12 +162,12 @@ public class EmployeeService {
 
     private ResponseDTO<EmployeeInfo> invalid(String type, String msg) {
         return new ResponseDTO.Builder<EmployeeInfo>()
-                .type(type).status("INVALID").message(msg).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.INVALID.getValue()).message(msg).data(null).build();
     }
 
     private ResponseDTO<EmployeeInfo> error(String type, Exception e) {
         return new ResponseDTO.Builder<EmployeeInfo>()
-                .type(type).status("ERROR").message(e.getMessage()).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
     }
 
     private ResponseDTO<List<EmployeeInfo>> successList(String type, String msg, List<EmployeeInfo> data) {
@@ -177,6 +177,6 @@ public class EmployeeService {
 
     private ResponseDTO<List<EmployeeInfo>> errorList(String type, Exception e) {
         return new ResponseDTO.Builder<List<EmployeeInfo>>()
-                .type(type).status("ERROR").message(e.getMessage()).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
     }
 }
