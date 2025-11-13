@@ -30,10 +30,14 @@ public class EmployeeRepositoryImpl extends BaseRepository<EmployeeModel> implem
     @Override
     public void delete(EmployeeModel entity) {
         execute(session -> {
-            session.remove(entity);
+            EmployeeModel managed = session.get(EmployeeModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
             return null;
         });
     }
+
 
     @Override
     public EmployeeModel findById(String id) {

@@ -2,7 +2,6 @@ package edu.ptithcm.repository.product;
 
 import edu.ptithcm.models.ProductModel;
 import edu.ptithcm.repository.BaseRepository;
-import org.hibernate.Session;
 import org.hibernate.query.Query;
 import java.util.List;
 
@@ -20,8 +19,15 @@ public class ProductRepositoryImpl extends BaseRepository<ProductModel> implemen
 
     @Override
     public void delete(ProductModel entity) {
-        execute(session -> { session.remove(entity); return null; });
+        execute(session -> {
+            ProductModel managed = session.get(ProductModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
+            return null;
+        });
     }
+
 
     @Override
     public ProductModel findById(String id) {

@@ -13,7 +13,16 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
     public void update(CustomerModel entity) { execute(s -> { s.merge(entity); return null; }); }
 
     @Override
-    public void delete(CustomerModel entity) { execute(s -> { s.remove(entity); return null; }); }
+    public void delete(CustomerModel entity) {
+        execute(session -> {
+            CustomerModel managed = session.get(CustomerModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
+            return null;
+        });
+    }
+
 
     @Override
     public CustomerModel findById(String id) { return execute(s -> s.get(CustomerModel.class, id)); }

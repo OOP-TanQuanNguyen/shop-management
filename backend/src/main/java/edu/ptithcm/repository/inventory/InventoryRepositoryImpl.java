@@ -1,5 +1,6 @@
 package edu.ptithcm.repository.inventory;
 
+import edu.ptithcm.models.EmployeeModel;
 import edu.ptithcm.models.InventoryModel;
 import edu.ptithcm.repository.BaseRepository;
 import org.hibernate.query.Query;
@@ -19,8 +20,15 @@ public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> impl
 
     @Override
     public void delete(InventoryModel entity) {
-        execute(s -> { s.remove(entity); return null; });
+        execute(session -> {
+            InventoryModel managed = session.get(InventoryModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
+            return null;
+        });
     }
+
 
     @Override
     public InventoryModel findById(Integer id) {

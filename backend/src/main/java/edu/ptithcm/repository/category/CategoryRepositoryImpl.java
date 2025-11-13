@@ -26,10 +26,14 @@ public class CategoryRepositoryImpl extends BaseRepository<CategoryModel> implem
     @Override
     public void delete(CategoryModel entity) {
         execute(session -> {
-            session.remove(entity);
+            CategoryModel managed = session.get(CategoryModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
             return null;
         });
     }
+
 
     @Override
     public CategoryModel findById(String id) {

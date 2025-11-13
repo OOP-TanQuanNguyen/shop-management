@@ -12,7 +12,16 @@ public class BranchRepositoryImpl extends BaseRepository<BranchModel> implements
     public void update(BranchModel entity) { execute(s -> { s.merge(entity); return null; }); }
 
     @Override
-    public void delete(BranchModel entity) { execute(s -> { s.remove(entity); return null; }); }
+    public void delete(BranchModel entity) {
+        execute(session -> {
+            BranchModel managed = session.get(BranchModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
+            return null;
+        });
+    }
+
 
     @Override
     public BranchModel findById(Integer id) { return execute(s -> s.get(BranchModel.class, id)); }

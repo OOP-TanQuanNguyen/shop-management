@@ -10,29 +10,61 @@ import edu.ptithcm.configs.databases.HibernateUtil;
 public abstract class BaseRepository<T> {
 
     protected <R> R execute(Function<Session, R> action) {
+        Session session = null;
         Transaction tx = null;
-        try (Session session = HibernateUtil.getInstance().getSessionFactory().openSession()) {
+        try {
+            // Mở session mới cho mỗi lần gọi, đảm bảo thread-safe
+            session = HibernateUtil.getInstance().getSessionFactory().openSession();
             tx = session.beginTransaction();
+
             R result = action.apply(session);
+
             tx.commit();
             return result;
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            // Rollback an toàn: chỉ rollback nếu transaction vẫn còn active
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
             throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
+
     protected void executeVoid(Function<Session, Void> action) {
+        Session session = null;
         Transaction tx = null;
-        try (Session session = HibernateUtil.getInstance().getSessionFactory().openSession()) {
+        try {
+            session = HibernateUtil.getInstance().getSessionFactory().openSession();
             tx = session.beginTransaction();
+
             action.apply(session);
+
             tx.commit();
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
             throw e;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
+
 
     protected List<T> queryList(String hql, Class<T> clazz, Function<Query<T>, Void> configurator) {
         return execute(session -> {

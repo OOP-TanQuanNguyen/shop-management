@@ -1,6 +1,9 @@
 package edu.ptithcm.services;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import edu.ptithcm.dto.request.employee.EmployeeRequestDTO;
@@ -9,8 +12,8 @@ import edu.ptithcm.dto.response.ResponseDTO;
 import edu.ptithcm.models.BranchModel;
 import edu.ptithcm.models.EmployeeModel;
 import edu.ptithcm.repository.Repository;
-import edu.ptithcm.repository.employee.EmployeeRepository;
 import edu.ptithcm.repository.branch.BranchRepository;
+import edu.ptithcm.repository.employee.EmployeeRepository;
 import edu.ptithcm.utils.CryptoUtil;
 
 public class EmployeeService {
@@ -121,7 +124,7 @@ public class EmployeeService {
             return success("EMPLOYEE_DELETE", "Xóa nhân viên thành công", null);
 
         } catch (Exception e) {
-            return error("EMPLOYEE_DELETE", e);
+            return error("EMPLOYEE_DELETE",e);
         }
     }
 
@@ -167,7 +170,7 @@ public class EmployeeService {
 
     private ResponseDTO<EmployeeInfo> error(String type, Exception e) {
         return new ResponseDTO.Builder<EmployeeInfo>()
-                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
+                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message("Lỗi server").data(null).build();
     }
 
     private ResponseDTO<List<EmployeeInfo>> successList(String type, String msg, List<EmployeeInfo> data) {

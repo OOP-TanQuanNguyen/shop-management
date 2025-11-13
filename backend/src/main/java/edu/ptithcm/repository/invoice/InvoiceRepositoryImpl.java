@@ -14,7 +14,16 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public void update(InvoiceModel entity) { execute(s -> { s.merge(entity); return null; }); }
 
     @Override
-    public void delete(InvoiceModel entity) { execute(s -> { s.remove(entity); return null; }); }
+    public void delete(InvoiceModel entity) {
+        execute(session -> {
+            InvoiceModel managed = session.get(InvoiceModel.class, entity.getId());
+            if (managed != null) {
+                session.remove(managed); // giờ thuộc session hiện tại
+            }
+            return null;
+        });
+    }
+
 
     @Override
     public InvoiceModel findById(String id) { return execute(s -> s.get(InvoiceModel.class, id)); }
