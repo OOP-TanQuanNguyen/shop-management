@@ -57,7 +57,7 @@ public class EmployeeService {
         EmployeeModel employee = new EmployeeModel.Builder()
                 .id(UUID.randomUUID().toString())
                 .username(req.getUsername())
-                .password(CryptoUtil.md5(req.getPassword()))
+                .password(CryptoUtil.hash(req.getPassword()))
                 .name(req.getName())
                 .phone(req.getPhone())
                 .branch(branch)
@@ -81,7 +81,7 @@ public class EmployeeService {
                 .name(req.getName())
                 .phone(req.getPhone())
                 .role(req.getRole())
-                .password(req.getPassword() != null ? CryptoUtil.md5(req.getPassword()) : null)
+                .password(req.getPassword() != null ? CryptoUtil.hash(req.getPassword()) : null)
                 .branch(req.getBranchId() != null ? branchRepo.findById(req.getBranchId()) : null)
                 .status(req.getStatus() != null ? req.getStatus() : true)
                 .build();

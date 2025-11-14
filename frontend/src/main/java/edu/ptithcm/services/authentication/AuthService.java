@@ -21,6 +21,10 @@ public class AuthService {
     private void registerHandlers() throws IOException {
         // Lắng nghe phản hồi LOGIN từ server
         client.on("LOGIN", args -> {
+            long end = System.nanoTime();  // timestamp nhận
+            long start = (long) store.get("login_start_time");
+            long rttMicros = (end - start) / 1000;    // microsecond
+            long rttMillis = rttMicros / 1000;        // millisecond
             if ("SUCCESS".equals(args.status)) {
                 Map<String, Object> data = (Map<String, Object>) args.data;
 
@@ -47,11 +51,14 @@ public class AuthService {
     }
 
     public void login(String username, String password) throws IOException {
+        long start = System.nanoTime();  // timestamp gửi
         System.out.println("Username : "+username);
         System.out.println("Password : "+password);
         Map<String, Object> data = new HashMap<>();
         data.put("username", username);
         data.put("password", password);
         client.send("LOGIN", data, "REQUEST", "Login request");
+
+        // Lưu timestamp vào store để callback đọc lạiz
     }
 }

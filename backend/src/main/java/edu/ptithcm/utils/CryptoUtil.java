@@ -1,27 +1,22 @@
 package edu.ptithcm.utils;
 
-import java.security.MessageDigest;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class CryptoUtil {
-    private CryptoUtil(){}
 
-    public static String md5(String input) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(input.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : hash) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (Exception e) {
-            return null;
-        }
+    private static final int WORKLOAD = 12;
+
+    private CryptoUtil() {}
+
+    public static String hash(String plainPassword) {
+        if (plainPassword == null) return null;
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(WORKLOAD));
     }
 
-    public static boolean verifyPassword(String plain, String hash) {
-        String plainHash = md5(plain);
-        if (plainHash == null || hash == null) {
+    public static boolean verifyPassword(String plainPassword, String hashedPassword) {
+        if (plainPassword == null || hashedPassword == null) {
             return false;
         }
-        return plainHash.equals(hash);
+        return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 }
