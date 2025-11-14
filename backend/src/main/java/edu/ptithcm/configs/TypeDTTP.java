@@ -16,7 +16,12 @@ public enum TypeDTTP {
     PRODUCT_GET_ALL("PRODUCT_GET_ALL"),
     PRODUCT_CREATE("PRODUCT_CREATE"),
     PRODUCT_UPDATE("PRODUCT_UPDATE"),
-    PRODUCT_DELETE("PRODUCT_DELETE");
+    PRODUCT_DELETE("PRODUCT_DELETE"),
+
+    //System
+    PING("PING"),
+    PING_RESPONSE("PING_RESPONSE");
+    
 
     private final String value;
 

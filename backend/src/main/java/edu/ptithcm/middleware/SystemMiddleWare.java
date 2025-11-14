@@ -2,6 +2,7 @@ package edu.ptithcm.middleware;
 
 import java.io.IOException;
 
+import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.protocols.DTTP;
 
 public class SystemMiddleWare {
@@ -10,11 +11,11 @@ public class SystemMiddleWare {
     }
     
     public static void replyClientCheck(DTTP server){
-        server.on("PING", args -> {
+        server.on(TypeDTTP.PING.getValue(), args -> {
             try {
-                server.send("PING_RESPONSE", null, "SUCCESS", "Server online...");
+                server.send(TypeDTTP.PING_RESPONSE.getValue(), null, "SUCCESS", "Server online...");
             }catch (IOException e){
-                e.printStackTrace();
+                System.err.println("Lỗi : "+e.getMessage());
             }
         });
     }
