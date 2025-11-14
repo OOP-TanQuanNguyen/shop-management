@@ -3,14 +3,17 @@ package edu.ptithcm.routes.employee;
 import java.util.List;
 import java.util.Map;
 
+import edu.ptithcm.configs.Role;
+import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.controller.EmployeeController;
 import edu.ptithcm.dto.request.employee.EmployeeRequestDTO;
-import edu.ptithcm.dto.response.EmployeeInfo;
-import edu.ptithcm.dto.response.ResponseDTO;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.info_models.EmployeeInfo;
 import edu.ptithcm.middleware.AuthenMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.utils.ReplyUtils;
+
 
 public class EmployeeRoute {
     private final DTTP server;
@@ -24,10 +27,9 @@ public class EmployeeRoute {
     }
 
     public void register() {
-        // ---------------- GET ALL ----------------
-        server.on("EMPLOYEE_GET_ALL", args -> {
+        server.on(TypeDTTP.EMPLOYEE_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_GET_ALL")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_GET_ALL.getValue())) return;
 
                 ResponseDTO<List<EmployeeInfo>> response = controller.getAllEmployees();
                 List<Map<String, Object>> employees = null;
@@ -39,17 +41,17 @@ public class EmployeeRoute {
                 }
 
                 Map<String, Object> payload = Map.of("employees", employees);
-                args.reply(response.getType(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.EMPLOYEE_GET_ALL.getValue(), payload, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_GET_ALL", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_GET_ALL.getValue(), e);
             }
         });
 
         // ---------------- GET ACTIVE ----------------
-        server.on("EMPLOYEE_GET_ACTIVE", args -> {
+        server.on(TypeDTTP.EMPLOYEE_GET_ACTIVE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_GET_ACTIVE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_GET_ACTIVE.getValue())) return;
 
                 ResponseDTO<List<EmployeeInfo>> response = controller.getAllEmployeesActive();
                 List<Map<String, Object>> employees = null;
@@ -61,70 +63,71 @@ public class EmployeeRoute {
                 }
 
                 Map<String, Object> payload = Map.of("employees", employees);
-                args.reply(response.getType(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.EMPLOYEE_GET_ACTIVE.getValue(), payload, response.getStatus(), response.getMessage());
 
             }catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_GET_ACTIVE", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_GET_ACTIVE.getValue(), e);
             }
         });
 
         // ---------------- CREATE ----------------
-        server.on("EMPLOYEE_CREATE", args -> {
+        server.on(TypeDTTP.EMPLOYEE_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_CREATE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_CREATE.getValue())) return;
 
                 EmployeeRequestDTO request = new EmployeeRequestDTO(args.data);
                 ResponseDTO<EmployeeInfo> response = controller.createEmployee(request);
 
-                args.reply(response.getType(),
+                args.reply(TypeDTTP.EMPLOYEE_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
                         response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_CREATE", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_CREATE.getValue(), e);
             }
         });
 
         // ---------------- UPDATE ----------------
-        server.on("EMPLOYEE_UPDATE", args -> {
+        server.on(TypeDTTP.EMPLOYEE_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_UPDATE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_UPDATE.getValue())) return;
 
                 EmployeeRequestDTO request = new EmployeeRequestDTO(args.data);
                 ResponseDTO<EmployeeInfo> response = controller.updateEmployee(request);
 
-                args.reply(response.getType(),
+                args.reply(TypeDTTP.EMPLOYEE_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
                         response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_UPDATE", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_UPDATE.getValue(), e);
             }
         });
 
         // ---------------- DELETE ----------------
-        server.on("EMPLOYEE_DELETE", args -> {
+        server.on(TypeDTTP.EMPLOYEE_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_DELETE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_DELETE.getValue())) return;
 
                 EmployeeRequestDTO request = new EmployeeRequestDTO(args.data);
                 ResponseDTO<EmployeeInfo> response = controller.deleteEmployee(request);
 
-                args.reply(response.getType(), null, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.EMPLOYEE_DELETE.getValue(), null, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_DELETE", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_DELETE.getValue(), e);
             }
         });
 
         // ---------------- FILTER ----------------
-        server.on("EMPLOYEE_FILTER", args -> {
-            try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "EMPLOYEE_FILTER")) return;
 
-                Map<String, Object> filters = (Map<String, Object>) args.data;
+        server.on(TypeDTTP.EMPLOYEE_FILTER.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_FILTER.getValue())) return;
+
+                Map<String, Object> filters = (Map<String, Object>)args.data;
                 ResponseDTO<List<EmployeeInfo>> response = controller.filterEmployees(filters);
                 List<Map<String, Object>> employees = null;
                 if (response.getData() != null) {
@@ -135,10 +138,10 @@ public class EmployeeRoute {
                 }
 
                 Map<String, Object> payload = Map.of("employees", employees);
-                args.reply(response.getType(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.EMPLOYEE_FILTER.getValue(), payload, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "EMPLOYEE_FILTER", e);
+                ReplyUtils.replyError(args, TypeDTTP.EMPLOYEE_FILTER.getValue(), e);
             }
         });
     }

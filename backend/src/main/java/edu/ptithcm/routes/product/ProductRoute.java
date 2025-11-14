@@ -3,10 +3,12 @@ package edu.ptithcm.routes.product;
 import java.util.List;
 import java.util.Map;
 
+import edu.ptithcm.configs.Role;
+import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.controller.ProductController;
 import edu.ptithcm.dto.request.product.ProductRequestDTO;
-import edu.ptithcm.dto.response.ProductInfo;
-import edu.ptithcm.dto.response.ResponseDTO;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.info_models.ProductInfo;
 import edu.ptithcm.middleware.AuthenMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
@@ -25,9 +27,9 @@ public class ProductRoute {
 
     public void register() {
         // ---------------- GET ALL ----------------
-        server.on("PRODUCT_GET_ALL", args -> {
+        server.on(TypeDTTP.PRODUCT_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "PRODUCT_GET_ALL")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_GET_ALL.getValue())) return;
 
                 ResponseDTO<List<ProductInfo>> response = controller.getAllProducts();
                 List<Map<String, Object>> products = null;
@@ -39,61 +41,61 @@ public class ProductRoute {
                 }
 
                 Map<String, Object> payload = Map.of("products", products);
-                args.reply(response.getType(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.PRODUCT_GET_ALL.getValue(), payload, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "PRODUCT_GET_ALL", e);
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_GET_ALL.getValue(), e);
             }
         });
 
         // ---------------- CREATE ----------------
-        server.on("PRODUCT_CREATE", args -> {
+        server.on(TypeDTTP.PRODUCT_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "PRODUCT_CREATE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_CREATE.getValue())) return;
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.createProduct(request);
 
-                args.reply(response.getType(),
+                args.reply(TypeDTTP.PRODUCT_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
                         response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "PRODUCT_CREATE", e);
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_CREATE.getValue(), e);
             }
         });
 
         // ---------------- UPDATE ----------------
-        server.on("PRODUCT_UPDATE", args -> {
+        server.on(TypeDTTP.PRODUCT_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "PRODUCT_UPDATE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_UPDATE.getValue())) return;
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.updateProduct(request);
 
-                args.reply(response.getType(),
+                args.reply(TypeDTTP.PRODUCT_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
                         response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "PRODUCT_UPDATE", e);
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_UPDATE.getValue(), e);
             }
         });
 
         // ---------------- DELETE ----------------
-        server.on("PRODUCT_DELETE", args -> {
+        server.on(TypeDTTP.PRODUCT_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, "ADMIN", args, "PRODUCT_DELETE")) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_DELETE.getValue())) return;
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.deleteProduct(request);
 
-                args.reply(response.getType(), null, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.PRODUCT_DELETE.getValue(), null, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
-                ReplyUtils.replyError(args, "PRODUCT_DELETE", e);
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_DELETE.getValue(), e);
             }
         });
     }

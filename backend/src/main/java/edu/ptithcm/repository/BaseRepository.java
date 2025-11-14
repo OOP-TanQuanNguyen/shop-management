@@ -13,7 +13,6 @@ public abstract class BaseRepository<T> {
         Session session = null;
         Transaction tx = null;
         try {
-            // Mở session mới cho mỗi lần gọi, đảm bảo thread-safe
             session = HibernateUtil.getInstance().getSessionFactory().openSession();
             tx = session.beginTransaction();
 
@@ -21,13 +20,12 @@ public abstract class BaseRepository<T> {
 
             tx.commit();
             return result;
-        } catch (Exception e) {
-            // Rollback an toàn: chỉ rollback nếu transaction vẫn còn active
+        } catch (RuntimeException e) {
             if (tx != null && tx.isActive()) {
                 try {
                     tx.rollback();
-                } catch (Exception rollbackEx) {
-                    rollbackEx.printStackTrace();
+                } catch (RuntimeException rollbackEx) {
+                    throw rollbackEx;
                 }
             }
             throw e;
@@ -49,12 +47,12 @@ public abstract class BaseRepository<T> {
             action.apply(session);
 
             tx.commit();
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             if (tx != null && tx.isActive()) {
                 try {
                     tx.rollback();
-                } catch (Exception rollbackEx) {
-                    rollbackEx.printStackTrace();
+                } catch (RuntimeException rollbackEx) {
+                    throw rollbackEx;
                 }
             }
             throw e;

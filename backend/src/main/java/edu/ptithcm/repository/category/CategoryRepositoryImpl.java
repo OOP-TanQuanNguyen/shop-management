@@ -1,9 +1,11 @@
 package edu.ptithcm.repository.category;
 
+import java.util.List;
+
+import org.hibernate.query.Query;
+
 import edu.ptithcm.models.CategoryModel;
 import edu.ptithcm.repository.BaseRepository;
-import org.hibernate.query.Query;
-import java.util.List;
 
 public class CategoryRepositoryImpl extends BaseRepository<CategoryModel> implements CategoryRepository {
 
@@ -16,24 +18,26 @@ public class CategoryRepositoryImpl extends BaseRepository<CategoryModel> implem
     }
 
     @Override
-    public void update(CategoryModel entity) {
-        execute(session -> {
-            session.merge(entity);
-            return null;
+    public CategoryModel update(CategoryModel newData) {
+        return execute(session -> {
+            CategoryModel managed = session.get(CategoryModel.class, newData.getId());
+            if (managed == null) return null;
+            // Dirty checking — Hibernate tự flush khi commit
+            if (newData.getName() != null) managed.setName(newData.getName());
+
+            return managed;
         });
     }
 
     @Override
-    public void delete(CategoryModel entity) {
-        execute(session -> {
-            CategoryModel managed = session.get(CategoryModel.class, entity.getId());
-            if (managed != null) {
-                session.remove(managed); // giờ thuộc session hiện tại
-            }
-            return null;
+    public CategoryModel delete(String id) {
+        return execute(session -> {
+            CategoryModel managed = session.get(CategoryModel.class, id);
+            if (managed == null) return null;
+            session.remove(managed);
+            return managed;
         });
     }
-
 
     @Override
     public CategoryModel findById(String id) {
@@ -43,26 +47,28 @@ public class CategoryRepositoryImpl extends BaseRepository<CategoryModel> implem
     @Override
     public List<CategoryModel> findAll() {
         return execute(session ->
-            session.createQuery("FROM CategoryModel c", CategoryModel.class).list()
-        );
-    }
-
-    @Override
-    public List<CategoryModel> findAllOrdered() {
-        return execute(session ->
-            session.createQuery("FROM CategoryModel c ORDER BY c.name ASC", CategoryModel.class).list()
+            session.createQuery("FROM CategoryModel c ORDER BY c.createdAt DESC", CategoryModel.class).list()
         );
     }
 
     @Override
     public boolean existsByName(String name) {
         return execute(session -> {
-            Query<Long> query = session.createQuery(
-                "SELECT COUNT(c) FROM CategoryModel c WHERE LOWER(c.name) = :name",
-                Long.class
-            );
-            query.setParameter("name", name.toLowerCase());
-            return query.uniqueResult() > 0;
+            Query<Integer> q = session.createQuery(
+                "SELECT 1 FROM CategoryModel c WHERE c.name = :name", Integer.class);
+            q.setParameter("name", name);
+            q.setMaxResults(1);
+            return q.uniqueResult() != null;
         });
+    }
+
+    @Override
+    public List<CategoryModel> findAllOrdered() {
+        return execute(session ->
+            session.createQuery(
+                "FROM CategoryModel c WHERE c.active = true ORDER BY c.name ASC",
+                CategoryModel.class
+            ).list()
+        );
     }
 }

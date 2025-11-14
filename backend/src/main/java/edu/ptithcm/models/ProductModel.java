@@ -1,9 +1,16 @@
 package edu.ptithcm.models;
 
-import jakarta.persistence.*;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "product")
@@ -21,10 +28,10 @@ public class ProductModel {
     private CategoryModel category;
 
     @Column(name = "cost_price")
-    private double costPrice;
+    private Double costPrice;
 
     @Column(name = "sell_price")
-    private double sellPrice;
+    private Double sellPrice;
 
     @Column(name = "expiry_date")
     private Date expiryDate;
@@ -62,8 +69,8 @@ public class ProductModel {
         private String id;
         private String name;
         private CategoryModel category;
-        private double costPrice;
-        private double sellPrice;
+        private Double costPrice;
+        private Double sellPrice;
         private Date expiryDate;
         private boolean isActive;
         private Timestamp createdAt;
@@ -73,8 +80,8 @@ public class ProductModel {
         public Builder id(String id) { this.id = id; return this; }
         public Builder name(String name) { this.name = name; return this; }
         public Builder category(CategoryModel category) { this.category = category; return this; }
-        public Builder costPrice(double costPrice) { this.costPrice = costPrice; return this; }
-        public Builder sellPrice(double sellPrice) { this.sellPrice = sellPrice; return this; }
+        public Builder costPrice(Double costPrice) { this.costPrice = costPrice; return this; }
+        public Builder sellPrice(Double sellPrice) { this.sellPrice = sellPrice; return this; }
         public Builder expiryDate(Date expiryDate) { this.expiryDate = expiryDate; return this; }
         public Builder isActive(boolean isActive) { this.isActive = isActive; return this; }
         public Builder createdAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
@@ -94,11 +101,11 @@ public class ProductModel {
     public CategoryModel getCategory() { return category; }
     public void setCategory(CategoryModel category) { this.category = category; }
 
-    public double getCostPrice() { return costPrice; }
-    public void setCostPrice(double costPrice) { this.costPrice = costPrice; }
+    public Double getCostPrice() { return costPrice; }
+    public void setCostPrice(Double costPrice) { this.costPrice = costPrice; }
 
-    public double getSellPrice() { return sellPrice; }
-    public void setSellPrice(double sellPrice) { this.sellPrice = sellPrice; }
+    public Double getSellPrice() { return sellPrice; }
+    public void setSellPrice(Double sellPrice) { this.sellPrice = sellPrice; }
 
     public Date getExpiryDate() { return expiryDate; }
     public void setExpiryDate(Date expiryDate) { this.expiryDate = expiryDate; }

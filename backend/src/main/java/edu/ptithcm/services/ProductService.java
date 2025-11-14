@@ -1,145 +1,123 @@
 package edu.ptithcm.services;
 
-import java.sql.Date;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import edu.ptithcm.dto.response.ProductInfo;
-import edu.ptithcm.dto.response.ResponseDTO;
+import edu.ptithcm.dto.request.product.ProductRequestDTO;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.error.InvalidResponse;
+import edu.ptithcm.dto.response.error.NotFoundResponse;
+import edu.ptithcm.dto.response.success.SuccessResponse;
+import edu.ptithcm.dto.response.info_models.ProductInfo;
 import edu.ptithcm.models.CategoryModel;
 import edu.ptithcm.models.ProductModel;
 import edu.ptithcm.repository.Repository;
 import edu.ptithcm.repository.category.CategoryRepository;
 import edu.ptithcm.repository.product.ProductRepository;
+import edu.ptithcm.utils.mapper.BaseMapper;
+import edu.ptithcm.utils.mapper.MapperFactory;
 
 public class ProductService {
+
     private static final ProductRepository productRepo = Repository.product();
     private static final CategoryRepository categoryRepo = Repository.category();
+    private static final BaseMapper<ProductModel, ProductInfo> mapper = MapperFactory.product();
 
-    public ResponseDTO<List<ProductInfo>> getAllProducts() {
-        try {
-            List<ProductModel> list = productRepo.findAll();
-            return successList("PRODUCT_GET_ALL", "Lấy toàn bộ sản phẩm", mapList(list));
-        } catch (Exception e) {
-            return errorList("PRODUCT_GET_ALL", e);
-        }
-    }
-
-    public ResponseDTO<ProductInfo> createProduct(
-            String name, String categoryId, double costPrice,
-            double sellPrice, Date expiryDate, Boolean isActive
-    ) {
-        try {
-            CategoryModel category = categoryId != null ? categoryRepo.findById(categoryId) : null;
-
-            ProductModel model = new ProductModel.Builder()
-                    .id(UUID.randomUUID().toString())
-                    .name(name)
-                    .category(category)
-                    .costPrice(costPrice)
-                    .sellPrice(sellPrice)
-                    .expiryDate(expiryDate)
-                    .isActive(isActive != null ? isActive : true)
-                    .build();
-
-            productRepo.save(model);
-            return success("PRODUCT_CREATE", "Thêm sản phẩm thành công", toInfo(model));
-
-        } catch (Exception e) {
-            return error("PRODUCT_CREATE", e);
-        }
-    }
-
-    public ResponseDTO<ProductInfo> updateProduct(
-            String productId, String name, String categoryId,
-            double costPrice, double sellPrice, Date expiryDate, Boolean isActive
-    ) {
-        try {
-            ProductModel existing = productRepo.findById(productId);
-            if (existing == null)
-                return invalid("PRODUCT_UPDATE", "Không tìm thấy sản phẩm!");
-
-            if (name != null) existing.setName(name);
-            if (categoryId != null) existing.setCategory(categoryRepo.findById(categoryId));
-            if (costPrice > 0) existing.setCostPrice(costPrice);
-            if (sellPrice > 0) existing.setSellPrice(sellPrice);
-            if (expiryDate != null) existing.setExpiryDate(expiryDate);
-            if (isActive != null) existing.setActive(isActive);
-
-            productRepo.update(existing);
-            return success("PRODUCT_UPDATE", "Cập nhật sản phẩm thành công", toInfo(existing));
-
-        } catch (Exception e) {
-            return error("PRODUCT_UPDATE", e);
-        }
-    }
-
-    public ResponseDTO<ProductInfo> deleteProduct(String productId) {
-        try {
-            ProductModel existing = productRepo.findById(productId);
-            if (existing == null)
-                return invalid("PRODUCT_DELETE", "Sản phẩm không tồn tại!");
-
-            productRepo.delete(existing);
-            return success("PRODUCT_DELETE", "Xóa sản phẩm thành công", null);
-        } catch (Exception e) {
-            return error("PRODUCT_DELETE", e);
-        }
-    }
-
-    public ResponseDTO<ProductInfo> getProductById(String id) {
-        try {
-            ProductModel p = productRepo.findById(id);
-            if (p == null)
-                return invalid("PRODUCT_GET_BY_ID", "Không tồn tại!");
-            return success("PRODUCT_GET_BY_ID", "Lấy sản phẩm thành công", toInfo(p));
-        } catch (Exception e) {
-            return error("PRODUCT_GET_BY_ID", e);
-        }
-    }
-
-    // ================= Helper =================
-    private List<ProductInfo> mapList(List<ProductModel> models) {
-        if (models == null) return Collections.emptyList();
-        return models.stream().map(this::toInfo).collect(Collectors.toList());
-    }
-
-    private ProductInfo toInfo(ProductModel p) {
-        return new ProductInfo(
-                p.getId(),
-                p.getName(),
-                p.getCategory() != null ? p.getCategory().getName() : null,
-                p.getCostPrice(),
-                p.getSellPrice(),
-                p.getExpiryDate(),
-                p.isActive()
+    // ------------------ Lấy tất cả ------------------
+    public ResponseDTO<List<ProductInfo>> getAllProducts() throws RuntimeException {
+        return new SuccessResponse<>(
+                "Lấy toàn bộ sản phẩm thành công",
+                mapper.toDTOList(productRepo.findAll())
         );
     }
 
-    private ResponseDTO<ProductInfo> success(String type, String msg, ProductInfo data) {
-        return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
+    // ------------------ Tạo sản phẩm ------------------
+    public ResponseDTO<ProductInfo> createProduct(ProductRequestDTO req) throws RuntimeException {
+
+        if (!req.validForCreate())
+            return new InvalidResponse<>("Thiếu tên sản phẩm");
+
+        CategoryModel category = req.getCategoryId() != null
+                ? categoryRepo.findById(req.getCategoryId())
+                : null;
+
+        ProductModel product = new ProductModel.Builder()
+                .id(UUID.randomUUID().toString())
+                .name(req.getName())
+                .category(category)
+                .costPrice(req.getCostPrice() != null ? req.getCostPrice() : 0.0)
+                .sellPrice(req.getSellPrice() != null ? req.getSellPrice() : 0.0)
+                .expiryDate(req.getExpiryDate())
+                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
+                .build();
+
+        productRepo.save(product);
+
+        return new SuccessResponse<>("Tạo sản phẩm thành công", mapper.toDTO(product));
     }
 
-    private ResponseDTO<ProductInfo> invalid(String type, String msg) {
-        return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status(ResponseDTO.STATUS.INVALID.getValue()).message(msg).data(null).build();
+    // ------------------ Cập nhật sản phẩm ------------------
+    public ResponseDTO<ProductInfo> updateProduct(ProductRequestDTO req) throws RuntimeException {
+
+        if (!req.validForUpdate())
+            return new InvalidResponse<>("Thiếu ID sản phẩm");
+
+        CategoryModel category = req.getCategoryId() != null
+                ? categoryRepo.findById(req.getCategoryId())
+                : null;
+
+        ProductModel temp = new ProductModel.Builder()
+                .id(req.getProductId())
+                .name(req.getName())
+                .category(category)
+                .costPrice(req.getCostPrice())
+                .sellPrice(req.getSellPrice())
+                .expiryDate(req.getExpiryDate())
+                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
+                .build();
+
+        ProductModel updated = productRepo.update(temp);
+
+        if (updated == null)
+            return new NotFoundResponse<>("Không tìm thấy sản phẩm để cập nhật");
+
+        return new SuccessResponse<>("Cập nhật sản phẩm thành công", mapper.toDTO(updated));
     }
 
-    private ResponseDTO<ProductInfo> error(String type, Exception e) {
-        return new ResponseDTO.Builder<ProductInfo>()
-                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
+    // ------------------ Xóa sản phẩm ------------------
+    public ResponseDTO<ProductInfo> deleteProduct(ProductRequestDTO req) throws RuntimeException {
+
+        if (req.getProductId() == null || req.getProductId().isBlank())
+            return new InvalidResponse<>("Thiếu ID sản phẩm");
+
+        ProductModel deleted = productRepo.delete(req.getProductId());
+
+        if (deleted == null)
+            return new NotFoundResponse<>("Không tồn tại sản phẩm");
+
+        return new SuccessResponse<>("Xóa sản phẩm thành công", mapper.toDTO(deleted));
     }
 
-    private ResponseDTO<List<ProductInfo>> successList(String type, String msg, List<ProductInfo> data) {
-        return new ResponseDTO.Builder<List<ProductInfo>>()
-                .type(type).status(ResponseDTO.STATUS.SUCCESS.getValue()).message(msg).data(data).build();
+    // ------------------ Tìm kiếm theo tên ------------------
+    public ResponseDTO<List<ProductInfo>> searchByName(String keyword) throws RuntimeException {
+
+        if (keyword == null || keyword.isBlank())
+            return new InvalidResponse<>("Thiếu từ khóa tìm kiếm");
+
+        return new SuccessResponse<>(
+                "Tìm kiếm sản phẩm thành công",
+                mapper.toDTOList(productRepo.searchByName(keyword))
+        );
     }
 
-    private ResponseDTO<List<ProductInfo>> errorList(String type, Exception e) {
-        return new ResponseDTO.Builder<List<ProductInfo>>()
-                .type(type).status(ResponseDTO.STATUS.ERROR.getValue()).message(e.getMessage()).data(null).build();
+    // ------------------ Lấy theo ID ------------------
+    public ResponseDTO<ProductInfo> getProductById(ProductRequestDTO req) throws RuntimeException {
+
+        ProductModel product = productRepo.findById(req.getProductId());
+
+        if (product == null)
+            return new NotFoundResponse<>("Không tìm thấy sản phẩm");
+
+        return new SuccessResponse<>("Lấy sản phẩm thành công", mapper.toDTO(product));
     }
 }

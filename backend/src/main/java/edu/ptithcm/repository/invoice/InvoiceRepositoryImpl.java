@@ -1,56 +1,121 @@
 package edu.ptithcm.repository.invoice;
 
+import java.util.List;
+
+import org.hibernate.query.Query;
+
 import edu.ptithcm.models.InvoiceModel;
 import edu.ptithcm.repository.BaseRepository;
-import org.hibernate.query.Query;
-import java.util.List;
+import edu.ptithcm.utils.BigDecimalUtil;
+
 
 public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implements InvoiceRepository {
 
+    // -------------------- SAVE --------------------
     @Override
-    public void save(InvoiceModel entity) { execute(s -> { s.persist(entity); return null; }); }
-
-    @Override
-    public void update(InvoiceModel entity) { execute(s -> { s.merge(entity); return null; }); }
-
-    @Override
-    public void delete(InvoiceModel entity) {
+    public void save(InvoiceModel entity) {
         execute(session -> {
-            InvoiceModel managed = session.get(InvoiceModel.class, entity.getId());
-            if (managed != null) {
-                session.remove(managed); // giờ thuộc session hiện tại
-            }
+            session.persist(entity);
             return null;
         });
     }
 
-
+    // -------------------- UPDATE --------------------
     @Override
-    public InvoiceModel findById(String id) { return execute(s -> s.get(InvoiceModel.class, id)); }
+    public InvoiceModel update(InvoiceModel newData) {
+        return execute(session -> {
+            InvoiceModel managed = session.get(InvoiceModel.class, newData.getId());
+            if (managed == null) return null;
 
-    @Override
-    public List<InvoiceModel> findAll() {
-        return execute(s ->
-            s.createQuery("FROM InvoiceModel i ORDER BY i.createdAt DESC", InvoiceModel.class).list());
-    }
+            // Dirty-checking: Hibernate tự flush khi commit
+            if (newData.getEmployee() != null) managed.setEmployee(newData.getEmployee());
+            if (newData.getBranch() != null) managed.setBranch(newData.getBranch());
+            if (newData.getCustomer() != null) managed.setCustomer(newData.getCustomer());
 
-    @Override
-    public List<InvoiceModel> findByCustomer(String customerId) {
-        return execute(s -> {
-            Query<InvoiceModel> q = s.createQuery(
-                "FROM InvoiceModel i WHERE i.customer.id = :cid ORDER BY i.createdAt DESC", InvoiceModel.class);
-            q.setParameter("cid", customerId);
-            return q.list();
+            // BigDecimal so sánh hiệu quả
+            if (!BigDecimalUtil.isZero(newData.getTotal())) managed.setTotal(newData.getTotal());
+            if (!BigDecimalUtil.isZero(newData.getDiscount())) managed.setDiscount(newData.getDiscount());
+
+            if (newData.getNote() != null && !newData.getNote().isBlank()) 
+                managed.setNote(newData.getNote());
+
+            if (newData.getDetails() != null && !newData.getDetails().isEmpty())
+                managed.setDetails(newData.getDetails());
+
+            return managed;
         });
     }
 
+    // -------------------- DELETE --------------------
+    @Override
+    public InvoiceModel delete(String id) {
+        return execute(session -> {
+            InvoiceModel managed = session.get(InvoiceModel.class, id);
+            if (managed == null) return null;
+            session.remove(managed);
+            return managed;
+        });
+    }
+
+    // -------------------- FIND BY ID --------------------
+    @Override
+    public InvoiceModel findById(String id) {
+        return execute(session -> session.get(InvoiceModel.class, id));                                                                                                                                                                         
+    }
+
+    // -------------------- FIND ALL --------------------
+    @Override
+    public List<InvoiceModel> findAll() {
+        return execute(session ->
+            session.createQuery(
+                "SELECT i FROM InvoiceModel i " +
+                "LEFT JOIN FETCH i.customer c " +
+                "LEFT JOIN FETCH i.employee e " +
+                "LEFT JOIN FETCH i.branch b " +
+                "ORDER BY i.createdAt DESC", InvoiceModel.class
+            ).list()
+        );
+    }
+
+    // -------------------- FIND BY CUSTOMER --------------------
+    @Override
+    public List<InvoiceModel> findByCustomer(String customerId) {
+        return execute(session -> {
+            Query<InvoiceModel> query = session.createQuery(
+                "SELECT i FROM InvoiceModel i " +
+                "JOIN FETCH i.customer c " +
+                "WHERE c.id = :customerId " +
+                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+            query.setParameter("customerId", customerId);
+            return query.list();
+        });
+    }
+
+    // -------------------- FIND BY BRANCH --------------------
     @Override
     public List<InvoiceModel> findByBranch(Integer branchId) {
-        return execute(s -> {
-            Query<InvoiceModel> q = s.createQuery(
-                "FROM InvoiceModel i WHERE i.branch.id = :bid ORDER BY i.createdAt DESC", InvoiceModel.class);
-            q.setParameter("bid", branchId);
-            return q.list();
+        return execute(session -> {
+            Query<InvoiceModel> query = session.createQuery(
+                "SELECT i FROM InvoiceModel i " +
+                "JOIN FETCH i.branch b " +
+                "WHERE b.id = :branchId " +
+                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+            query.setParameter("branchId", branchId);
+            return query.list();
+        });
+    }
+
+    // -------------------- FIND BY EMPLOYEE --------------------
+    @Override
+    public List<InvoiceModel> findByEmployee(String employeeId) {
+        return execute(session -> {
+            Query<InvoiceModel> query = session.createQuery(
+                "SELECT i FROM InvoiceModel i " +
+                "JOIN FETCH i.employee e " +
+                "WHERE e.id = :employeeId " +
+                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+            query.setParameter("employeeId", employeeId);
+            return query.list();
         });
     }
 }

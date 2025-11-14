@@ -1,7 +1,11 @@
 package edu.ptithcm.services;
 
-import edu.ptithcm.dto.response.ResponseDTO;
-import edu.ptithcm.dto.response.UserLoginInfo;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.error.ErrorResponse;
+import edu.ptithcm.dto.response.error.InvalidResponse;
+import edu.ptithcm.dto.response.error.NotFoundResponse;
+import edu.ptithcm.dto.response.success.SuccessResponse;
+import edu.ptithcm.dto.response.info_models.UserLoginInfo;
 import edu.ptithcm.models.EmployeeModel;
 import edu.ptithcm.repository.Repository;
 import edu.ptithcm.repository.employee.EmployeeRepository;
@@ -9,40 +13,27 @@ import edu.ptithcm.utils.CryptoUtil;
 
 public class AuthenticationService {
     private static AuthenticationService instance;
-
     private static final EmployeeRepository employeeRepo = Repository.employee();
 
-    private AuthenticationService(){}
+    private AuthenticationService() {}
 
-    public static AuthenticationService getInstance(){
-        if (AuthenticationService.instance == null){
-            AuthenticationService.instance = new AuthenticationService();
+    public static synchronized AuthenticationService getInstance() {
+        if (instance == null) {
+            instance = new AuthenticationService();
         }
-
-        return AuthenticationService.instance;
+        return instance;
     }
 
     public ResponseDTO<UserLoginInfo> login(String username, String password) {
         try {
             EmployeeModel employee = employeeRepo.findByUsername(username);
-
             if (employee == null) {
-                return new ResponseDTO.Builder<UserLoginInfo>()
-                        .type("LOGIN")
-                        .status("NOT_FOUND_USER")
-                        .message("Tài khoản không tồn tại")
-                        .data(null)
-                        .build();
+                return new NotFoundResponse<>("Tài khoản không tồn tại");
             }
 
             boolean valid = CryptoUtil.verifyPassword(password, employee.getPassword());
             if (!valid) {
-                return new ResponseDTO.Builder<UserLoginInfo>()
-                        .type("LOGIN")
-                        .status("WRONG_PASSWORD")
-                        .message("Sai mật khẩu!")
-                        .data(null)
-                        .build();
+                return new InvalidResponse<>("Sai mật khẩu!");
             }
 
             UserLoginInfo user = new UserLoginInfo(
@@ -54,20 +45,10 @@ public class AuthenticationService {
                     employee.getBranch() != null ? employee.getBranch().getName() : null
             );
 
-            return new ResponseDTO.Builder<UserLoginInfo>()
-                    .type("LOGIN")
-                    .status("SUCCESS")
-                    .message("Đăng nhập thành công!")
-                    .data(user)
-                    .build();
+            return new SuccessResponse<>("Đăng nhập thành công!", user);
 
         } catch (Exception e) {
-            return new ResponseDTO.Builder<UserLoginInfo>()
-                    .type("LOGIN")
-                    .status("ERROR")
-                    .message("Lỗi hệ thống: " + e.getMessage())
-                    .data(null)
-                    .build();
+            return new ErrorResponse<>("Lỗi hệ thống: " + e.getMessage(), null);
         }
     }
 }

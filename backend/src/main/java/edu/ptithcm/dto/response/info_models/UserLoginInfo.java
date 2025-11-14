@@ -1,4 +1,4 @@
-package edu.ptithcm.dto.response;
+package edu.ptithcm.dto.response.info_models;
 
 import java.util.HashMap;
 import java.util.Map;

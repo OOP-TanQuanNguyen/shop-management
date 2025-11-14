@@ -23,6 +23,7 @@ public class CategoryModel {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductModel> products;
 
+
     // --- Constructors ---
     private CategoryModel() {}
 

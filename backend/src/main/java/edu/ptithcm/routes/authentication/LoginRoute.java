@@ -2,10 +2,11 @@ package edu.ptithcm.routes.authentication;
 
 import java.io.IOException;
 
+import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.controller.LoginController;
 import edu.ptithcm.dto.request.login.LoginRequestDTO;
-import edu.ptithcm.dto.response.ResponseDTO;
-import edu.ptithcm.dto.response.UserLoginInfo;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.info_models.UserLoginInfo;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 
@@ -20,12 +21,12 @@ public class LoginRoute {
     }
 
     public void register() {
-        server.on("LOGIN", args -> {
+        server.on(TypeDTTP.LOGIN.getValue(), args -> {
             try {
                 String username = (String) args.data.get("username");
                 if (manager.isOnline(username)) {
                     DTTP oldConn = manager.getConn(username);
-                    oldConn.send("FORCE_KICK",null, "ERROR", "Tài khoản đăng nhập nơi khác!");
+                    oldConn.send(TypeDTTP.FORCE_KICK.getValue(),null, "ERROR", "Tài khoản đăng nhập nơi khác!");
                     manager.removeConnection(oldConn);
                 }
                 String password = (String)args.data.get("password");
@@ -35,7 +36,7 @@ public class LoginRoute {
                 ResponseDTO<UserLoginInfo> response = controller.handleLogin(request);
 
                 if (response.getData() == null) {
-                    args.reply(response.getType(), null, (String)response.getStatus(),response.getMessage());
+                    args.reply(TypeDTTP.LOGIN.getValue(), null,response.getStatus(),response.getMessage());
                     return;
                 }
 
@@ -47,7 +48,7 @@ public class LoginRoute {
                 );
 
                 args.reply(
-                    response.getType(),
+                    TypeDTTP.LOGIN.getValue(),
                     response.getData().toMap(),
                     response.getStatus(),
                     response.getMessage()
@@ -58,14 +59,14 @@ public class LoginRoute {
             } catch (Exception e) {
                 System.err.print("Lỗi server : "+e);
                 try {
-                    args.reply("LOGIN", null, "ERROR", "Lỗi nội bộ server: " + e.getMessage());
+                    args.reply(TypeDTTP.LOGIN.getValue(), null, "ERROR", "Lỗi nội bộ server: " + e.getMessage());
                 }catch(IOException ex) {
                     System.err.print("Lỗi server : "+ex);
                 }
             }
         });
 
-        server.on("LOGOUT", args -> {
+        server.on(TypeDTTP.LOGOUT.getValue(), args -> {
             manager.removeConnection(server);
         });
     }

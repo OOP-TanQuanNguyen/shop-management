@@ -1,23 +1,18 @@
 package edu.ptithcm.services.admin;
 
-import edu.ptithcm.app.actions.AdminAction;
-import edu.ptithcm.app.store.Store;
-import edu.ptithcm.models.UserModel;
-import edu.ptithcm.protocols.DTTP;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-/**
- * Service xử lý nghiệp vụ quản lý nhân viên. - Gửi request đến Backend qua DTTP
- * - Nhận response và dispatch vào Store - Không chứa UI logic
- */
+import edu.ptithcm.app.actions.AdminAction;
+import edu.ptithcm.app.store.Store;
+import edu.ptithcm.models.UserModel;
+import edu.ptithcm.protocols.DTTP;
+
 public class EmployeeService {
 
-    // Constants
     private static final String SUCCESS = "SUCCESS";
     private static final String INVALID = "INVALID";
     private static final String ERROR = "ERROR";
@@ -35,10 +30,6 @@ public class EmployeeService {
         registerHandlers();
     }
 
-    // ============================================================
-    // Event Handlers Registration
-    // ============================================================
-    @SuppressWarnings("unchecked")
     private void registerHandlers() {
         client.on("EMPLOYEE_GET_ALL", args -> handleGetAllResponse(args));
         client.on("EMPLOYEE_GET_ACTIVE", args -> handleGetActiveResponse(args));
@@ -52,7 +43,6 @@ public class EmployeeService {
     // ============================================================
     // Response Handlers
     // ============================================================
-    @SuppressWarnings("unchecked")
     private void handleGetAllResponse(DTTP.DTTPArgs args) {
         logger.info("EMPLOYEE_GET_ALL response: " + args.status);
 
@@ -79,11 +69,11 @@ public class EmployeeService {
     private void handleCreateResponse(DTTP.DTTPArgs args) {
         logger.info("EMPLOYEE_CREATE response: " + args.status);
 
+                
         switch (args.status) {
             case SUCCESS -> {
                 store.dispatch(AdminAction.EMPLOYEE_ADD_SUCCESS.toString(), args.data);
-                setMessage("Thêm nhân viên thành công!");
-                reloadEmployeeList();
+                setMessage("Thêm nhân viên thành công!");reloadEmployeeList();
             }
             case INVALID ->
                 setError("Thiếu thông tin bắt buộc!");
