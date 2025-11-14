@@ -21,13 +21,13 @@ public class CustomerService {
     private static final BaseMapper<CustomerModel, CustomerInfo> mapper = MapperFactory.customer();
 
     // ------------------ Lấy toàn bộ ------------------
-    public ResponseDTO<List<CustomerInfo>> getAllCustomers() {
+    public ResponseDTO<List<CustomerInfo>> getAllCustomers() throws RuntimeException {
         List<CustomerModel> list = customerRepo.findAll();
         return new SuccessResponse<>("Lấy toàn bộ khách hàng thành công", mapper.toDTOList(list));
     }
 
     // ------------------ Tạo khách hàng ------------------
-    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req) {
+    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req) throws RuntimeException {
 
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên khách hàng");
@@ -44,7 +44,7 @@ public class CustomerService {
     }
 
     // ------------------ Cập nhật khách hàng ------------------
-    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req) {
+    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req) throws RuntimeException {
 
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID khách hàng");
@@ -62,7 +62,7 @@ public class CustomerService {
     }
 
     // ------------------ Xóa khách hàng ------------------
-    public ResponseDTO<CustomerInfo> deleteCustomer(CustomerRequestDTO req) {
+    public ResponseDTO<CustomerInfo> deleteCustomer(CustomerRequestDTO req) throws RuntimeException {
 
         if (req.getCustomerId() == null || req.getCustomerId().isBlank())
             return new InvalidResponse<>("Thiếu ID khách hàng");
@@ -76,7 +76,7 @@ public class CustomerService {
     }
 
     // ------------------ Lấy khách hàng theo ID ------------------
-    public ResponseDTO<CustomerInfo> getCustomerById(CustomerRequestDTO req) {
+    public ResponseDTO<CustomerInfo> getCustomerById(CustomerRequestDTO req) throws RuntimeException {
 
         CustomerModel customer = customerRepo.findById(req.getCustomerId());
 
@@ -87,7 +87,7 @@ public class CustomerService {
     }
 
     // ------------------ Lấy khách hàng theo số điện thoại ------------------
-    public ResponseDTO<CustomerInfo> getCustomerByPhone(String phone) {
+    public ResponseDTO<CustomerInfo> getCustomerByPhone(String phone) throws RuntimeException {
 
         if (phone == null || phone.isBlank())
             return new InvalidResponse<>("Thiếu số điện thoại");

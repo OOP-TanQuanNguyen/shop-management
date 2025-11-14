@@ -20,7 +20,7 @@ public class BranchService {
     private static final BaseMapper<BranchModel, BranchInfo> mapper = MapperFactory.branch();
 
     // Lấy tất cả chi nhánh
-    public ResponseDTO<List<BranchInfo>> getAllBranches() {
+    public ResponseDTO<List<BranchInfo>> getAllBranches() throws RuntimeException {
         return new SuccessResponse<>(
                 "Lấy toàn bộ chi nhánh thành công",
                 mapper.toDTOList(branchRepo.findAll())
@@ -28,7 +28,7 @@ public class BranchService {
     }
 
     // Tạo chi nhánh
-    public ResponseDTO<BranchInfo> createBranch(BranchRequestDTO req) {
+    public ResponseDTO<BranchInfo> createBranch(BranchRequestDTO req) throws RuntimeException {
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên chi nhánh");
 
@@ -44,7 +44,7 @@ public class BranchService {
     }
 
     // Cập nhật chi nhánh
-    public ResponseDTO<BranchInfo> updateBranch(BranchRequestDTO req) {
+    public ResponseDTO<BranchInfo> updateBranch(BranchRequestDTO req) throws RuntimeException {
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID hoặc tên chi nhánh");
 
@@ -64,7 +64,7 @@ public class BranchService {
     }
 
     // Xóa chi nhánh
-    public ResponseDTO<BranchInfo> deleteBranch(BranchRequestDTO req) {
+    public ResponseDTO<BranchInfo> deleteBranch(BranchRequestDTO req) throws RuntimeException {
         if (req.getBranchId() == null || req.getBranchId() <= 0)
             return new InvalidResponse<>("Thiếu ID chi nhánh");
 
@@ -77,7 +77,7 @@ public class BranchService {
     }
 
     // Lấy chi nhánh theo ID
-    public ResponseDTO<BranchInfo> getBranchById(BranchRequestDTO req) {
+    public ResponseDTO<BranchInfo> getBranchById(BranchRequestDTO req) throws RuntimeException {
         BranchModel branch = branchRepo.findById(req.getBranchId());
 
         if (branch == null)

@@ -25,7 +25,7 @@ public class InventoryService {
     private static final BaseMapper<InventoryModel, InventoryInfo> mapper = MapperFactory.inventory();
 
     // Lấy tất cả
-    public ResponseDTO<List<InventoryInfo>> getAllInventories() {
+    public ResponseDTO<List<InventoryInfo>> getAllInventories() throws RuntimeException {
         return new SuccessResponse<>(
                 "Lấy toàn bộ kho thành công",
                 mapper.toDTOList(inventoryRepo.findAll())
@@ -33,7 +33,7 @@ public class InventoryService {
     }
 
     // Tạo mới
-    public ResponseDTO<InventoryInfo> createInventory(InventoryRequestDTO req) {
+    public ResponseDTO<InventoryInfo> createInventory(InventoryRequestDTO req) throws RuntimeException {
         if (!req.validForCreate()) return new InvalidResponse<>("Dữ liệu không hợp lệ");
 
         BranchModel branch = branchRepo.findById(Integer.valueOf(req.getBranchId()));
@@ -56,7 +56,7 @@ public class InventoryService {
     }
 
     // Cập nhật
-    public ResponseDTO<InventoryInfo> updateInventory(InventoryRequestDTO req) {
+    public ResponseDTO<InventoryInfo> updateInventory(InventoryRequestDTO req) throws RuntimeException {
         if (!req.validForUpdate()) return new InvalidResponse<>("Dữ liệu không hợp lệ");
 
         InventoryModel temp = new InventoryModel();
@@ -73,7 +73,7 @@ public class InventoryService {
     }
 
     // Xóa
-    public ResponseDTO<InventoryInfo> deleteInventory(InventoryRequestDTO req) {
+    public ResponseDTO<InventoryInfo> deleteInventory(InventoryRequestDTO req) throws RuntimeException {
         if (req.getId() == null || req.getId() <= 0) return new InvalidResponse<>("Thiếu ID kho");
 
         InventoryModel deleted = inventoryRepo.delete(req.getId());
@@ -83,7 +83,7 @@ public class InventoryService {
     }
 
     // Lấy theo chi nhánh
-    public ResponseDTO<List<InventoryInfo>> getByBranch(Integer branchId) {
+    public ResponseDTO<List<InventoryInfo>> getByBranch(Integer branchId) throws RuntimeException {
         return new SuccessResponse<>(
                 "Lấy kho theo chi nhánh thành công",
                 mapper.toDTOList(inventoryRepo.findByBranch(branchId))

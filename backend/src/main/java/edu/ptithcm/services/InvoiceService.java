@@ -1,0 +1,166 @@
+package edu.ptithcm.services;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import edu.ptithcm.dto.request.invoice.InvoiceRequestDTO;
+import edu.ptithcm.dto.response.base.ResponseDTO;
+import edu.ptithcm.dto.response.error.InvalidResponse;
+import edu.ptithcm.dto.response.error.NotFoundResponse;
+import edu.ptithcm.dto.response.success.SuccessResponse;
+import edu.ptithcm.dto.response.info_models.InvoiceInfo;
+import edu.ptithcm.models.*;
+import edu.ptithcm.repository.*;
+import edu.ptithcm.repository.branch.BranchRepository;
+import edu.ptithcm.repository.customer.CustomerRepository;
+import edu.ptithcm.repository.employee.EmployeeRepository;
+import edu.ptithcm.repository.invoice.InvoiceRepository;
+import edu.ptithcm.repository.product.ProductRepository;
+import edu.ptithcm.utils.BigDecimalUtil;
+import edu.ptithcm.utils.mapper.BaseMapper;
+import edu.ptithcm.utils.mapper.MapperFactory;
+
+public class InvoiceService {
+
+    private static final InvoiceRepository invoiceRepo = Repository.invoice();
+    private static final EmployeeRepository employeeRepo = Repository.employee();
+    private static final BranchRepository branchRepo = Repository.branch();
+    private static final CustomerRepository customerRepo = Repository.customer();
+    private static final ProductRepository productRepo = Repository.product();
+    private static final BaseMapper<InvoiceModel, InvoiceInfo> mapper = MapperFactory.invoice();
+
+    // ------------------ Lấy tất cả hóa đơn ------------------
+    public ResponseDTO<List<InvoiceInfo>> getAllInvoices() throws RuntimeException {
+        List<InvoiceModel> list = invoiceRepo.findAll();
+        return new SuccessResponse<>("Lấy tất cả hóa đơn thành công", mapper.toDTOList(list));
+    }
+
+    // ------------------ Tạo hóa đơn ------------------
+    public ResponseDTO<InvoiceInfo> createInvoice(InvoiceRequestDTO req) throws RuntimeException {
+        if (!req.validForCreate()) 
+            return new InvalidResponse<>("Dữ liệu hóa đơn không hợp lệ");
+
+        EmployeeModel employee = employeeRepo.findById(req.getEmployeeId());
+        BranchModel branch = branchRepo.findById(req.getBranchId());
+        CustomerModel customer = customerRepo.findById(req.getCustomerId());
+
+        if (employee == null) return new NotFoundResponse<>("Nhân viên không tồn tại");
+        if (branch == null) return new NotFoundResponse<>("Chi nhánh không tồn tại");
+        if (customer == null) return new NotFoundResponse<>("Khách hàng không tồn tại");
+
+        List<InvoiceDetailModel> details = new ArrayList<>();
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
+            ProductModel product = productRepo.findById(d.getProductId());
+            if (product == null) return new NotFoundResponse<>("Sản phẩm không tồn tại: " + d.getProductId());
+
+            BigDecimal unitPrice = BigDecimalUtil.safe(
+                    product.getSellPrice() != null ? BigDecimal.valueOf(product.getSellPrice()) : BigDecimal.ZERO
+            );
+            InvoiceDetailModel detail = new InvoiceDetailModel(product, null, d.getQuantity(), unitPrice);
+            details.add(detail);
+            total = total.add(BigDecimalUtil.safe(detail.getTotal()));
+        }
+
+        BigDecimal discount = BigDecimalUtil.safe(req.getDiscount());
+        InvoiceModel invoice = new InvoiceModel.Builder()
+                .id(UUID.randomUUID().toString())
+                .employee(employee)
+                .branch(branch)
+                .customer(customer)
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .discount(discount)
+                .note(req.getNote())
+                .details(details)
+                .total(total.subtract(discount))
+                .build();
+
+        // Liên kết chi tiết với invoice
+        for (InvoiceDetailModel d : details) d.setInvoice(invoice);
+
+        invoiceRepo.save(invoice);
+        return new SuccessResponse<>("Tạo hóa đơn thành công", mapper.toDTO(invoice));
+    }
+
+    // ------------------ Cập nhật hóa đơn ------------------
+    public ResponseDTO<InvoiceInfo> updateInvoice(InvoiceRequestDTO req) throws RuntimeException {
+        if (!req.validForUpdate()) 
+            return new InvalidResponse<>("Thiếu ID hóa đơn");
+
+        InvoiceModel existing = invoiceRepo.findById(req.getInvoiceId());
+        if (existing == null) return new NotFoundResponse<>("Hóa đơn không tồn tại");
+
+        if (req.getEmployeeId() != null) existing.setEmployee(employeeRepo.findById(req.getEmployeeId()));
+        if (req.getBranchId() != null) existing.setBranch(branchRepo.findById(req.getBranchId()));
+        if (req.getCustomerId() != null) existing.setCustomer(customerRepo.findById(req.getCustomerId()));
+        if (req.getNote() != null) existing.setNote(req.getNote());
+        if (req.getDiscount() != null) existing.setDiscount(BigDecimalUtil.safe(req.getDiscount()));
+
+        // Cập nhật chi tiết nếu có
+        if (req.getDetails() != null && !req.getDetails().isEmpty()) {
+            List<InvoiceDetailModel> details = new ArrayList<>();
+            BigDecimal total = BigDecimal.ZERO;
+
+            for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
+                ProductModel product = productRepo.findById(d.getProductId());
+                if (product == null) return new NotFoundResponse<>("Sản phẩm không tồn tại: " + d.getProductId());
+
+                BigDecimal unitPrice = BigDecimalUtil.safe(
+                        product.getSellPrice() != null ? BigDecimal.valueOf(product.getSellPrice()) : BigDecimal.ZERO
+                );
+                InvoiceDetailModel detail = new InvoiceDetailModel(product, existing, d.getQuantity(), unitPrice);
+                details.add(detail);
+                total = total.add(BigDecimalUtil.safe(detail.getTotal()));
+            }
+
+            existing.setDetails(details);
+            existing.setTotal(total.subtract(BigDecimalUtil.safe(existing.getDiscount())));
+        } else {
+            // Nếu không update chi tiết, vẫn cần cập nhật tổng dựa trên discount
+            existing.setTotal(existing.getTotal().subtract(BigDecimalUtil.safe(existing.getDiscount())));
+        }
+
+        InvoiceModel updated = invoiceRepo.update(existing);
+        return new SuccessResponse<>("Cập nhật hóa đơn thành công", mapper.toDTO(updated));
+    }
+
+    // ------------------ Xóa hóa đơn ------------------
+    public ResponseDTO<InvoiceInfo> deleteInvoice(String invoiceId) throws RuntimeException {
+        if (invoiceId == null || invoiceId.isBlank()) 
+            return new InvalidResponse<>("Thiếu ID hóa đơn");
+
+        InvoiceModel deleted = invoiceRepo.delete(invoiceId);
+        if (deleted == null) return new NotFoundResponse<>("Hóa đơn không tồn tại");
+
+        return new SuccessResponse<>("Xóa hóa đơn thành công", mapper.toDTO(deleted));
+    }
+
+    // ------------------ Lấy hóa đơn theo khách hàng ------------------
+    public ResponseDTO<List<InvoiceInfo>> getByCustomer(String customerId) throws RuntimeException {
+        List<InvoiceModel> list = invoiceRepo.findByCustomer(customerId);
+        return new SuccessResponse<>("Lấy hóa đơn theo khách hàng thành công", mapper.toDTOList(list));
+    }
+
+    // ------------------ Lấy hóa đơn theo chi nhánh ------------------
+    public ResponseDTO<List<InvoiceInfo>> getByBranch(Integer branchId) throws RuntimeException {
+        List<InvoiceModel> list = invoiceRepo.findByBranch(branchId);
+        return new SuccessResponse<>("Lấy hóa đơn theo chi nhánh thành công", mapper.toDTOList(list));
+    }
+
+    // ------------------ Lấy hóa đơn theo nhân viên ------------------
+    public ResponseDTO<List<InvoiceInfo>> getByEmployee(String employeeId) throws RuntimeException {
+        List<InvoiceModel> list = invoiceRepo.findByEmployee(employeeId);
+        return new SuccessResponse<>("Lấy hóa đơn theo nhân viên thành công", mapper.toDTOList(list));
+    }
+
+    // ------------------ Lấy hóa đơn theo ID ------------------
+    public ResponseDTO<InvoiceInfo> getById(String invoiceId) throws RuntimeException {
+        InvoiceModel invoice = invoiceRepo.findById(invoiceId);
+        if (invoice == null) return new NotFoundResponse<>("Hóa đơn không tồn tại");
+        return new SuccessResponse<>("Lấy hóa đơn thành công", mapper.toDTO(invoice));
+    }
+}

@@ -9,6 +9,7 @@ import edu.ptithcm.routes.category.CategoryRoute;
 import edu.ptithcm.routes.inventory.InventoryRoute;
 import edu.ptithcm.routes.branch.BranchRoute;
 import edu.ptithcm.routes.customer.CustomerRoute;
+import edu.ptithcm.routes.invoice.InvoiceRoute;
 
 public class RouteManager {
     private final DTTP server;
@@ -28,5 +29,6 @@ public class RouteManager {
         new InventoryRoute(server, manager).register();
         new BranchRoute(server, manager).register();
         new CustomerRoute(server, manager).register();
+        new InvoiceRoute(server, manager).register();
     }
 }

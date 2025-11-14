@@ -21,12 +21,12 @@ public class CategoryService {
     private static final BaseMapper<CategoryModel, CategoryInfo> mapper = MapperFactory.category();
 
     // ------------------ Lấy tất cả ------------------
-    public ResponseDTO<List<CategoryInfo>> getAllCategories() {
+    public ResponseDTO<List<CategoryInfo>> getAllCategories() throws RuntimeException {
         return new SuccessResponse<>("Lấy danh sách category thành công", mapper.toDTOList(categoryRepo.findAll()));
     }
 
     // ------------------ Tạo category ------------------
-    public ResponseDTO<CategoryInfo> createCategory(CategoryRequestDTO req) {
+    public ResponseDTO<CategoryInfo> createCategory(CategoryRequestDTO req) throws RuntimeException {
 
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên category");
@@ -42,7 +42,7 @@ public class CategoryService {
     }
 
     // ------------------ Cập nhật category ------------------
-    public ResponseDTO<CategoryInfo> updateCategory(CategoryRequestDTO req) {
+    public ResponseDTO<CategoryInfo> updateCategory(CategoryRequestDTO req) throws RuntimeException {
 
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID category");
@@ -57,7 +57,7 @@ public class CategoryService {
     }
 
     // ------------------ Xóa category ------------------
-    public ResponseDTO<CategoryInfo> deleteCategory(CategoryRequestDTO req) {
+    public ResponseDTO<CategoryInfo> deleteCategory(CategoryRequestDTO req) throws RuntimeException {
 
         if (req.getCategoryId() == null || req.getCategoryId().isBlank())
             return new InvalidResponse<>("Thiếu ID category");
@@ -71,7 +71,7 @@ public class CategoryService {
     }
 
     // ------------------ Lấy theo ID ------------------
-    public ResponseDTO<CategoryInfo> getCategoryById(CategoryRequestDTO req) {
+    public ResponseDTO<CategoryInfo> getCategoryById(CategoryRequestDTO req) throws RuntimeException {
         CategoryModel category = categoryRepo.findById(req.getCategoryId());
         if (category == null)
             return new NotFoundResponse<>("Không tìm thấy category");
