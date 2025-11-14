@@ -78,7 +78,7 @@ public class EmployeeService {
             case INVALID ->
                 setError("Thiếu thông tin bắt buộc!");
             case ERROR ->
-                setError("Lỗi server: " + args.message);
+                setError("Lỗi :  " + args.message);
         }
     }
 
@@ -94,7 +94,7 @@ public class EmployeeService {
             case INVALID ->
                 setError("Thiếu ID hoặc dữ liệu cập nhật!");
             case ERROR ->
-                setError("Lỗi server: " + args.message);
+                setError("Lỗi :  " + args.message);
         }
     }
 
@@ -108,19 +108,13 @@ public class EmployeeService {
                 reloadEmployeeList();
             }
             case INVALID ->
-                setError("Thiếu ID nhân viên!");
+                setError(args.message);
             case ERROR -> {
-                String errorMsg = args.message;
-                if (errorMsg != null && errorMsg.contains("LogicalConnectionManagedImpl")) {
-                    setError("Lỗi kết nối database! Vui lòng thử lại sau.");
-                } else {
-                    setError("Lỗi server: " + errorMsg);
-                }
+                setError("Lỗi :  " + args.message);
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void handleFilterResponse(DTTP.DTTPArgs args) {
         logger.info("EMPLOYEE_FILTER response: " + args.status);
 

@@ -4,6 +4,7 @@ import edu.ptithcm.dto.request.login.LoginRequestDTO;
 import edu.ptithcm.dto.response.base.ResponseDTO;
 import edu.ptithcm.dto.response.info_models.UserLoginInfo;
 import edu.ptithcm.services.AuthenticationService;
+import edu.ptithcm.utils.handle_exception.SafeExecutor;
 
 public class LoginController {
 
@@ -24,7 +25,6 @@ public class LoginController {
     public ResponseDTO<UserLoginInfo> handleLogin(LoginRequestDTO request){
         String username = request.getUsername();
         String password = request.getPassword();        
-        return this.service.login(username, password);    
-
+        return SafeExecutor.run(() -> this.service.login(username, password));
     }
 }
