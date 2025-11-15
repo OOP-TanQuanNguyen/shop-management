@@ -2,6 +2,7 @@ package edu.ptithcm.dto.response.info_models;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,21 @@ public class InvoiceInfo {
         this.discount = builder.discount;
         this.note = builder.note;
         this.details = builder.details;
+    }
+
+    // --- Convert to Map ---
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("invoiceId", invoiceId);
+        map.put("employeeId", employeeId);
+        map.put("branchId", branchId);
+        map.put("customerId", customerId);
+        map.put("createdAt", createdAt != null ? createdAt.getTime() : null);
+        map.put("total", total);
+        map.put("discount", discount);
+        map.put("note", note);
+        map.put("details", details);  // đã là List<Map> sẵn
+        return map;
     }
 
     // --- Getters ---

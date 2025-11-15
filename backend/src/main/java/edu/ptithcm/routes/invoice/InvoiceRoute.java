@@ -32,15 +32,16 @@ public class InvoiceRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.INVOICE_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_GET_ALL.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_GET_ALL.getValue()))
+                    return;
 
                 ResponseDTO<List<InvoiceInfo>> response = controller.getAllInvoices();
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
                         : null;
 
-                Map<String, Object> payload = Map.of("invoices", invoices);
-                args.reply(TypeDTTP.INVOICE_GET_ALL.getValue(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.INVOICE_GET_ALL.getValue(), Map.of("invoices", invoices),
+                        response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_GET_ALL.getValue(), e);
