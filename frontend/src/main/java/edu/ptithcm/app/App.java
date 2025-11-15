@@ -1,12 +1,14 @@
 package edu.ptithcm.app;
 
 import java.io.IOException;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.reducers.AuthReducer;
 import edu.ptithcm.app.reducers.EmployeeReducer;
+import edu.ptithcm.app.reducers.ProductReducer;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.controllers.admin.AdminController;
 import edu.ptithcm.controllers.auth.LoginController;
@@ -38,6 +40,7 @@ public class App {
                 // --- Đăng ký reducer ---
                 AuthReducer.register(store);
                 EmployeeReducer.register(store);
+                ProductReducer.register(store);
 
                 // --- Kết nối socket ---
                 client = new DTTP("127.0.0.1", 2025);

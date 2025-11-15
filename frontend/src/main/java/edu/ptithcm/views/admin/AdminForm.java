@@ -14,8 +14,9 @@ public class AdminForm extends JFrame {
     private final JTabbedPane tabPane = new JTabbedPane();
     private final JButton btnLogout = new JButton(" 🚪 Đăng xuất");
 
-    // 👉 THÊM DÒNG NÀY:
+    // Panels
     private final EmployeePanel employeePanel = new EmployeePanel();
+    private final ProductPanel productPanel = new ProductPanel();
 
     public AdminForm(UserModel userData) {
         setTitle("🏢 Hệ thống quản trị mini market");
@@ -38,25 +39,37 @@ public class AdminForm extends JFrame {
         btnLogout.setForeground(Color.WHITE);
         btnLogout.setFocusPainted(false);
         btnLogout.setBorder(new LineBorder(new Color(180, 35, 50)));
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogout.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         header.add(btnLogout, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
         // Tabs
         tabPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tabPane.addTab("👤 Nhân viên", employeePanel); // dùng biến
-        tabPane.addTab("📦 Sản phẩm", new ProductPanel());
+
+        tabPane.addTab("👤 Nhân viên", employeePanel);
+        tabPane.addTab("📦 Sản phẩm", productPanel);
         tabPane.addTab("🏬 Chi nhánh", new BranchPanel());
         tabPane.addTab("📈 Thống kê", new StatisticPanel());
         tabPane.addTab("⚙️ Cài đặt", new SettingPanel());
+
         add(tabPane, BorderLayout.CENTER);
     }
 
+    // Getters
     public JButton getLogoutButton() {
         return btnLogout;
     }
 
-    // 👉 THÊM GETTER NÀY:
     public EmployeePanel getEmployeePanel() {
         return employeePanel;
+    }
+
+    public ProductPanel getProductPanel() {
+        return productPanel;
+    }
+
+    public JTabbedPane getTabPane() {
+        return tabPane;
     }
 }

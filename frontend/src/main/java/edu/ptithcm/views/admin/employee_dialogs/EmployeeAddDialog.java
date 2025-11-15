@@ -1,4 +1,4 @@
-package edu.ptithcm.views.admin.dialogs;
+package edu.ptithcm.views.admin.employee_dialogs;
 
 import javax.swing.*;
 import java.awt.*;
@@ -7,6 +7,9 @@ import java.awt.*;
  * Dialog thêm nhân viên mới
  */
 public class EmployeeAddDialog extends EmployeeFormDialog {
+
+    // 🔹 Thêm dòng này để khai báo biến cboRole
+    private JComboBox<String> cboRole;
 
     public EmployeeAddDialog(Frame owner) {
         super(owner, "➕ Thêm nhân viên mới");
@@ -21,14 +24,14 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
         txtPassword = new JPasswordField(20);
         txtName = new JTextField(20);
         txtPhone = new JTextField(20);
-        txtRole = new JTextField(20);
+        cboRole = new JComboBox<>(new String[]{"STAFF", "ADMIN"}); // ✅ đã khai báo ở trên
 
         // Add fields to form
         addField(formPanel, "Tên đăng nhập: *", txtUsername, 0);
         addField(formPanel, "Mật khẩu: *", txtPassword, 1);
         addField(formPanel, "Tên nhân viên: *", txtName, 2);
         addField(formPanel, "Số điện thoại:", txtPhone, 3);
-        addField(formPanel, "Chức vụ: *", txtRole, 4);
+        addField(formPanel, "Chức vụ: *", cboRole, 4);
 
         // Layout
         setLayout(new BorderLayout());
@@ -57,8 +60,8 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập tên nhân viên!", "Lỗi", JOptionPane.WARNING_MESSAGE);
             return false;
         }
-        if (txtRole.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập chức vụ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
+        if (cboRole.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn chức vụ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
@@ -82,6 +85,6 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
     }
 
     public String getRole() {
-        return txtRole.getText().trim();
+        return cboRole.getSelectedItem().toString();
     }
 }

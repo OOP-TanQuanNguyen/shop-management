@@ -1,4 +1,4 @@
-package edu.ptithcm.views.admin.dialogs;
+package edu.ptithcm.views.admin.employee_dialogs;
 
 import javax.swing.*;
 import java.awt.*;

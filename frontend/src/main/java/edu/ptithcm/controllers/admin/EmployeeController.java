@@ -14,9 +14,9 @@ import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.services.admin.EmployeeService;
 import edu.ptithcm.views.admin.EmployeePanel;
-import edu.ptithcm.views.admin.dialogs.EmployeeAddDialog;
-import edu.ptithcm.views.admin.dialogs.EmployeeDeleteConfirmDialog;
-import edu.ptithcm.views.admin.dialogs.EmployeeEditDialog;
+import edu.ptithcm.views.admin.employee_dialogs.EmployeeAddDialog;
+import edu.ptithcm.views.admin.employee_dialogs.EmployeeDeleteConfirmDialog;
+import edu.ptithcm.views.admin.employee_dialogs.EmployeeEditDialog;
 import edu.ptithcm.views.components.AppMessageBox;
 
 /**

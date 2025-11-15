@@ -1,4 +1,4 @@
-package edu.ptithcm.views.admin.dialogs;
+package edu.ptithcm.views.admin.employee_dialogs;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +8,7 @@ import java.awt.*;
  */
 public class EmployeeEditDialog extends EmployeeFormDialog {
 
+    private JComboBox<String> cboRole;
     private final String employeeId;
 
     public EmployeeEditDialog(Frame owner, String id, String name, String phone, String role, boolean status) {
@@ -22,13 +23,18 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
         // Create fields with initial values
         txtName = new JTextField(name, 20);
         txtPhone = new JTextField(phone, 20);
-        txtRole = new JTextField(role, 20);
+
+        // ✅ ComboBox cho chức vụ
+        cboRole = new JComboBox<>(new String[]{"STAFF", "ADMIN"});
+        cboRole.setSelectedItem(role != null ? role : "STAFF");
+
+        // ✅ Checkbox trạng thái làm việc
         chkStatus = new JCheckBox("Đang làm việc", status);
 
         // Add fields to form
         addField(formPanel, "Tên nhân viên:", txtName, 0);
         addField(formPanel, "Số điện thoại:", txtPhone, 1);
-        addField(formPanel, "Chức vụ:", txtRole, 2);
+        addField(formPanel, "Chức vụ:", cboRole, 2);
         addField(formPanel, "Trạng thái:", chkStatus, 3);
 
         // Layout
@@ -57,7 +63,7 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
     }
 
     public String getRole() {
-        return txtRole.getText().trim();
+        return (String) cboRole.getSelectedItem();  // ✅ lấy từ combo box
     }
 
     public boolean getStatus() {

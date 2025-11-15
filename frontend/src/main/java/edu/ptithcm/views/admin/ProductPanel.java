@@ -1,45 +1,120 @@
 package edu.ptithcm.views.admin;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Font;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import edu.ptithcm.models.ProductInfo;
+import java.awt.*;
+import java.util.List;
 
 public class ProductPanel extends JPanel {
+
+    private JTable table;
+    private JButton btnAdd, btnEdit, btnDelete, btnReload;
+    private DefaultTableModel model;
+
     public ProductPanel() {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
+        // Title
         JLabel title = new JLabel("📦 Quản lý sản phẩm", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        add(title, BorderLayout.NORTH);
 
-        JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        controls.add(new JButton("➕ Thêm"));
-        controls.add(new JButton("✏️ Sửa"));
-        controls.add(new JButton("🗑️ Xóa"));
-        controls.add(new JButton("🔄 Làm mới"));
+        // Button bar
+        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        btnAdd = new JButton("➕ Thêm");
+        btnEdit = new JButton("✏️ Sửa");
+        btnDelete = new JButton("🗑️ Xóa");
+        btnReload = new JButton("🔄 Tải lại");
 
-        String[] columns = {"Mã SP", "Tên sản phẩm", "Danh mục", "Giá nhập", "Giá bán", "Hạn sử dụng", "Trạng thái"};
-        Object[][] data = {
-                {"SP001", "Bánh quy Oreo", "Bánh kẹo", "15.000", "25.000", "2025-12-31", "Đang bán"},
-                {"SP002", "Nước suối Lavie", "Đồ uống", "5.000", "10.000", "2026-03-20", "Đang bán"}
+        topBar.add(btnAdd);
+        topBar.add(btnEdit);
+        topBar.add(btnDelete);
+        topBar.add(btnReload);
+        add(topBar, BorderLayout.SOUTH);
+
+        // Table
+        String[] columns = {
+            "Mã SP",
+            "Tên sản phẩm",
+            "Danh mục",
+            "Giá vốn",
+            "Giá bán",
+            "Hạn dùng",
+            "Trạng thái"
+        };
+        model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Read-only table
+            }
         };
 
-        JTable table = new JTable(new DefaultTableModel(data, columns));
+        table = new JTable(model);
         table.setRowHeight(26);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        JScrollPane scroll = new JScrollPane(table);
 
-        add(title, BorderLayout.NORTH);
-        add(controls, BorderLayout.SOUTH);
+        JScrollPane scroll = new JScrollPane(table);
         add(scroll, BorderLayout.CENTER);
+    }
+
+    // ============================================================
+    // Getters for Buttons
+    // ============================================================
+    public JButton getBtnAdd() {
+        return btnAdd;
+    }
+
+    public JButton getBtnEdit() {
+        return btnEdit;
+    }
+
+    public JButton getBtnDelete() {
+        return btnDelete;
+    }
+
+    public JButton getBtnReload() {
+        return btnReload;
+    }
+
+    public JTable getTable() {
+        return table;
+    }
+
+    // ============================================================
+    // Update Table Data
+    // ============================================================
+    public void updateTable(List<ProductInfo> products) {
+        model.setRowCount(0);
+
+        if (products == null || products.isEmpty()) {
+            return;
+        }
+
+        for (ProductInfo product : products) {
+            Object[] row = new Object[]{
+                product.getId(),
+                product.getName(),
+                product.getCategoryName() != null ? product.getCategoryName() : "N/A",
+                formatPrice(product.getCostPrice()),
+                formatPrice(product.getSellPrice()),
+                product.getExpiryDate() != null ? product.getExpiryDate() : "N/A",
+                product.getIsActive() ? "Đang bán" : "Ngừng bán"
+            };
+            model.addRow(row);
+        }
+    }
+
+    // ============================================================
+    // Helper Methods
+    // ============================================================
+    private String formatPrice(Double price) {
+        if (price == null) {
+            return "0";
+        }
+        return String.format("%,.0f đ", price);
     }
 }

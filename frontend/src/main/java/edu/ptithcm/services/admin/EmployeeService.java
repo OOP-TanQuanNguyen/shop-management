@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import edu.ptithcm.app.actions.AdminAction;
+import edu.ptithcm.app.actions.EmployeeAction;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.protocols.DTTP;
@@ -52,7 +52,7 @@ public class EmployeeService {
         logger.info("EMPLOYEE_GET_ALL response: " + args.status);
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> employees = extractEmployeeList(args.data);
-            store.dispatch(AdminAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
         } else {
             setError(args.message);
         }
@@ -64,7 +64,7 @@ public class EmployeeService {
 
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> employees = extractEmployeeList(args.data);
-            store.dispatch(AdminAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
         } else {
             setError(args.message);
         }
@@ -73,11 +73,11 @@ public class EmployeeService {
     private void handleCreateResponse(DTTP.DTTPArgs args) {
         logger.info("EMPLOYEE_CREATE response: " + args.status);
 
-                
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(AdminAction.EMPLOYEE_ADD_SUCCESS.toString(), args.data);
-                setMessage("Thêm nhân viên thành công!");reloadEmployeeList();
+                store.dispatch(EmployeeAction.EMPLOYEE_ADD_SUCCESS.toString(), args.data);
+                setMessage("Thêm nhân viên thành công!");
+                reloadEmployeeList();
             }
             case INVALID ->
                 setError("Thiếu thông tin bắt buộc!");
@@ -91,7 +91,7 @@ public class EmployeeService {
 
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(AdminAction.EMPLOYEE_UPDATE_SUCCESS.toString(), null);
+                store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_SUCCESS.toString(), null);
                 setMessage("Cập nhật nhân viên thành công!");
                 reloadEmployeeList();
             }
@@ -107,7 +107,7 @@ public class EmployeeService {
 
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(AdminAction.EMPLOYEE_DELETE_SUCCESS.toString(), null);
+                store.dispatch(EmployeeAction.EMPLOYEE_DELETE_SUCCESS.toString(), null);
                 setMessage("Xóa nhân viên thành công!");
                 reloadEmployeeList();
             }
@@ -124,7 +124,7 @@ public class EmployeeService {
 
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> employees = extractEmployeeList(args.data);
-            store.dispatch(AdminAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
             setMessage("Lọc dữ liệu thành công!");
         } else {
             setError(args.message);
@@ -137,7 +137,7 @@ public class EmployeeService {
 
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> employees = extractEmployeeList(args.data);
-            store.dispatch(AdminAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
             setMessage("Tìm kiếm thành công!");
         } else {
             setError(args.message);
@@ -159,7 +159,7 @@ public class EmployeeService {
     private void setError(String err) {
         logger.warning("Employee Error: " + err);
         store.getAppState().set("EmployeeError", err);
-        store.dispatch(AdminAction.EMPLOYEE_ERROR.toString(), err);
+        store.dispatch(EmployeeAction.EMPLOYEE_ERROR.toString(), err);
     }
 
     private void reloadEmployeeList() {
