@@ -56,7 +56,7 @@ public class EmployeeRepositoryImpl extends BaseRepository<EmployeeModel> implem
         return execute(session ->
             session.createQuery(
                 "FROM EmployeeModel e ORDER BY e.startAt DESC", EmployeeModel.class
-            ).list()
+            ).setMaxResults(50).list()
         );
     }
 

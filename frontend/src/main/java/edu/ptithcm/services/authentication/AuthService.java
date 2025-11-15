@@ -1,6 +1,8 @@
 package edu.ptithcm.services.authentication;
 
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +54,9 @@ public class AuthService {
         Map<String, Object> data = new HashMap<>();
         data.put("username", username);
         data.put("password", password);
+        LocalTime now = LocalTime.now();
+        String time = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        System.out.println("⏱ Time send login = " + time);
         client.send("LOGIN", data, "REQUEST", "Login request");
 
         // Lưu timestamp vào store để callback đọc lạiz

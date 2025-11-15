@@ -1,6 +1,8 @@
 package edu.ptithcm.services.admin;
 
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +46,10 @@ public class EmployeeService {
     // Response Handlers
     // ============================================================
     private void handleGetAllResponse(DTTP.DTTPArgs args) {
+        LocalTime now = LocalTime.now();
+        String time = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        System.out.println("⏱ Now = " + time);
         logger.info("EMPLOYEE_GET_ALL response: " + args.status);
-
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> employees = extractEmployeeList(args.data);
             store.dispatch(AdminAction.EMPLOYEE_UPDATE_LIST.toString(), employees);

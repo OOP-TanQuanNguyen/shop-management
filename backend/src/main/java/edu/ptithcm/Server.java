@@ -56,7 +56,7 @@ public class Server {
             RouteManager routeManager = new RouteManager(server, MANAGER);
             routeManager.registerRoutes();
 
-            server.setOnDisconect(() -> MANAGER.removeConnection(server));
+            server.setOnDisconnect(() -> MANAGER.removeConnection(server));
             server.listen();
 
             System.out.println("Đã đăng kí sự kiện cho client " + server.getConnection().getAddress());

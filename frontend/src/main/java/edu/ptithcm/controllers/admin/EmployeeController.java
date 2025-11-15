@@ -1,20 +1,23 @@
 package edu.ptithcm.controllers.admin;
 
+import java.awt.Frame;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
+
 import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.services.admin.EmployeeService;
 import edu.ptithcm.views.admin.EmployeePanel;
 import edu.ptithcm.views.admin.dialogs.EmployeeAddDialog;
-import edu.ptithcm.views.admin.dialogs.EmployeeEditDialog;
 import edu.ptithcm.views.admin.dialogs.EmployeeDeleteConfirmDialog;
+import edu.ptithcm.views.admin.dialogs.EmployeeEditDialog;
 import edu.ptithcm.views.components.AppMessageBox;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * Controller điều phối giữa EmployeePanel và EmployeeService. KHÔNG chứa code
@@ -185,6 +188,10 @@ public class EmployeeController {
             @SuppressWarnings("unchecked")
             List<UserModel> employees = (List<UserModel>) list;
             view.updateTable(employees);
+
+            LocalTime now = LocalTime.now();
+            String time = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+            System.out.println("⏱ Update row thành công = " + time);
             logger.info("Employee list updated: " + employees.size() + " items");
         }
     }

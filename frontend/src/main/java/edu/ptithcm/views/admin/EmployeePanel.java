@@ -1,12 +1,20 @@
 package edu.ptithcm.views.admin;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import edu.ptithcm.models.UserModel;
-import java.awt.*;
-import java.util.List;
 
 public class EmployeePanel extends JPanel {
 
