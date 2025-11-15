@@ -34,7 +34,7 @@ public class InvoiceRoute {
             try {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_GET_ALL.getValue())) return;
 
-                ResponseDTO<List<InvoiceInfo>> response = controller.getAll();
+                ResponseDTO<List<InvoiceInfo>> response = controller.getAllInvoices();
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
                         : null;
@@ -53,7 +53,7 @@ public class InvoiceRoute {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CREATE.getValue())) return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
-                ResponseDTO<InvoiceInfo> response = controller.create(request);
+                ResponseDTO<InvoiceInfo> response = controller.createInvoice(request);
 
                 args.reply(TypeDTTP.INVOICE_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
@@ -71,7 +71,7 @@ public class InvoiceRoute {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_UPDATE.getValue())) return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
-                ResponseDTO<InvoiceInfo> response = controller.update(request);
+                ResponseDTO<InvoiceInfo> response = controller.updateInvoice(request);
 
                 args.reply(TypeDTTP.INVOICE_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
@@ -88,10 +88,9 @@ public class InvoiceRoute {
             try {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_DELETE.getValue())) return;
 
-                Map<String, Object> data = (Map<String, Object>) args.data;
-                String invoiceId = (String) data.get("invoiceId");
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<InvoiceInfo> response = controller.deleteInvoice(request);
 
-                ResponseDTO<InvoiceInfo> response = controller.delete(invoiceId);
                 args.reply(TypeDTTP.INVOICE_DELETE.getValue(), null, response.getStatus(), response.getMessage());
 
             } catch (Exception e) {
@@ -102,16 +101,17 @@ public class InvoiceRoute {
         // ---------------- GET BY CUSTOMER ----------------
         server.on(TypeDTTP.INVOICE_GET_BY_CUSTOMER.getValue(), args -> {
             try {
-                Map<String, Object> data = (Map<String, Object>) args.data;
-                String customerId = (String) data.get("customerId");
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getByCustomer(request);
 
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByCustomer(customerId);
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
                         : null;
 
-                Map<String, Object> payload = Map.of("invoices", invoices);
-                args.reply(TypeDTTP.INVOICE_GET_BY_CUSTOMER.getValue(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.INVOICE_GET_BY_CUSTOMER.getValue(),
+                        Map.of("invoices", invoices),
+                        response.getStatus(),
+                        response.getMessage());
 
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_GET_BY_CUSTOMER.getValue(), e);
@@ -121,16 +121,17 @@ public class InvoiceRoute {
         // ---------------- GET BY BRANCH ----------------
         server.on(TypeDTTP.INVOICE_GET_BY_BRANCH.getValue(), args -> {
             try {
-                Map<String, Object> data = (Map<String, Object>) args.data;
-                Integer branchId = ((Number) data.get("branchId")).intValue();
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getByBranch(request);
 
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByBranch(branchId);
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
                         : null;
 
-                Map<String, Object> payload = Map.of("invoices", invoices);
-                args.reply(TypeDTTP.INVOICE_GET_BY_BRANCH.getValue(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.INVOICE_GET_BY_BRANCH.getValue(),
+                        Map.of("invoices", invoices),
+                        response.getStatus(),
+                        response.getMessage());
 
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_GET_BY_BRANCH.getValue(), e);
@@ -140,16 +141,17 @@ public class InvoiceRoute {
         // ---------------- GET BY EMPLOYEE ----------------
         server.on(TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(), args -> {
             try {
-                Map<String, Object> data = (Map<String, Object>) args.data;
-                String employeeId = (String) data.get("employeeId");
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getByEmployee(request);
 
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByEmployee(employeeId);
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
                         : null;
 
-                Map<String, Object> payload = Map.of("invoices", invoices);
-                args.reply(TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(), payload, response.getStatus(), response.getMessage());
+                args.reply(TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(),
+                        Map.of("invoices", invoices),
+                        response.getStatus(),
+                        response.getMessage());
 
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(), e);

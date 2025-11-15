@@ -10,37 +10,45 @@ import edu.ptithcm.utils.handle_exception.SafeExecutor;
 
 public class InvoiceController {
 
-    private static final InvoiceService invoiceService = new InvoiceService();
+    private static final InvoiceService service = new InvoiceService();
 
-    public ResponseDTO<List<InvoiceInfo>> getAll() {
-        return SafeExecutor.run(() -> invoiceService.getAllInvoices());
+    // ---------- CREATE ----------
+    public ResponseDTO<InvoiceInfo> createInvoice(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.createInvoice(req));
     }
 
-    public ResponseDTO<InvoiceInfo> getById(String invoiceId) {
-        return SafeExecutor.run(() -> invoiceService.getById(invoiceId));
+    // ---------- UPDATE ----------
+    public ResponseDTO<InvoiceInfo> updateInvoice(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.updateInvoice(req));
     }
 
-    public ResponseDTO<List<InvoiceInfo>> getByCustomer(String customerId) {
-        return SafeExecutor.run(() -> invoiceService.getByCustomer(customerId));
+    // ---------- DELETE ----------
+    public ResponseDTO<InvoiceInfo> deleteInvoice(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.deleteInvoice(req.getInvoiceId()));
     }
 
-    public ResponseDTO<List<InvoiceInfo>> getByBranch(Integer branchId) {
-        return SafeExecutor.run(() -> invoiceService.getByBranch(branchId));
+    // ---------- GET ALL ----------
+    public ResponseDTO<List<InvoiceInfo>> getAllInvoices() {
+        return SafeExecutor.run(() -> service.getAllInvoices());
     }
 
-    public ResponseDTO<List<InvoiceInfo>> getByEmployee(String employeeId) {
-        return SafeExecutor.run(() -> invoiceService.getByEmployee(employeeId));
+    // ---------- GET BY ID ----------
+    public ResponseDTO<InvoiceInfo> getInvoiceById(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getById(req.getInvoiceId()));
     }
 
-    public ResponseDTO<InvoiceInfo> create(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> invoiceService.createInvoice(req));
+    // ---------- GET BY CUSTOMER ----------
+    public ResponseDTO<List<InvoiceInfo>> getByCustomer(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getByCustomer(req.getCustomerId()));
     }
 
-    public ResponseDTO<InvoiceInfo> update(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> invoiceService.updateInvoice(req));
+    // ---------- GET BY BRANCH ----------
+    public ResponseDTO<List<InvoiceInfo>> getByBranch(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getByBranch(req.getBranchId()));
     }
 
-    public ResponseDTO<InvoiceInfo> delete(String invoiceId) {
-        return SafeExecutor.run(() -> invoiceService.deleteInvoice(invoiceId));
+    // ---------- GET BY EMPLOYEE ----------
+    public ResponseDTO<List<InvoiceInfo>> getByEmployee(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getByEmployee(req.getEmployeeId()));
     }
 }
