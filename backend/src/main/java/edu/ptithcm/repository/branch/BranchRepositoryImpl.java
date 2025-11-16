@@ -25,6 +25,7 @@ public class BranchRepositoryImpl extends BaseRepository<BranchModel> implements
             if (newData.getName() != null) managed.setName(newData.getName());
             if (newData.getAddress() != null) managed.setAddress(newData.getAddress());
             if (newData.getPhone() != null) managed.setPhone(newData.getPhone());
+            if (newData.isActive() != managed.isActive()) managed.setActive(newData.isActive());
 
             return managed; // Hibernate auto-flush khi commit
         });

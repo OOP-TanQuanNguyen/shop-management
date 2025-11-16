@@ -37,6 +37,7 @@ public class BranchService {
                 .name(req.getName())
                 .phone(req.getPhone())
                 .address(req.getAddress())
+                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
                 .build();
 
         branchRepo.save(branch);
@@ -55,6 +56,7 @@ public class BranchService {
                 .name(req.getName())
                 .phone(req.getPhone())
                 .address(req.getAddress())
+                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
                 .build();
 
         BranchModel updated = branchRepo.update(temp);
