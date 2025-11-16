@@ -1,5 +1,6 @@
 package edu.ptithcm.dto.request.inventory;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.util.Map;
 
 public class InventoryRequestDTO {
@@ -9,10 +10,10 @@ public class InventoryRequestDTO {
     private final Integer quantity;
 
     public InventoryRequestDTO(Map<String, Object> data) {
-        this.id = data.get("id") != null ? (Integer) data.get("id") : null;
-        this.branchId = data.get("branchId") != null ? data.get("branchId").toString() : null;
-        this.productId = data.get("productId") != null ? data.get("productId").toString() : null;
-        this.quantity = data.get("quantity") != null ? (Integer) data.get("quantity") : 0;
+        this.id = RequestUtil.toInt(data.get("id"));
+        this.branchId = RequestUtil.toStr(data.get("branchId"));
+        this.productId = RequestUtil.toStr(data.get("productId"));
+        this.quantity = RequestUtil.toInt(data.get("quantity"));
     }
 
     // Getters

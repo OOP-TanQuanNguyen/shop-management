@@ -2,6 +2,7 @@ package edu.ptithcm.dto.request.employee;
 
 import java.util.Map;
 import edu.ptithcm.models.EmployeeModel;
+import edu.ptithcm.utils.RequestUtil;
 
 public class EmployeeRequestDTO {
     private final String employeeId;
@@ -14,11 +15,11 @@ public class EmployeeRequestDTO {
     private final Boolean status;
 
     public EmployeeRequestDTO(Map<String, Object> data) {
-        this.employeeId = (String) data.get("id");
-        this.username = (String) data.get("username");
-        this.password = (String) data.get("password");
-        this.name = (String) data.get("name");
-        this.phone = (String) data.get("phone");
+        this.employeeId = RequestUtil.toStr(data.get("id")) ;
+        this.username = RequestUtil.toStr(data.get("username"));
+        this.password =  RequestUtil.toStr(data.get("password"));
+        this.name =  RequestUtil.toStr(data.get("name"));
+        this.phone =  RequestUtil.toStr(data.get("phone"));
 
         // --- Role handling ---
         Object roleValue = data.get("role");
@@ -31,15 +32,8 @@ public class EmployeeRequestDTO {
         }
 
         // --- Branch ID handling ---
-        Object branchValue = data.get("branchId");
-        if (branchValue instanceof Number num) {
-            this.branchId = num.intValue();
-        } else if (branchValue instanceof String str && !str.isEmpty()) {
-            this.branchId = Integer.parseInt(str);
-        } else {
-            this.branchId = null;
-        }
-
+        this.branchId = RequestUtil.toInt(data.get("branchId"));
+        
         // --- Status handling ---
         Object statusValue = data.get("status");
         if (statusValue instanceof Boolean b) {

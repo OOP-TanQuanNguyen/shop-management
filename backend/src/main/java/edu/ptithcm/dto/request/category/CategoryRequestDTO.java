@@ -1,5 +1,6 @@
 package edu.ptithcm.dto.request.category;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.util.Map;
 
 public class CategoryRequestDTO {
@@ -8,8 +9,8 @@ public class CategoryRequestDTO {
     private final String name;
 
     public CategoryRequestDTO(Map<String, Object> data) {
-        this.categoryId = (String) data.get("categoryId");
-        this.name = (String) data.get("name");
+        this.categoryId = RequestUtil.toStr(data.get("categoryId"));
+        this.name = RequestUtil.toStr(data.get("name"));
     }
 
     // Getters
