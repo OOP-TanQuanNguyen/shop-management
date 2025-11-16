@@ -1,0 +1,89 @@
+package edu.ptithcm.views.admin.branch_dialogs;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class BranchEditDialog extends BranchFormDialog {
+
+    private final Integer branchId;
+
+    public BranchEditDialog(Frame owner, Integer id, String name, String phone,
+            String address, boolean status) {
+        super(owner, "✏️ Cập nhật chi nhánh");
+        this.branchId = id;
+        initComponents(name, phone, address, status);
+
+        pack();
+        setLocationRelativeTo(owner);
+    }
+
+    private void initComponents(String name, String phone, String address, boolean status) {
+        JPanel formPanel = createFormPanel();
+
+        txtName = new JTextField(name != null ? name : "", 20);
+        txtPhone = new JTextField(phone != null ? phone : "", 20);
+        txtAddress = new JTextField(address != null ? address : "", 20);
+        chkStatus = new JCheckBox("Hoạt động", status);
+
+        addField(formPanel, "Tên chi nhánh: *", txtName, 0);
+        addField(formPanel, "Số điện thoại:", txtPhone, 1);
+        addField(formPanel, "Địa chỉ:", txtAddress, 2);
+        addField(formPanel, "Trạng thái:", chkStatus, 3);
+
+        setLayout(new BorderLayout());
+        add(formPanel, BorderLayout.CENTER);
+        add(createButtonPanel(), BorderLayout.SOUTH);
+    }
+
+    @Override
+    protected void onOkClicked() {
+        if (validateInput()) {
+            confirmed = true;
+            setVisible(false);
+        }
+    }
+
+    private boolean validateInput() {
+        if (txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên chi nhánh!",
+                    "Lỗi", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("name", getBranchName());
+        data.put("phone", getPhone());
+        data.put("address", getAddress());
+        data.put("isActive", getStatus());
+
+        return data;
+    }
+
+    public Integer getBranchId() {
+        return branchId;
+    }
+
+    public String getBranchName() {
+        return txtName.getText().trim();
+    }
+
+    public String getPhone() {
+        String val = txtPhone.getText().trim();
+        return val.isEmpty() ? null : val;
+    }
+
+    public String getAddress() {
+        String val = txtAddress.getText().trim();
+        return val.isEmpty() ? null : val;
+    }
+
+    public Boolean getStatus() {
+        return chkStatus.isSelected();
+    }
+}

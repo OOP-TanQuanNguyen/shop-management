@@ -2,8 +2,6 @@ package edu.ptithcm.controllers.admin;
 
 import java.awt.Frame;
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -19,10 +17,6 @@ import edu.ptithcm.views.admin.employee_dialogs.EmployeeDeleteConfirmDialog;
 import edu.ptithcm.views.admin.employee_dialogs.EmployeeEditDialog;
 import edu.ptithcm.views.components.AppMessageBox;
 
-/**
- * Controller điều phối giữa EmployeePanel và EmployeeService. KHÔNG chứa code
- * Swing - tất cả UI logic ở View layer.
- */
 public class EmployeeController {
 
     private static final Logger logger = Logger.getLogger(EmployeeController.class.getName());
@@ -30,6 +24,8 @@ public class EmployeeController {
     private final EmployeePanel view;
     private final EmployeeService service;
     private final Store store = Store.getInstance();
+
+    private boolean isShowingMessage = false;
 
     public EmployeeController(EmployeePanel view, EmployeeService service) {
         this.view = view;
@@ -40,9 +36,6 @@ public class EmployeeController {
         loadEmployees();
     }
 
-    // ============================================================
-    // Event Registration
-    // ============================================================
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
@@ -50,178 +43,127 @@ public class EmployeeController {
         view.getBtnReload().addActionListener(e -> loadEmployees());
     }
 
-    // ============================================================
-    // Data Loading
-    // ============================================================
     private void loadEmployees() {
         try {
             service.getAllEmployees();
         } catch (IOException e) {
-            logger.severe("Failed to load employees: " + e.getMessage());
-            AppMessageBox.showError("Không thể tải danh sách nhân viên: " + e.getMessage());
+            AppMessageBox.showError("Không thể tải danh sách: " + e.getMessage());
         }
     }
 
-    // ============================================================
-    // Event Handlers
-    // ============================================================
+    // ─────────────────────────────────────────────
+    // CRUD
+    // ─────────────────────────────────────────────
     private void handleAdd() {
-        // Mở dialog thêm nhân viên
-        EmployeeAddDialog dialog = new EmployeeAddDialog(getParentFrame());
-        dialog.showDialog();
+        EmployeeAddDialog dl = new EmployeeAddDialog(getParentFrame());
+        dl.showDialog();
 
-        // Nếu user confirm, gọi service
-        if (dialog.isConfirmed()) {
-            createEmployee(
-                    dialog.getUsername(),
-                    dialog.getPassword(),
-                    dialog.getEmployeeName(),
-                    dialog.getPhone(),
-                    dialog.getRole()
-            );
+        if (dl.isConfirmed()) {
+            try {
+                service.createEmployee(
+                        dl.getUsername(),
+                        dl.getPassword(),
+                        dl.getEmployeeName(),
+                        dl.getPhone(),
+                        dl.getRole()
+                );
+            } catch (IOException e) {
+                AppMessageBox.showError("Lỗi: " + e.getMessage());
+            }
         }
     }
 
     private void handleEdit() {
-        // Lấy dòng được chọn
         int row = view.getTable().getSelectedRow();
-
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên để sửa!");
+            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
             return;
         }
 
-        // Lấy dữ liệu từ table
-        String id = String.valueOf(view.getTable().getValueAt(row, 0));
-        String name = String.valueOf(view.getTable().getValueAt(row, 1));
-        String role = String.valueOf(view.getTable().getValueAt(row, 3));
-        String phone = String.valueOf(view.getTable().getValueAt(row, 4));
-        String statusText = String.valueOf(view.getTable().getValueAt(row, 6));
-        boolean status = "Đang làm việc".equals(statusText);
+        String id = view.getTable().getValueAt(row, 0).toString();
+        String name = view.getTable().getValueAt(row, 1).toString();
+        String role = view.getTable().getValueAt(row, 3).toString();
+        String phone = view.getTable().getValueAt(row, 4).toString();
+        boolean status = "Đang làm việc".equals(view.getTable().getValueAt(row, 6));
 
-        // Mở dialog sửa
-        EmployeeEditDialog dialog = new EmployeeEditDialog(getParentFrame(), id, name, phone, role, status);
-        dialog.showDialog();
+        EmployeeEditDialog dl = new EmployeeEditDialog(getParentFrame(), id, name, phone, role, status);
+        dl.showDialog();
 
-        // Nếu user confirm, gọi service
-        if (dialog.isConfirmed()) {
-            updateEmployee(
-                    dialog.getEmployeeId(),
-                    dialog.getEmployeeName(),
-                    dialog.getPhone(),
-                    dialog.getRole(),
-                    dialog.getStatus()
-            );
+        if (dl.isConfirmed()) {
+            try {
+                service.updateEmployee(id, dl.getEmployeeName(), dl.getPhone(), dl.getRole(), dl.getStatus());
+            } catch (IOException e) {
+                AppMessageBox.showError("Lỗi cập nhật: " + e.getMessage());
+            }
         }
     }
 
     private void handleDelete() {
-        // Lấy dòng được chọn
         int row = view.getTable().getSelectedRow();
-
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên để xóa!");
+            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
             return;
         }
 
-        // Lấy thông tin nhân viên
-        String id = String.valueOf(view.getTable().getValueAt(row, 0));
-        String name = String.valueOf(view.getTable().getValueAt(row, 1));
+        String id = view.getTable().getValueAt(row, 0).toString();
+        String name = view.getTable().getValueAt(row, 1).toString();
 
-        // Mở dialog xác nhận
-        EmployeeDeleteConfirmDialog dialog = new EmployeeDeleteConfirmDialog(getParentFrame(), name);
-        dialog.showDialog();
+        EmployeeDeleteConfirmDialog dl = new EmployeeDeleteConfirmDialog(getParentFrame(), name);
+        dl.showDialog();
 
-        // Nếu user confirm, gọi service
-        if (dialog.isConfirmed()) {
-            deleteEmployee(id);
+        if (dl.isConfirmed()) {
+            try {
+                service.deleteEmployee(id);
+            } catch (IOException e) {
+                AppMessageBox.showError("Lỗi xóa: " + e.getMessage());
+            }
         }
     }
 
-    // ============================================================
-    // Business Logic
-    // ============================================================
-    private void createEmployee(String username, String password, String name, String phone, String role) {
-        try {
-            service.createEmployee(username, password, name, phone, role);
-            logger.info("Create employee request sent for: " + username);
-        } catch (IOException e) {
-            logger.severe("Failed to create employee: " + e.getMessage());
-            AppMessageBox.showError("Lỗi khi thêm nhân viên: " + e.getMessage());
-        }
-    }
-
-    private void updateEmployee(String id, String name, String phone, String role, Boolean status) {
-        try {
-            service.updateEmployee(id, name, phone, role, status);
-            logger.info("Update employee request sent for ID: " + id);
-        } catch (IOException e) {
-            logger.severe("Failed to update employee: " + e.getMessage());
-            AppMessageBox.showError("Lỗi khi cập nhật: " + e.getMessage());
-        }
-    }
-
-    private void deleteEmployee(String id) {
-        try {
-            service.deleteEmployee(id);
-            logger.info("Delete employee request sent for ID: " + id);
-        } catch (IOException e) {
-            logger.severe("Failed to delete employee: " + e.getMessage());
-            AppMessageBox.showError("Lỗi khi xóa nhân viên: " + e.getMessage());
-        }
-    }
-
-    // ============================================================
-    // State Change Handler
-    // ============================================================
+    // ─────────────────────────────────────────────
+    // STATE CHANGE
+    // ─────────────────────────────────────────────
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateEmployeeList(state);
             showMessages(state);
-            clearMessages(state);
         });
     }
 
     private void updateEmployeeList(AppState state) {
-        Object empListObj = state.get("Employees");
-        if (empListObj instanceof List<?> list) {
-            @SuppressWarnings("unchecked")
-            List<UserModel> employees = (List<UserModel>) list;
-            view.updateTable(employees);
-
-            LocalTime now = LocalTime.now();
-            String time = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-            System.out.println("⏱ Update row thành công = " + time);
-            logger.info("Employee list updated: " + employees.size() + " items");
+        Object listObj = state.get("Employees");
+        if (listObj instanceof List<?> list) {
+            view.updateTable((List<UserModel>) list);
         }
     }
 
     private void showMessages(AppState state) {
-        // Show success/info message
-        Object msg = state.get("EmployeeMessage");
-        if (msg instanceof String message && !message.isEmpty()) {
-            if (message.contains("thành công")) {
-                AppMessageBox.showSuccess(message);
-            } else {
-                AppMessageBox.showInfo(message);
-            }
+        if (isShowingMessage) {
+            return;
         }
 
-        // Show error message
-        Object err = state.get("EmployeeError");
-        if (err instanceof String error && !error.isEmpty()) {
-            AppMessageBox.showError(error);
+        String msg = (String) state.get("EmployeeMessage");
+        if (msg != null && !msg.isEmpty()) {
+            isShowingMessage = true;
+
+            state.set("EmployeeMessage", "");
+            AppMessageBox.showSuccess(msg);
+
+            isShowingMessage = false;
+            return;
+        }
+
+        String err = (String) state.get("EmployeeError");
+        if (err != null && !err.isEmpty()) {
+            isShowingMessage = true;
+
+            state.set("EmployeeError", "");
+            AppMessageBox.showError(err);
+
+            isShowingMessage = false;
         }
     }
 
-    private void clearMessages(AppState state) {
-        state.set("EmployeeMessage", "");
-        state.set("EmployeeError", "");
-    }
-
-    // ============================================================
-    // Helper
-    // ============================================================
     private Frame getParentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(view);
     }
