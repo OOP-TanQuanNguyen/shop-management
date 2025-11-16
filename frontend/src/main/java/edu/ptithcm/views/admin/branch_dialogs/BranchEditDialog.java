@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class BranchEditDialog extends BranchFormDialog {
 
-    private final Integer branchId;
+    private final String branchId;
 
-    public BranchEditDialog(Frame owner, Integer id, String name, String phone,
+    public BranchEditDialog(Frame owner, String id, String name, String phone,
             String address, boolean status) {
         super(owner, "✏️ Cập nhật chi nhánh");
         this.branchId = id;
@@ -65,7 +65,7 @@ public class BranchEditDialog extends BranchFormDialog {
         return data;
     }
 
-    public Integer getBranchId() {
+    public String getBranchId() {
         return branchId;
     }
 

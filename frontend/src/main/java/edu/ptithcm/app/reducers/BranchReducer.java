@@ -14,10 +14,9 @@ public class BranchReducer {
     public static void register(Store store) {
         store.registerReducer(BranchAction.BRANCH_UPDATE_LIST.toString(), payload -> {
             if (payload instanceof List<?>) {
-                // payload is expected List<Map<String,Object>> from BE
                 List<Map<String, Object>> raw = (List<Map<String, Object>>) payload;
                 List<BranchInfo> list = raw.stream()
-                        .map(BranchInfo::new) // BranchInfo has constructor from Map
+                        .map(BranchInfo::new)
                         .collect(Collectors.toList());
                 store.getAppState().set("Branches", list);
             }

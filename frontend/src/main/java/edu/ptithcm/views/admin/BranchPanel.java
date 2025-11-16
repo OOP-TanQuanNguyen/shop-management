@@ -17,12 +17,10 @@ public class BranchPanel extends JPanel {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        // Title
         JLabel title = new JLabel("🏬 Quản lý chi nhánh", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         add(title, BorderLayout.NORTH);
 
-        // Button bar
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         btnAdd = new JButton("➕ Thêm");
         btnEdit = new JButton("✏️ Sửa");
@@ -35,15 +33,7 @@ public class BranchPanel extends JPanel {
         topBar.add(btnReload);
         add(topBar, BorderLayout.SOUTH);
 
-        // Table
-        String[] columns = {
-            "ID",
-            "Tên chi nhánh",
-            "Số điện thoại",
-            "Địa chỉ",
-            "Ngày mở cửa",
-            "Trạng thái"
-        };
+        String[] columns = {"ID", "Tên chi nhánh", "Số điện thoại", "Địa chỉ", "Ngày mở cửa", "Trạng thái"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -60,7 +50,6 @@ public class BranchPanel extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    // Getters
     public JButton getBtnAdd() {
         return btnAdd;
     }
@@ -81,7 +70,6 @@ public class BranchPanel extends JPanel {
         return table;
     }
 
-    // Update Table
     public void updateTable(List<BranchInfo> branches) {
         model.setRowCount(0);
 

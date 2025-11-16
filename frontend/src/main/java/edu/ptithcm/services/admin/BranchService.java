@@ -38,10 +38,12 @@ public class BranchService {
 
     @SuppressWarnings("unchecked")
     private void handleGetAllResponse(DTTP.DTTPArgs args) {
-        logger.info(String.format("BRANCH_GET_ALL response: %s", args.status));
+        logger.info("BRANCH_GET_ALL response: " + args.status);
 
         if (SUCCESS.equals(args.status)) {
-            List<Map<String, Object>> branches = extractBranchList(args.data);
+            List<Map<String, Object>> branches
+                    = (List<Map<String, Object>>) args.data.get(BRANCHES_KEY);
+
             store.dispatch(BranchAction.BRANCH_UPDATE_LIST.toString(), branches);
         } else {
             setError(args.message);
@@ -49,56 +51,48 @@ public class BranchService {
     }
 
     private void handleCreateResponse(DTTP.DTTPArgs args) {
-        logger.info(String.format("BRANCH_CREATE response: %s", args.status));
+        logger.info("BRANCH_CREATE response: " + args.status);
 
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(BranchAction.BRANCH_ADD_SUCCESS.toString(), args.data);
                 setMessage("Thêm chi nhánh thành công!");
                 reloadBranchList();
             }
             case INVALID ->
                 setError("Thiếu thông tin bắt buộc!");
             case ERROR ->
-                setError(String.format("Lỗi: %s", args.message));
+                setError("Lỗi: " + args.message);
         }
     }
 
     private void handleUpdateResponse(DTTP.DTTPArgs args) {
-        logger.info(String.format("BRANCH_UPDATE response: %s", args.status));
+        logger.info("BRANCH_UPDATE response: " + args.status);
 
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(BranchAction.BRANCH_UPDATE_SUCCESS.toString(), null);
                 setMessage("Cập nhật chi nhánh thành công!");
                 reloadBranchList();
             }
             case INVALID ->
                 setError("Thiếu ID hoặc dữ liệu không hợp lệ!");
             case ERROR ->
-                setError(String.format("Lỗi: %s", args.message));
+                setError("Lỗi: " + args.message);
         }
     }
 
     private void handleDeleteResponse(DTTP.DTTPArgs args) {
-        logger.info(String.format("BRANCH_DELETE response: %s", args.status));
+        logger.info("BRANCH_DELETE response: " + args.status);
 
         switch (args.status) {
             case SUCCESS -> {
-                store.dispatch(BranchAction.BRANCH_DELETE_SUCCESS.toString(), null);
                 setMessage("Xóa chi nhánh thành công!");
                 reloadBranchList();
             }
             case INVALID ->
                 setError(args.message);
             case ERROR ->
-                setError(String.format("Lỗi: %s", args.message));
+                setError("Lỗi: " + args.message);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> extractBranchList(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get(BRANCHES_KEY);
     }
 
     private void setMessage(String msg) {
@@ -106,26 +100,22 @@ public class BranchService {
     }
 
     private void setError(String err) {
-        logger.warning(String.format("Branch Error: %s", err));
+        logger.warning("Branch Error: " + err);
         store.getAppState().set("BranchError", err);
         store.dispatch(BranchAction.BRANCH_ERROR.toString(), err);
     }
 
     private void reloadBranchList() {
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
+        new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 try {
                     getAllBranches();
                 } catch (IOException e) {
-                    logger.severe(String.format("Lỗi khi reload danh sách: %s", e.getMessage()));
                     setError("Không thể tải lại danh sách: " + e.getMessage());
                 }
             }
-        },
-                RELOAD_DELAY_MS
-        );
+        }, RELOAD_DELAY_MS);
     }
 
     private void checkConnection() throws IOException {
@@ -141,19 +131,19 @@ public class BranchService {
     }
 
     public void createBranch(Map<String, Object> branchData) throws IOException {
-        logger.info(String.format("Sending BRANCH_CREATE request for: %s", branchData.get("name")));
+        logger.info("Sending BRANCH_CREATE request: " + branchData);
         checkConnection();
-        client.send("BRANCH_CREATE", branchData, REQUEST, "Tạo chi nhánh mới");
+        client.send("BRANCH_CREATE", branchData, REQUEST, "Tạo chi nhánh");
     }
 
     public void updateBranch(Map<String, Object> branchData) throws IOException {
-        logger.info(String.format("Sending BRANCH_UPDATE request for ID: %s", branchData.get("branchId")));
+        logger.info("Sending BRANCH_UPDATE request: " + branchData);
         checkConnection();
         client.send("BRANCH_UPDATE", branchData, REQUEST, "Cập nhật chi nhánh");
     }
 
-    public void deleteBranch(Integer id) throws IOException {
-        logger.info(String.format("Sending BRANCH_DELETE request for ID: %s", id));
+    public void deleteBranch(String id) throws IOException {
+        logger.info("Sending BRANCH_DELETE request id: " + id);
         checkConnection();
 
         Map<String, Object> data = new HashMap<>();

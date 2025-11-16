@@ -12,6 +12,7 @@ import edu.ptithcm.views.admin.branch_dialogs.BranchEditDialog;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -33,6 +34,8 @@ public class BranchController {
         registerEvents();
         store.subcribe(this::onStateChanged);
         loadBranches();
+
+        logger.info("BranchController initialized");
     }
 
     private void registerEvents() {
@@ -101,8 +104,14 @@ public class BranchController {
                 dialog.setVisible(true);
 
                 if (dialog.isConfirmed()) {
-                    Map<String, Object> data = dialog.toMap();
+                    Map<String, Object> data = new HashMap<>();
+
                     data.put("branchId", branch.getId());
+                    data.put("name", dialog.getBranchName());
+                    data.put("phone", dialog.getPhone());
+                    data.put("address", dialog.getAddress());
+                    data.put("isActive", dialog.getStatus());
+
                     logger.info("Branch data to update: " + data);
                     updateBranch(data);
                 }
@@ -134,7 +143,7 @@ public class BranchController {
         SwingUtilities.invokeLater(() -> {
             try {
                 BranchInfo branch = currentBranches.get(row);
-                Integer id = branch.getId();
+                String id = branch.getId();
                 String name = branch.getName();
 
                 logger.info(String.format("Attempting to delete branch: ID=%s, Name=%s", id, name));
@@ -172,7 +181,7 @@ public class BranchController {
     private void updateBranch(Map<String, Object> branchData) {
         try {
             service.updateBranch(branchData);
-            Integer id = branchData.containsKey("branchId") ? (Integer) branchData.get("branchId") : null;
+            String id = branchData.containsKey("branchId") ? String.valueOf(branchData.get("branchId")) : "Unknown";
             logger.info(String.format("Update branch request sent for ID: %s", id));
         } catch (IOException e) {
             logger.severe(String.format("Failed to send update request: %s", e.getMessage()));
@@ -183,7 +192,7 @@ public class BranchController {
         }
     }
 
-    private void deleteBranch(Integer id) {
+    private void deleteBranch(String id) {
         try {
             service.deleteBranch(id);
             logger.info(String.format("Delete branch request sent for ID: %s", id));

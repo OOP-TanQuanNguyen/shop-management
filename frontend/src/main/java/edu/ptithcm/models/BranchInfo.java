@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class BranchInfo {
 
-    private Integer id;
+    private String id;
     private String name;
     private String phone;
     private String address;
@@ -15,7 +15,20 @@ public class BranchInfo {
     }
 
     public BranchInfo(Map<String, Object> data) {
-        this.id = data.get("id") != null ? ((Number) data.get("id")).intValue() : null;
+        Object idObj = data.get("id");
+        if (idObj == null) {
+            idObj = data.get("branchId");
+        }
+
+        if (idObj != null) {
+            // ✅ FIX: Convert Double/Number → String integer (bỏ .0)
+            if (idObj instanceof Number) {
+                this.id = String.valueOf(((Number) idObj).intValue());
+            } else {
+                this.id = String.valueOf(idObj);
+            }
+        }
+
         this.name = (String) data.get("name");
         this.phone = (String) data.get("phone");
         this.address = (String) data.get("address");
@@ -25,12 +38,11 @@ public class BranchInfo {
         this.isActive = activeObj != null ? (Boolean) activeObj : true;
     }
 
-    // Getters & Setters
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -80,12 +92,7 @@ public class BranchInfo {
 
     @Override
     public String toString() {
-        return "BranchInfo{"
-                + "id=" + id
-                + ", name='" + name + '\''
-                + ", phone='" + phone + '\''
-                + ", address='" + address + '\''
-                + ", isActive=" + isActive
-                + '}';
+        return "BranchInfo{id='" + id + "', name='" + name + "', phone='" + phone
+                + "', address='" + address + "', isActive=" + isActive + '}';
     }
 }
