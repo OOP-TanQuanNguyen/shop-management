@@ -1,5 +1,6 @@
 package edu.ptithcm.dto.request.customer;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.util.Map;
 
 public class CustomerRequestDTO {
@@ -9,9 +10,9 @@ public class CustomerRequestDTO {
     private final String phone;
 
     public CustomerRequestDTO(Map<String, Object> data) {
-        this.customerId = (String) data.get("customerId");
-        this.name = (String) data.get("name");
-        this.phone = (String) data.get("phone");
+        this.customerId = RequestUtil.toStr(data.get("customerId"));
+        this.name = RequestUtil.toStr(data.get("name"));
+        this.phone = RequestUtil.toStr(data.get("phone"));
     }
 
     public String getCustomerId() { return customerId; }

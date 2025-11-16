@@ -1,5 +1,6 @@
 package edu.ptithcm.dto.request.branch;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.util.Map;
 
 public class BranchRequestDTO {
@@ -10,10 +11,10 @@ public class BranchRequestDTO {
     private final String address;
 
     public BranchRequestDTO(Map<String, Object> data) {
-        this.branchId = data.get("branchId") != null ? (Integer) data.get("branchId") : null;
-        this.name = (String) data.get("name");
-        this.phone = (String) data.get("phone");
-        this.address = (String) data.get("address");
+        this.branchId = RequestUtil.toInt(data.get("branchId"));
+        this.name = RequestUtil.toStr(data.get("name"));
+        this.phone = RequestUtil.toStr(data.get("phone"));
+        this.address = RequestUtil.toStr(data.get("address"));
     }
 
     // Getters

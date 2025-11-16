@@ -1,8 +1,8 @@
 package edu.ptithcm.dto.request.product;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.sql.Date;
 import java.util.Map;
-
 
 public class ProductRequestDTO {
     private final String productId;
@@ -14,13 +14,13 @@ public class ProductRequestDTO {
     private final Boolean isActive;
 
     public ProductRequestDTO(Map<String, Object> data) {
-        this.productId = (String) data.get("productId");
-        this.name = (String) data.get("name");
-        this.categoryId = (String) data.get("categoryId");
-        this.costPrice = data.get("costPrice") != null ? (Double)data.get("costPrice") : 0;
-        this.sellPrice = data.get("sellPrice") != null ? (Double)data.get("sellPrice") : 0;
-        this.expiryDate = (Date)data.get("expiryDate");
-        this.isActive = data.get("isActive") != null ? (Boolean) data.get("isActive") : true;
+        this.productId = RequestUtil.toStr(data.get("productId"));
+        this.name = RequestUtil.toStr(data.get("name"));
+        this.categoryId = RequestUtil.toStr(data.get("categoryId"));
+        this.costPrice = RequestUtil.toDouble(data.get("costPrice"));
+        this.sellPrice = RequestUtil.toDouble(data.get("sellPrice"));
+        this.expiryDate = RequestUtil.toDate(data.get("expiryDate"));
+        this.isActive = RequestUtil.toBool(data.get("isActive"), true);
     }
 
     // Getters

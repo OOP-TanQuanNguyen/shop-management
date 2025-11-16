@@ -1,5 +1,6 @@
 package edu.ptithcm.dto.request.invoice;
 
+import edu.ptithcm.utils.RequestUtil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,19 +39,19 @@ public class InvoiceRequestDTO {
     // Constructor Map -> DTO
     public InvoiceRequestDTO(Map<String, Object> data) {
         if (data == null) return;
-        this.invoiceId = (String) data.get("invoiceId");
-        this.employeeId = (String) data.get("employeeId");
-        this.branchId = data.get("branchId") != null ? (Integer) data.get("branchId") : null;
-        this.customerId = (String) data.get("customerId");
-        this.note = (String) data.get("note");
-        this.discount = data.get("discount") != null ? new BigDecimal(data.get("discount").toString()) : null;
+        this.invoiceId = RequestUtil.toStr(data.get("invoiceId"));
+        this.employeeId = RequestUtil.toStr(data.get("employeeId"));
+        this.branchId = RequestUtil.toInt(data.get("branchId"));
+        this.customerId = RequestUtil.toStr(data.get("customerId"));
+        this.note = RequestUtil.toStr(data.get("note"));
+        this.discount = RequestUtil.toBigDecimal(data.get("discount"));
 
         Object detailsObj = data.get("details");
         if (detailsObj instanceof List<?>) {
             this.details = new ArrayList<>();
             for (Object o : (List<?>) detailsObj) {
                 if (o instanceof Map<?, ?> m) {
-                    String productId = (String) m.get("productId");
+                    String productId = RequestUtil.toStr(m.get("productId"));
                     int quantity = m.get("quantity") != null ? ((Number) m.get("quantity")).intValue() : 0;
                     this.details.add(new InvoiceDetailRequest(productId, quantity));
                 }
