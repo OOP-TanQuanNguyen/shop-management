@@ -1,45 +1,104 @@
 package edu.ptithcm.views.admin;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.Font;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import edu.ptithcm.models.BranchInfo;
+import java.awt.*;
+import java.util.List;
 
 public class BranchPanel extends JPanel {
+
+    private JTable table;
+    private JButton btnAdd, btnEdit, btnDelete, btnReload;
+    private DefaultTableModel model;
+
     public BranchPanel() {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
+        // Title
         JLabel title = new JLabel("🏬 Quản lý chi nhánh", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        add(title, BorderLayout.NORTH);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        actions.add(new JButton("➕ Thêm"));
-        actions.add(new JButton("✏️ Sửa"));
-        actions.add(new JButton("🗑️ Xóa"));
-        actions.add(new JButton("🔄 Làm mới"));
+        // Button bar
+        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        btnAdd = new JButton("➕ Thêm");
+        btnEdit = new JButton("✏️ Sửa");
+        btnDelete = new JButton("🗑️ Xóa");
+        btnReload = new JButton("🔄 Tải lại");
 
-        String[] columns = {"Mã CN", "Tên chi nhánh", "SĐT", "Địa chỉ", "Ngày mở", "Tình trạng"};
-        Object[][] data = {
-                {"CN001", "Chi nhánh Q1", "0933222111", "12 Nguyễn Huệ, Q1", "2022-01-01", "Hoạt động"},
-                {"CN002", "Chi nhánh Q7", "0988332211", "45 Nguyễn Văn Linh, Q7", "2023-02-15", "Bảo trì"}
+        topBar.add(btnAdd);
+        topBar.add(btnEdit);
+        topBar.add(btnDelete);
+        topBar.add(btnReload);
+        add(topBar, BorderLayout.SOUTH);
+
+        // Table
+        String[] columns = {
+            "ID",
+            "Tên chi nhánh",
+            "Số điện thoại",
+            "Địa chỉ",
+            "Ngày mở cửa",
+            "Trạng thái"
+        };
+        model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
 
-        JTable table = new JTable(new DefaultTableModel(data, columns));
+        table = new JTable(model);
         table.setRowHeight(26);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        JScrollPane scroll = new JScrollPane(table);
 
-        add(title, BorderLayout.NORTH);
-        add(actions, BorderLayout.SOUTH);
+        JScrollPane scroll = new JScrollPane(table);
         add(scroll, BorderLayout.CENTER);
+    }
+
+    // Getters
+    public JButton getBtnAdd() {
+        return btnAdd;
+    }
+
+    public JButton getBtnEdit() {
+        return btnEdit;
+    }
+
+    public JButton getBtnDelete() {
+        return btnDelete;
+    }
+
+    public JButton getBtnReload() {
+        return btnReload;
+    }
+
+    public JTable getTable() {
+        return table;
+    }
+
+    // Update Table
+    public void updateTable(List<BranchInfo> branches) {
+        model.setRowCount(0);
+
+        if (branches == null || branches.isEmpty()) {
+            return;
+        }
+
+        for (BranchInfo branch : branches) {
+            Object[] row = new Object[]{
+                branch.getId(),
+                branch.getName(),
+                branch.getPhone() != null ? branch.getPhone() : "N/A",
+                branch.getAddress() != null ? branch.getAddress() : "N/A",
+                branch.getOpenDate() != null ? branch.getOpenDate() : "N/A",
+                branch.getStatusText()
+            };
+            model.addRow(row);
+        }
     }
 }

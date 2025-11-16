@@ -119,4 +119,5 @@ LIMIT 1 OFFSET 1;
 INSERT INTO loyalty (loyalty_id, last_update, total_points, customer_id)
 SELECT UUID(), NOW(), FLOOR(RAND()*100), customer_id FROM customer;
 
+
 COMMIT;

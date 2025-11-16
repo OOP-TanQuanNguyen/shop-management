@@ -8,6 +8,8 @@ import edu.ptithcm.services.admin.ProductService;
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.admin.EmployeePanel;
 import edu.ptithcm.views.admin.ProductPanel;
+import edu.ptithcm.views.admin.BranchPanel;
+import edu.ptithcm.services.admin.BranchService;
 
 import javax.swing.*;
 import java.util.logging.Logger;
@@ -26,7 +28,13 @@ public class AdminController {
 
         registerEvent();
         initEmployeeModule();
+<<<<<<< Updated upstream
         initProductModule();
+=======
+        initProductModule(); // The method being called
+        initBranchModule(); // ✅ THÊM DÒNG NÀY
+
+>>>>>>> Stashed changes
         store.subcribe(this::handleState);
 
         logger.info("AdminController initialized successfully");
@@ -103,6 +111,7 @@ public class AdminController {
         }
     }
 
+<<<<<<< Updated upstream
     private void showInitError(String moduleName, Exception e) {
         SwingUtilities.invokeLater(()
                 -> JOptionPane.showMessageDialog(
@@ -112,6 +121,16 @@ public class AdminController {
                         JOptionPane.ERROR_MESSAGE
                 )
         );
+=======
+    private void initBranchModule() {
+        try {
+            BranchPanel branchPanel = view.getBranchPanel();
+            BranchService branchService = new BranchService(client);
+            new BranchController(branchPanel, branchService);
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to init EmployeeController: " + e.getMessage());
+        }
+>>>>>>> Stashed changes
     }
 
     private void handleState(AppState state) {

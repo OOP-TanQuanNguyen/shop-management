@@ -29,8 +29,9 @@ public class BranchService {
 
     // Tạo chi nhánh
     public ResponseDTO<BranchInfo> createBranch(BranchRequestDTO req) throws RuntimeException {
-        if (!req.validForCreate())
+        if (!req.validForCreate()) {
             return new InvalidResponse<>("Thiếu tên chi nhánh");
+        }
 
         BranchModel branch = new BranchModel.Builder()
                 .name(req.getName())
@@ -45,8 +46,9 @@ public class BranchService {
 
     // Cập nhật chi nhánh
     public ResponseDTO<BranchInfo> updateBranch(BranchRequestDTO req) throws RuntimeException {
-        if (!req.validForUpdate())
+        if (!req.validForUpdate()) {
             return new InvalidResponse<>("Thiếu ID hoặc tên chi nhánh");
+        }
 
         BranchModel temp = new BranchModel.Builder()
                 .id(req.getBranchId())
@@ -57,21 +59,24 @@ public class BranchService {
 
         BranchModel updated = branchRepo.update(temp);
 
-        if (updated == null)
+        if (updated == null) {
             return new NotFoundResponse<>("Không tìm thấy chi nhánh để cập nhật");
+        }
 
         return new SuccessResponse<>("Cập nhật chi nhánh thành công", mapper.toDTO(updated));
     }
 
     // Xóa chi nhánh
     public ResponseDTO<BranchInfo> deleteBranch(BranchRequestDTO req) throws RuntimeException {
-        if (req.getBranchId() == null || req.getBranchId() <= 0)
+        if (req.getBranchId() == null || req.getBranchId() <= 0) {
             return new InvalidResponse<>("Thiếu ID chi nhánh");
+        }
 
         BranchModel deleted = branchRepo.delete(req.getBranchId());
 
-        if (deleted == null)
+        if (deleted == null) {
             return new NotFoundResponse<>("Không tồn tại chi nhánh");
+        }
 
         return new SuccessResponse<>("Xóa chi nhánh thành công", mapper.toDTO(deleted));
     }
@@ -80,8 +85,9 @@ public class BranchService {
     public ResponseDTO<BranchInfo> getBranchById(BranchRequestDTO req) throws RuntimeException {
         BranchModel branch = branchRepo.findById(req.getBranchId());
 
-        if (branch == null)
+        if (branch == null) {
             return new NotFoundResponse<>("Không tìm thấy chi nhánh");
+        }
 
         return new SuccessResponse<>("Lấy chi nhánh thành công", mapper.toDTO(branch));
     }
