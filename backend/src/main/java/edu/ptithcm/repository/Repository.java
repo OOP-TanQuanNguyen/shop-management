@@ -8,6 +8,7 @@ import edu.ptithcm.repository.category.CategoryRepositoryImpl;
 import edu.ptithcm.repository.customer.*;
 import edu.ptithcm.repository.invoice.*;
 import edu.ptithcm.repository.inventory.*;
+import edu.ptithcm.repository.loyalty.*;
 
 public class Repository {
     private static final ProductRepository PRODUCT_REPO = new ProductRepositoryImpl();
@@ -17,6 +18,7 @@ public class Repository {
     private static final InvoiceRepository INVOICE_REPO = new InvoiceRepositoryImpl();
     private static final InventoryRepository INVENTORY_REPO = new InventoryRepositoryImpl();
     private static final CategoryRepository CATEGORY_REPO = new CategoryRepositoryImpl();
+    private static final LoyaltyRepository LOYALTY_REPO = new LoyaltyRepositoryImpl();
 
     public static ProductRepository product() { return PRODUCT_REPO; }
     public static EmployeeRepository employee() { return EMPLOYEE_REPO; }
@@ -25,4 +27,5 @@ public class Repository {
     public static InvoiceRepository invoice() { return INVOICE_REPO; }
     public static InventoryRepository inventory() { return INVENTORY_REPO; }
     public static CategoryRepository category() { return CATEGORY_REPO; }
+    public static LoyaltyRepository loyalty() { return LOYALTY_REPO; }
 }

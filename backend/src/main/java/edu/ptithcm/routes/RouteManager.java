@@ -9,6 +9,7 @@ import edu.ptithcm.routes.category.CategoryRoute;
 import edu.ptithcm.routes.inventory.InventoryRoute;
 import edu.ptithcm.routes.branch.BranchRoute;
 import edu.ptithcm.routes.customer.CustomerRoute;
+import edu.ptithcm.routes.loyalty.LoyaltyRoute;
 
 public class RouteManager {
 
@@ -29,5 +30,6 @@ public class RouteManager {
         new InventoryRoute(server, manager).register();
         new BranchRoute(server, manager).register();
         new CustomerRoute(server, manager).register();
+        new LoyaltyRoute(server, manager).register();
     }
 }

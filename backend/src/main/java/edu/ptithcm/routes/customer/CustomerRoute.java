@@ -43,8 +43,9 @@ public class CustomerRoute {
             try {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, "CUSTOMER_CREATE")) return;
 
+                String sessionId = args.data.get("sessionId") != null ? args.data.get("sessionId").toString() : null;
                 CustomerRequestDTO request = new CustomerRequestDTO(args.data);
-                var response = controller.createCustomer(request);
+                var response = controller.createCustomer(request, sessionId);
                 args.reply("CUSTOMER_CREATE",
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
@@ -58,8 +59,9 @@ public class CustomerRoute {
             try {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, "CUSTOMER_UPDATE")) return;
 
+                String sessionId = args.data.get("sessionId") != null ? args.data.get("sessionId").toString() : null;
                 CustomerRequestDTO request = new CustomerRequestDTO(args.data);
-                var response = controller.updateCustomer(request);
+                var response = controller.updateCustomer(request, sessionId);
                 args.reply("CUSTOMER_UPDATE",
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),

@@ -16,12 +16,12 @@ public class CustomerController {
         return SafeExecutor.run(() -> service.getAllCustomers());
     }
 
-    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req) {
-        return SafeExecutor.run(() -> service.createCustomer(req));
+    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req, String sessionId) {
+        return SafeExecutor.run(() -> service.createCustomer(req, sessionId));
     }
 
-    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req) {
-        return SafeExecutor.run(() -> service.updateCustomer(req));
+    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req, String sessionId) {
+        return SafeExecutor.run(() -> service.updateCustomer(req, sessionId));
     }
 
     public ResponseDTO<CustomerInfo> deleteCustomer(CustomerRequestDTO req) {
