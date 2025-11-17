@@ -33,7 +33,8 @@ public class BranchPanel extends JPanel {
         topBar.add(btnReload);
         add(topBar, BorderLayout.SOUTH);
 
-        String[] columns = {"ID", "Tên chi nhánh", "Số điện thoại", "Địa chỉ", "Ngày mở cửa", "Trạng thái"};
+        // ✅ BỎ cột "ID"
+        String[] columns = {"Tên chi nhánh", "Số điện thoại", "Địa chỉ", "Ngày mở cửa", "Trạng thái"};
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -78,8 +79,8 @@ public class BranchPanel extends JPanel {
         }
 
         for (BranchInfo branch : branches) {
+            // ✅ BỎ branch.getId()
             Object[] row = new Object[]{
-                branch.getId(),
                 branch.getName(),
                 branch.getPhone() != null ? branch.getPhone() : "N/A",
                 branch.getAddress() != null ? branch.getAddress() : "N/A",

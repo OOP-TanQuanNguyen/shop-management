@@ -1,4 +1,3 @@
-
 package edu.ptithcm.controllers.admin;
 
 import edu.ptithcm.app.AppState;
@@ -9,12 +8,13 @@ import edu.ptithcm.services.admin.AdminService;
 import edu.ptithcm.services.admin.EmployeeService;
 import edu.ptithcm.services.admin.ProductService;
 import edu.ptithcm.services.admin.BranchService;
+import edu.ptithcm.services.admin.CustomerService;
 
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.admin.EmployeePanel;
 import edu.ptithcm.views.admin.ProductPanel;
 import edu.ptithcm.views.admin.BranchPanel;
-
+import edu.ptithcm.views.admin.CustomerPanel;
 
 public class AdminController {
 
@@ -30,6 +30,8 @@ public class AdminController {
         initEmployeeModule();
         initProductModule();
         initBranchModule();
+        initCustomerModule();   //  <<< ---- THÊM MODULE CUSTOMER
+
         store.subcribe(this::handleState);
     }
 
@@ -64,6 +66,20 @@ public class AdminController {
             new BranchController(branchPanel, branchService);
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to init BranchController: " + e.getMessage());
+        }
+    }
+
+    // ===================================
+    //   💠 MODULE CUSTOMER - THÊM MỚI
+    // ===================================
+    private void initCustomerModule() {
+        try {
+            CustomerPanel customerPanel = view.getCustomerPanel();
+            CustomerService customerService = new CustomerService(client);
+            new CustomerController(customerPanel, customerService);
+
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to init CustomerController: " + e.getMessage());
         }
     }
 

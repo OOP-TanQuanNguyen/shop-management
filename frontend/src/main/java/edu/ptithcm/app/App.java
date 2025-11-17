@@ -8,6 +8,7 @@ import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.reducers.AuthReducer;
 import edu.ptithcm.app.reducers.BranchReducer;
+import edu.ptithcm.app.reducers.CustomerReducer;
 import edu.ptithcm.app.reducers.EmployeeReducer;
 import edu.ptithcm.app.reducers.ProductReducer;
 import edu.ptithcm.app.store.Store;
@@ -43,7 +44,7 @@ public class App {
                 EmployeeReducer.register(store);
                 ProductReducer.register(store);
                 BranchReducer.register(store);
-
+                CustomerReducer.register(store);
                 // --- Kết nối socket ---
                 client = new DTTP("127.0.0.1", 2025);
                 client.listen();

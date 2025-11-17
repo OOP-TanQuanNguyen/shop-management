@@ -9,44 +9,44 @@ import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
-import edu.ptithcm.models.UserModel;
-import edu.ptithcm.services.admin.EmployeeService;
-import edu.ptithcm.views.admin.EmployeePanel;
-import edu.ptithcm.views.admin.employee_dialogs.EmployeeAddDialog;
-import edu.ptithcm.views.admin.employee_dialogs.EmployeeDeleteConfirmDialog;
-import edu.ptithcm.views.admin.employee_dialogs.EmployeeEditDialog;
+import edu.ptithcm.models.CustomerModel;
+import edu.ptithcm.services.admin.CustomerService;
+import edu.ptithcm.views.admin.CustomerPanel;
+import edu.ptithcm.views.admin.customer_dialogs.CustomerAddDialog;
+import edu.ptithcm.views.admin.customer_dialogs.CustomerEditDialog;
+import edu.ptithcm.views.admin.customer_dialogs.CustomerDeleteConfirmDialog;
 import edu.ptithcm.views.components.AppMessageBox;
 
-public class EmployeeController {
+public class CustomerController {
 
-    private static final Logger logger = Logger.getLogger(EmployeeController.class.getName());
+    private static final Logger logger = Logger.getLogger(CustomerController.class.getName());
 
-    private final EmployeePanel view;
-    private final EmployeeService service;
+    private final CustomerPanel view;
+    private final CustomerService service;
     private final Store store = Store.getInstance();
 
     private boolean isShowingMessage = false;
-    private List<UserModel> currentEmployees; // ✅ Cache danh sách
+    private List<CustomerModel> currentCustomers; // ✅ Cache danh sách hiện tại
 
-    public EmployeeController(EmployeePanel view, EmployeeService service) {
+    public CustomerController(CustomerPanel view, CustomerService service) {
         this.view = view;
         this.service = service;
 
         registerEvents();
         store.subcribe(this::onStateChanged);
-        loadEmployees();
+        loadCustomers();
     }
 
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
-        view.getBtnReload().addActionListener(e -> loadEmployees());
+        view.getBtnReload().addActionListener(e -> loadCustomers());
     }
 
-    private void loadEmployees() {
+    private void loadCustomers() {
         try {
-            service.getAllEmployees();
+            service.getAllCustomers();
         } catch (IOException e) {
             AppMessageBox.showError("Không thể tải danh sách: " + e.getMessage());
         }
@@ -56,17 +56,15 @@ public class EmployeeController {
     // CRUD
     // ─────────────────────────────────────────────
     private void handleAdd() {
-        EmployeeAddDialog dl = new EmployeeAddDialog(getParentFrame());
+        CustomerAddDialog dl = new CustomerAddDialog(getParentFrame());
         dl.showDialog();
 
         if (dl.isConfirmed()) {
             try {
-                service.createEmployee(
-                        dl.getUsername(),
-                        dl.getPassword(),
-                        dl.getEmployeeName(),
+                service.createCustomer(
+                        dl.getCustomerName(),
                         dl.getPhone(),
-                        dl.getRole()
+                        dl.getPoint()
                 );
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi: " + e.getMessage());
@@ -77,29 +75,34 @@ public class EmployeeController {
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
+            AppMessageBox.showWarning("Vui lòng chọn khách hàng!");
             return;
         }
 
-        // ✅ Lấy employee từ list cache thay vì từ table
-        if (currentEmployees == null || row >= currentEmployees.size()) {
+        // ✅ Lấy customer từ list cache thay vì từ table
+        if (currentCustomers == null || row >= currentCustomers.size()) {
             AppMessageBox.showError("Dữ liệu không hợp lệ!");
             return;
         }
 
-        UserModel employee = currentEmployees.get(row);
-        String id = employee.getId();
-        String name = employee.getName();
-        String role = employee.getRole();
-        String phone = employee.getPhone();
-        boolean status = employee.getStatus() != null ? employee.getStatus() : false;
+        CustomerModel customer = currentCustomers.get(row);
+        String customerId = customer.getId();
+        String name = customer.getName();
+        String phone = customer.getPhone();
+        int point = customer.getPoint() != null ? customer.getPoint() : 0;
 
-        EmployeeEditDialog dl = new EmployeeEditDialog(getParentFrame(), id, name, phone, role, status);
+        CustomerEditDialog dl = new CustomerEditDialog(getParentFrame(), customerId, name, phone, point);
         dl.showDialog();
 
         if (dl.isConfirmed()) {
             try {
-                service.updateEmployee(id, dl.getEmployeeName(), dl.getPhone(), dl.getRole(), dl.getStatus());
+                // ✅ KHÔNG gửi point - chỉ update name và phone
+                service.updateCustomer(
+                        customerId,
+                        dl.getCustomerName(),
+                        dl.getPhone(),
+                        null // ✅ Không update điểm tích lũy
+                );
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi cập nhật: " + e.getMessage());
             }
@@ -109,26 +112,26 @@ public class EmployeeController {
     private void handleDelete() {
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
+            AppMessageBox.showWarning("Vui lòng chọn khách hàng!");
             return;
         }
 
-        // ✅ Lấy employee từ list cache thay vì từ table
-        if (currentEmployees == null || row >= currentEmployees.size()) {
+        // ✅ Lấy customer từ list cache thay vì từ table
+        if (currentCustomers == null || row >= currentCustomers.size()) {
             AppMessageBox.showError("Dữ liệu không hợp lệ!");
             return;
         }
 
-        UserModel employee = currentEmployees.get(row);
-        String id = employee.getId();
-        String name = employee.getName();
+        CustomerModel customer = currentCustomers.get(row);
+        String customerId = customer.getId();
+        String name = customer.getName();
 
-        EmployeeDeleteConfirmDialog dl = new EmployeeDeleteConfirmDialog(getParentFrame(), name);
+        CustomerDeleteConfirmDialog dl = new CustomerDeleteConfirmDialog(getParentFrame(), name);
         dl.showDialog();
 
         if (dl.isConfirmed()) {
             try {
-                service.deleteEmployee(id);
+                service.deleteCustomer(customerId);
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi xóa: " + e.getMessage());
             }
@@ -140,17 +143,17 @@ public class EmployeeController {
     // ─────────────────────────────────────────────
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
-            updateEmployeeList(state);
+            updateCustomerList(state);
             showMessages(state);
         });
     }
 
     @SuppressWarnings("unchecked")
-    private void updateEmployeeList(AppState state) {
-        Object listObj = state.get("Employees");
+    private void updateCustomerList(AppState state) {
+        Object listObj = state.get("Customers");
         if (listObj instanceof List<?> list) {
-            currentEmployees = (List<UserModel>) list; // ✅ Cache lại
-            view.updateTable(currentEmployees);
+            currentCustomers = (List<CustomerModel>) list; // ✅ Cache lại
+            view.updateTable(currentCustomers);
         }
     }
 
@@ -159,22 +162,22 @@ public class EmployeeController {
             return;
         }
 
-        String msg = (String) state.get("EmployeeMessage");
+        String msg = (String) state.get("CustomerMessage");
         if (msg != null && !msg.isEmpty()) {
             isShowingMessage = true;
 
-            state.set("EmployeeMessage", "");
+            state.set("CustomerMessage", "");
             AppMessageBox.showSuccess(msg);
 
             isShowingMessage = false;
             return;
         }
 
-        String err = (String) state.get("EmployeeError");
+        String err = (String) state.get("CustomerError");
         if (err != null && !err.isEmpty()) {
             isShowingMessage = true;
 
-            state.set("EmployeeError", "");
+            state.set("CustomerError", "");
             AppMessageBox.showError(err);
 
             isShowingMessage = false;

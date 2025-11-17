@@ -35,9 +35,8 @@ public class ProductPanel extends JPanel {
         topBar.add(btnReload);
         add(topBar, BorderLayout.SOUTH);
 
-        // Table
+        // Table - ✅ BỎ cột "Mã SP"
         String[] columns = {
-            "Mã SP",
             "Tên sản phẩm",
             "Danh mục",
             "Giá vốn",
@@ -95,8 +94,8 @@ public class ProductPanel extends JPanel {
         }
 
         for (ProductInfo product : products) {
+            // ✅ BỎ product.getId()
             Object[] row = new Object[]{
-                product.getId(),
                 product.getName(),
                 product.getCategoryName() != null ? product.getCategoryName() : "N/A",
                 formatPrice(product.getCostPrice()),

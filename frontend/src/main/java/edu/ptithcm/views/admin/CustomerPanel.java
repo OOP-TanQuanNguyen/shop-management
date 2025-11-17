@@ -1,4 +1,4 @@
-package edu.ptithcm.views.pos.panels;
+package edu.ptithcm.views.admin;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
