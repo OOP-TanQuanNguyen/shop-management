@@ -6,10 +6,12 @@ import edu.ptithcm.routes.authentication.LoginRoute;
 import edu.ptithcm.routes.employee.EmployeeRoute;
 import edu.ptithcm.routes.product.ProductRoute;
 import edu.ptithcm.routes.category.CategoryRoute;
+import edu.ptithcm.routes.invoice.InvoiceRoute;
 import edu.ptithcm.routes.inventory.InventoryRoute;
 import edu.ptithcm.routes.branch.BranchRoute;
 import edu.ptithcm.routes.customer.CustomerRoute;
 import edu.ptithcm.routes.loyalty.LoyaltyRoute;
+import edu.ptithcm.routes.shift.ShiftRoute;
 
 public class RouteManager {
 
@@ -27,9 +29,11 @@ public class RouteManager {
         new EmployeeRoute(server, manager).register();
         new ProductRoute(server, manager).register();
         new CategoryRoute(server, manager).register();
+        new InvoiceRoute(server, manager).register();
         new InventoryRoute(server, manager).register();
         new BranchRoute(server, manager).register();
         new CustomerRoute(server, manager).register();
         new LoyaltyRoute(server, manager).register();
+        new ShiftRoute(server, manager).register();
     }
 }
