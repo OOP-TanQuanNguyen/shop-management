@@ -71,7 +71,7 @@ public class CategoryService {
     }
 
     // ------------------ Lấy theo ID ------------------
-    public ResponseDTO<CategoryInfo> getCategoryById(CategoryRequestDTO req) throws RuntimeException {
+    public ResponseDTO<CategoryInfo> getCategoriesById(CategoryRequestDTO req) throws RuntimeException {
         CategoryModel category = categoryRepo.findById(req.getCategoryId());
         if (category == null)
             return new NotFoundResponse<>("Không tìm thấy category");

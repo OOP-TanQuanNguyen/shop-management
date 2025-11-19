@@ -28,7 +28,7 @@ public class BranchController {
         return SafeExecutor.run(() -> service.deleteBranch(req));
     }
 
-    public ResponseDTO<BranchInfo> getBranchById(BranchRequestDTO req) {
-        return SafeExecutor.run(() -> service.getBranchById(req));
+    public ResponseDTO<BranchInfo> getBranchesById(BranchRequestDTO req) {
+        return SafeExecutor.run(() -> service.getBranchesById(req));
     }
 }

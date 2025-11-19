@@ -28,7 +28,7 @@ public class CategoryController {
         return SafeExecutor.run(() -> service.getAllCategories());
     }
 
-    public ResponseDTO<CategoryInfo> getCategoryById(CategoryRequestDTO req) {
-        return SafeExecutor.run(() -> service.getCategoryById(req));
+    public ResponseDTO<CategoryInfo> getCategoriesById(CategoryRequestDTO req) {
+        return SafeExecutor.run(() -> service.getCategoriesById(req));
     }
 }

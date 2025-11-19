@@ -12,6 +12,7 @@ import edu.ptithcm.routes.branch.BranchRoute;
 import edu.ptithcm.routes.customer.CustomerRoute;
 import edu.ptithcm.routes.loyalty.LoyaltyRoute;
 import edu.ptithcm.routes.shift.ShiftRoute;
+import edu.ptithcm.routes.shiftassignment.ShiftAssignmentRoute;
 
 public class RouteManager {
 
@@ -35,5 +36,6 @@ public class RouteManager {
         new CustomerRoute(server, manager).register();
         new LoyaltyRoute(server, manager).register();
         new ShiftRoute(server, manager).register();
+        new ShiftAssignmentRoute(server, manager).register();
     }
 }

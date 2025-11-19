@@ -96,5 +96,23 @@ public class CategoryRoute {
                 ReplyUtils.replyError(args, TypeDTTP.CATEGORY_DELETE.getValue(), e);
             }
         });
+
+        // ---------------- GET BY ID ----------------
+        server.on(TypeDTTP.CATEGORY_GET_BY_ID.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_GET_BY_ID.getValue())) return;
+
+                    CategoryRequestDTO request = new CategoryRequestDTO(args.data);
+                    ResponseDTO<CategoryInfo> response = controller.getCategoriesById(request);
+
+                    args.reply(TypeDTTP.CATEGORY_GET_BY_ID.getValue(),
+                            response.getData() != null ? response.getData().toMap() : null,
+                            response.getStatus(),
+                            response.getMessage());
+
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.CATEGORY_GET_BY_ID.getValue(), e);
+            }
+        });
     }
 }

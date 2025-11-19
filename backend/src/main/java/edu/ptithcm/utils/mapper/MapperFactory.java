@@ -14,10 +14,12 @@ import edu.ptithcm.models.BranchModel;
 import edu.ptithcm.models.CategoryModel;
 import edu.ptithcm.models.CustomerModel;
 import edu.ptithcm.models.ShiftModel;
+import edu.ptithcm.models.ShiftAssignmentModel;
 import edu.ptithcm.dto.response.info_models.BranchInfo;
 import edu.ptithcm.dto.response.info_models.CategoryInfo;
 import edu.ptithcm.dto.response.info_models.CustomerInfo;
 import edu.ptithcm.dto.response.info_models.ShiftInfo;
+import edu.ptithcm.dto.response.info_models.ShiftAssignmentInfo;
 
 public final class MapperFactory {
 
@@ -32,6 +34,7 @@ public final class MapperFactory {
     private static final InvoiceMapper INVOICE_MAPPER = new InvoiceMapper();
     private static final LoyaltyMapper LOYALTY_MAPPER = new LoyaltyMapper();
     private static final ShiftMapper SHIFT_MAPPER = new ShiftMapper();
+    private static final ShiftAssignmentMapper SHIFTASSIGNMENT_MAPPER = new ShiftAssignmentMapper();
 
 
     public static BaseMapper<EmployeeModel, EmployeeInfo> employee() {
@@ -68,5 +71,9 @@ public final class MapperFactory {
 
     public static BaseMapper<ShiftModel, ShiftInfo> shift() {
         return SHIFT_MAPPER;
+    }
+
+    public static BaseMapper<ShiftAssignmentModel, ShiftAssignmentInfo> shiftAssignment() {
+        return SHIFTASSIGNMENT_MAPPER;
     }
 }

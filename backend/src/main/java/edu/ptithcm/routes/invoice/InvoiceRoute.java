@@ -107,7 +107,7 @@ public class InvoiceRoute {
         server.on(TypeDTTP.INVOICE_GET_BY_CUSTOMER.getValue(), args -> {
             try {
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByCustomer(request);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getInvoiceByCustomer(request);
 
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
@@ -127,7 +127,7 @@ public class InvoiceRoute {
         server.on(TypeDTTP.INVOICE_GET_BY_BRANCH.getValue(), args -> {
             try {
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByBranch(request);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getInvoiceByBranch(request);
 
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())
@@ -147,7 +147,7 @@ public class InvoiceRoute {
         server.on(TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(), args -> {
             try {
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
-                ResponseDTO<List<InvoiceInfo>> response = controller.getByEmployee(request);
+                ResponseDTO<List<InvoiceInfo>> response = controller.getInvoiceByEmployee(request);
 
                 List<Map<String, Object>> invoices = response.getData() != null
                         ? response.getData().stream().map(InvoiceInfo::toMap).collect(Collectors.toList())

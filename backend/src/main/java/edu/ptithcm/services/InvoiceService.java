@@ -140,25 +140,25 @@ public class InvoiceService {
     }
 
     // ------------------ Lấy hóa đơn theo khách hàng ------------------
-    public ResponseDTO<List<InvoiceInfo>> getByCustomer(String customerId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByCustomer(String customerId) throws RuntimeException {
         List<InvoiceModel> list = invoiceRepo.findByCustomer(customerId);
         return new SuccessResponse<>("Lấy hóa đơn theo khách hàng thành công", mapper.toDTOList(list));
     }
 
     // ------------------ Lấy hóa đơn theo chi nhánh ------------------
-    public ResponseDTO<List<InvoiceInfo>> getByBranch(Integer branchId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByBranch(Integer branchId) throws RuntimeException {
         List<InvoiceModel> list = invoiceRepo.findByBranch(branchId);
         return new SuccessResponse<>("Lấy hóa đơn theo chi nhánh thành công", mapper.toDTOList(list));
     }
 
     // ------------------ Lấy hóa đơn theo nhân viên ------------------
-    public ResponseDTO<List<InvoiceInfo>> getByEmployee(String employeeId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByEmployee(String employeeId) throws RuntimeException {
         List<InvoiceModel> list = invoiceRepo.findByEmployee(employeeId);
         return new SuccessResponse<>("Lấy hóa đơn theo nhân viên thành công", mapper.toDTOList(list));
     }
 
     // ------------------ Lấy hóa đơn theo ID ------------------
-    public ResponseDTO<InvoiceInfo> getById(String invoiceId) throws RuntimeException {
+    public ResponseDTO<InvoiceInfo> getInvoiceById(String invoiceId) throws RuntimeException {
         InvoiceModel invoice = invoiceRepo.findById(invoiceId);
         if (invoice == null) return new NotFoundResponse<>("Hóa đơn không tồn tại");
         return new SuccessResponse<>("Lấy hóa đơn thành công", mapper.toDTO(invoice));

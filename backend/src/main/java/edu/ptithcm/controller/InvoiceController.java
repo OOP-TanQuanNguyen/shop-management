@@ -34,21 +34,21 @@ public class InvoiceController {
 
     // ---------- GET BY ID ----------
     public ResponseDTO<InvoiceInfo> getInvoiceById(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> service.getById(req.getInvoiceId()));
+        return SafeExecutor.run(() -> service.getInvoiceById(req.getInvoiceId()));
     }
 
     // ---------- GET BY CUSTOMER ----------
-    public ResponseDTO<List<InvoiceInfo>> getByCustomer(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> service.getByCustomer(req.getCustomerId()));
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByCustomer(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getInvoiceByCustomer(req.getCustomerId()));
     }
 
     // ---------- GET BY BRANCH ----------
-    public ResponseDTO<List<InvoiceInfo>> getByBranch(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> service.getByBranch(req.getBranchId()));
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByBranch(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getInvoiceByBranch(req.getBranchId()));
     }
 
     // ---------- GET BY EMPLOYEE ----------
-    public ResponseDTO<List<InvoiceInfo>> getByEmployee(InvoiceRequestDTO req) {
-        return SafeExecutor.run(() -> service.getByEmployee(req.getEmployeeId()));
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByEmployee(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.getInvoiceByEmployee(req.getEmployeeId()));
     }
 }

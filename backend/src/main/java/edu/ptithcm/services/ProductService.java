@@ -99,7 +99,7 @@ public class ProductService {
     }
 
     // ------------------ Tìm kiếm theo tên ------------------
-    public ResponseDTO<List<ProductInfo>> searchByName(String keyword) throws RuntimeException {
+    public ResponseDTO<List<ProductInfo>> getProductByName(String keyword) throws RuntimeException {
 
         if (keyword == null || keyword.isBlank())
             return new InvalidResponse<>("Thiếu từ khóa tìm kiếm");

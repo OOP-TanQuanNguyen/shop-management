@@ -85,5 +85,31 @@ public class CustomerRoute {
                 ReplyUtils.replyError(args, "CUSTOMER_DELETE", e);
             }
         });
+
+        server.on("CUSTOMER_GET_BY_ID", args -> {
+            try {
+                CustomerRequestDTO request = new CustomerRequestDTO(args.data);
+                var response = controller.getCustomerById(request);
+                args.reply("CUSTOMER_GET_BY_ID",
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, "CUSTOMER_GET_BY_ID", e);
+            }
+        });
+
+        server.on("CUSTOMER_GET_BY_PHONE", args -> {
+            try {
+                String phone = args.data.get("phone") != null ? args.data.get("phone").toString() : null;
+                var response = controller.getCustomerByPhone(phone);
+                args.reply("CUSTOMER_GET_BY_PHONE",
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, "CUSTOMER_GET_BY_PHONE", e);
+            }
+        });
     }
 }

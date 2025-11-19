@@ -83,7 +83,7 @@ public class InventoryService {
     }
 
     // Lấy theo chi nhánh
-    public ResponseDTO<List<InventoryInfo>> getByBranch(Integer branchId) throws RuntimeException {
+    public ResponseDTO<List<InventoryInfo>> getInventoriesByBranch(Integer branchId) throws RuntimeException {
         return new SuccessResponse<>(
                 "Lấy kho theo chi nhánh thành công",
                 mapper.toDTOList(inventoryRepo.findByBranch(branchId))

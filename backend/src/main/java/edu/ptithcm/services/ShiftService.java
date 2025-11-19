@@ -28,7 +28,7 @@ public class ShiftService {
     }
 
     // ------------------ Lấy shift theo ID ------------------
-    public ResponseDTO<ShiftInfo> getShiftById(ShiftRequestDTO req) {
+    public ResponseDTO<ShiftInfo> getShiftsById(ShiftRequestDTO req) throws RuntimeException {
         if (req.getShiftId() == null)
             return new InvalidResponse<>("Thiếu ID shift");
 
@@ -40,7 +40,7 @@ public class ShiftService {
     }
 
     // ------------------ Tạo shift ------------------
-    public ResponseDTO<ShiftInfo> createShift(ShiftRequestDTO req) {
+    public ResponseDTO<ShiftInfo> createShift(ShiftRequestDTO req) throws RuntimeException {
         if (!req.validForCreate())
             return new InvalidResponse<>("Dữ liệu không hợp lệ để tạo shift");
 
@@ -55,7 +55,7 @@ public class ShiftService {
     }
 
     // ------------------ Cập nhật shift ------------------
-    public ResponseDTO<ShiftInfo> updateShift(ShiftRequestDTO req) {
+    public ResponseDTO<ShiftInfo> updateShift(ShiftRequestDTO req) throws RuntimeException {
         if (!req.validForUpdate())
             return new InvalidResponse<>("Dữ liệu không hợp lệ để cập nhật shift");
 
@@ -74,7 +74,7 @@ public class ShiftService {
     }
 
     // ------------------ Xóa shift ------------------
-    public ResponseDTO<ShiftInfo> deleteShift(ShiftRequestDTO req) {
+    public ResponseDTO<ShiftInfo> deleteShift(ShiftRequestDTO req) throws RuntimeException {
         if (req.getShiftId() == null)
             return new InvalidResponse<>("Thiếu ID shift");
 
@@ -86,7 +86,7 @@ public class ShiftService {
     }
 
     // ------------------ Tìm kiếm theo tên ------------------
-    public ResponseDTO<List<ShiftInfo>> searchShiftsByName(String keyword) {
+    public ResponseDTO<List<ShiftInfo>> getShiftsByName(String keyword) throws RuntimeException {
         if (keyword == null || keyword.isBlank())
             return new InvalidResponse<>("Thiếu từ khóa tìm kiếm");
 

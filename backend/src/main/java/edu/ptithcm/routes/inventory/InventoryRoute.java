@@ -97,5 +97,23 @@ public class InventoryRoute {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_DELETE.getValue(), e);
             }
         });
+
+        // ---------------- GET BY BRANCH ----------------
+        server.on(TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue())) return;
+
+                Integer branchId = args.data.get("branchId") != null ? Integer.valueOf(args.data.get("branchId").toString()) : null;
+                ResponseDTO<List<InventoryInfo>> response = controller.getInventoriesByBranch(branchId);
+
+                List<Map<String, Object>> inventories = response.getData() != null
+                        ? response.getData().stream().map(InventoryInfo::toMap).toList()
+                        : null;
+
+                args.reply(TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), Map.of("inventories", inventories), response.getStatus(), response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), e);
+            }
+        });
     }
 }

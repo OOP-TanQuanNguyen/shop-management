@@ -98,5 +98,33 @@ public class ProductRoute {
                 ReplyUtils.replyError(args, TypeDTTP.PRODUCT_DELETE.getValue(), e);
             }
         });
+
+        server.on(TypeDTTP.PRODUCT_GET_BY_ID.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_DELETE.getValue())) return;
+
+                    ProductRequestDTO request = new ProductRequestDTO(args.data);
+                    ResponseDTO<ProductInfo> response = controller.getProductById(request);
+                    args.reply(TypeDTTP.PRODUCT_GET_BY_ID.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_GET_BY_ID.getValue(), e);
+            }
+        });
+
+        server.on(TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), args -> {
+            try {
+                String keyword = args.data.get("keyword").toString();
+                ResponseDTO<List<ProductInfo>> response = controller.getProductByName(keyword);
+                List<Map<String,Object>> products = response.getData() != null ?
+                response.getData().stream().map(ProductInfo::toMap).toList() : null;
+                args.reply(TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), Map.of("products", products),
+                    response.getStatus(), response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), e);
+            }
+        });
     }
 }

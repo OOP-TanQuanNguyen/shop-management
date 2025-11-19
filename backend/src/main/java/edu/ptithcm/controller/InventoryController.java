@@ -26,7 +26,7 @@ public class InventoryController {
         return SafeExecutor.run(() -> service.getAllInventories());
     }
 
-    public ResponseDTO<List<InventoryInfo>> getByBranch(Integer branchId) {
-        return SafeExecutor.run(() -> service.getByBranch(branchId));
+    public ResponseDTO<List<InventoryInfo>> getInventoriesByBranch(Integer branchId) {
+        return SafeExecutor.run(() -> service.getInventoriesByBranch(branchId));
     }
 }

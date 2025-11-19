@@ -94,5 +94,22 @@ public class ShiftRoute {
                 ReplyUtils.replyError(args, TypeDTTP.SHIFT_DELETE.getValue(), e);
             }
         });
+
+        // ---------------- GET BY ID ----------------
+        server.on(TypeDTTP.SHIFT_GET_BY_ID.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.SHIFT_GET_BY_ID.getValue())) return;
+
+                ShiftRequestDTO request = new ShiftRequestDTO(args.data);
+                ResponseDTO<ShiftInfo> response = controller.getShiftsById(request);
+
+                args.reply(TypeDTTP.SHIFT_GET_BY_ID.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.SHIFT_GET_BY_ID.getValue(), e);
+            }
+        });
     }
 }

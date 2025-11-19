@@ -32,7 +32,7 @@ public class ProductController {
         return SafeExecutor.run( () -> service.getProductById(req));
     }
 
-    public ResponseDTO<List<ProductInfo>> searchProductByName(String keyword){
-        return SafeExecutor.run( () -> service.searchByName(keyword));
+    public ResponseDTO<List<ProductInfo>> getProductByName(String keyword){
+        return SafeExecutor.run( () -> service.getProductByName(keyword));
     }
 }

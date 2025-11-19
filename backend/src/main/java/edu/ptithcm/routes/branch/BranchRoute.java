@@ -95,5 +95,23 @@ public class BranchRoute {
                 ReplyUtils.replyError(args, TypeDTTP.BRANCH_DELETE.getValue(), e);
             }
         });
+
+        // ---------------- GET BY ID ----------------
+        server.on(TypeDTTP.BRANCH_GET_BY_ID.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.BRANCH_GET_BY_ID.getValue())) return;
+
+                BranchRequestDTO request = new BranchRequestDTO(args.data);
+                ResponseDTO<BranchInfo> response = controller.getBranchesById(request);
+
+                args.reply(TypeDTTP.BRANCH_GET_BY_ID.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.BRANCH_GET_BY_ID.getValue(), e);
+            }
+        });
     }
 }

@@ -84,7 +84,7 @@ public class BranchService {
     }
 
     // Lấy chi nhánh theo ID
-    public ResponseDTO<BranchInfo> getBranchById(BranchRequestDTO req) throws RuntimeException {
+    public ResponseDTO<BranchInfo> getBranchesById(BranchRequestDTO req) throws RuntimeException {
         BranchModel branch = branchRepo.findById(req.getBranchId());
 
         if (branch == null) {

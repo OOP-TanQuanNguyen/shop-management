@@ -10,6 +10,7 @@ import edu.ptithcm.repository.invoice.*;
 import edu.ptithcm.repository.inventory.*;
 import edu.ptithcm.repository.loyalty.*;
 import edu.ptithcm.repository.shift.*;
+import edu.ptithcm.repository.shiftassignment.*;
 
 public class Repository {
     private static final ProductRepository PRODUCT_REPO = new ProductRepositoryImpl();
@@ -21,6 +22,7 @@ public class Repository {
     private static final CategoryRepository CATEGORY_REPO = new CategoryRepositoryImpl();
     private static final LoyaltyRepository LOYALTY_REPO = new LoyaltyRepositoryImpl();
     private static final ShiftRepository SHIFT_REPO = new ShiftRepositoryImpl();
+    private static final ShiftAssignmentRepository SHIFTASSIGNMENT_REPO = new ShiftAssignmentRepositoryImpl();
 
     public static ProductRepository product() { return PRODUCT_REPO; }
     public static EmployeeRepository employee() { return EMPLOYEE_REPO; }
@@ -31,4 +33,5 @@ public class Repository {
     public static CategoryRepository category() { return CATEGORY_REPO; }
     public static LoyaltyRepository loyalty() { return LOYALTY_REPO; }
     public static ShiftRepository shift() { return SHIFT_REPO; }
+    public static ShiftAssignmentRepository shiftAssignment() { return SHIFTASSIGNMENT_REPO; }
 }
