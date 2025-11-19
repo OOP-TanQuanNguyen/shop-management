@@ -18,12 +18,12 @@ public class ShiftAssignmentService {
     private static final ShiftAssignmentRepository ShiftAssignmentRepo = Repository.shiftAssignment();
     private static final BaseMapper<ShiftAssignmentModel, ShiftAssignmentInfo> mapper = MapperFactory.shiftAssignment();
 
-    public ResponseDTO<List<ShiftAssignmentInfo>> getAllAssignments() {
+    public ResponseDTO<List<ShiftAssignmentInfo>> getAllAssignments() throws RuntimeException {
         return new SuccessResponse<>("Lấy toàn bộ shift assignment thành công",
                 mapper.toDTOList(ShiftAssignmentRepo.findAll()));
     }
 
-    public ResponseDTO<ShiftAssignmentInfo> createAssignment(ShiftAssignmentRequestDTO req) {
+    public ResponseDTO<ShiftAssignmentInfo> createAssignment(ShiftAssignmentRequestDTO req) throws RuntimeException {
         if (!req.validForCreate())
             return new InvalidResponse<>("Dữ liệu không hợp lệ để tạo shift assignment");
 
@@ -36,7 +36,7 @@ public class ShiftAssignmentService {
         return new SuccessResponse<>("Tạo shift assignment thành công", mapper.toDTO(sa));
     }
 
-    public ResponseDTO<ShiftAssignmentInfo> deleteAssignment(ShiftAssignmentRequestDTO req) {
+    public ResponseDTO<ShiftAssignmentInfo> deleteAssignment(ShiftAssignmentRequestDTO req) throws RuntimeException {
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu dữ liệu để xóa shift assignment");
 
@@ -50,19 +50,19 @@ public class ShiftAssignmentService {
         return new SuccessResponse<>("Xóa shift assignment thành công", mapper.toDTO(deleted));
     }
 
-    public ResponseDTO<List<ShiftAssignmentInfo>> getByShiftId(Integer shiftId) {
+    public ResponseDTO<List<ShiftAssignmentInfo>> getByShiftId(Integer shiftId) throws RuntimeException {
         if (shiftId == null) return new InvalidResponse<>("Thiếu shiftId");
         return new SuccessResponse<>("Lấy danh sách assignments theo shift thành công",
                 mapper.toDTOList(ShiftAssignmentRepo.findByShift(shiftId)));
     }
 
-    public ResponseDTO<List<ShiftAssignmentInfo>> getByEmployeeId(String employeeId) {
+    public ResponseDTO<List<ShiftAssignmentInfo>> getByEmployeeId(String employeeId) throws RuntimeException {
         if (employeeId == null || employeeId.isBlank()) return new InvalidResponse<>("Thiếu employeeId");
         return new SuccessResponse<>("Lấy danh sách assignments theo employee thành công",
                 mapper.toDTOList(ShiftAssignmentRepo.findByEmployee(employeeId)));
     }
 
-    public ResponseDTO<List<ShiftAssignmentInfo>> getByBranchId(Integer branchId) {
+    public ResponseDTO<List<ShiftAssignmentInfo>> getByBranchId(Integer branchId) throws RuntimeException {
         if (branchId == null) return new InvalidResponse<>("Thiếu branchId");
         return new SuccessResponse<>("Lấy danh sách assignments theo branch thành công",
                 mapper.toDTOList(ShiftAssignmentRepo.findByBranch(branchId)));
