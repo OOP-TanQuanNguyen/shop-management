@@ -107,7 +107,7 @@ public class App {
         }
 
         POSForm posForm = new POSForm(user);
-        new POSController(posForm);
+        new POSController(posForm, client);
         currentView = posForm;
         currentView.setVisible(true);
     }

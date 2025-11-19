@@ -2,16 +2,9 @@ package edu.ptithcm.views.pos;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import java.awt.FlowLayout;
 
 import edu.ptithcm.models.UserModel;
 import edu.ptithcm.views.pos.panels.CustomerPanel;
@@ -21,6 +14,12 @@ import edu.ptithcm.views.pos.panels.SalePanel;
 public class POSForm extends JFrame {
 
     private JButton btnLogout = new JButton("Đăng xuất");
+
+    // ⭐ Tạo instance panel để dùng trong tab
+    private final CustomerPanel customerPanel = new CustomerPanel();
+    private final SalePanel salePanel = new SalePanel();
+    private final MyInvoicePanel myInvoicePanel = new MyInvoicePanel();
+    private final JTabbedPane tabs = new JTabbedPane();
 
     public POSForm(UserModel user) {
         setTitle("🛒 POS - Hệ thống bán hàng");
@@ -37,16 +36,15 @@ public class POSForm extends JFrame {
         lblTitle.setForeground(Color.WHITE);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
-        // Info user
-        JLabel lblUser = new JLabel(user.getUsername()+" | " + user.getRole() + " | " + user.getBranch());
+        JLabel lblUser = new JLabel(user.getUsername() + " | " + user.getRole() + " | " + user.getBranch());
         lblUser.setForeground(Color.WHITE);
         lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblUser.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
-        this.btnLogout.setBackground(new Color(220, 53, 69));
-        this.btnLogout.setForeground(Color.WHITE);
-        this.btnLogout.setFocusPainted(false);
-        this.btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnLogout.setBackground(new Color(220, 53, 69));
+        btnLogout.setForeground(Color.WHITE);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         JPanel rightBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         rightBar.setOpaque(false);
@@ -57,17 +55,33 @@ public class POSForm extends JFrame {
         topBar.add(rightBar, BorderLayout.EAST);
 
         // ===== TABS =====
-        JTabbedPane tabs = new JTabbedPane();
         tabs.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        tabs.addTab("🛒 Bán hàng", new SalePanel());
-        tabs.addTab("👥 Khách hàng", new CustomerPanel());
-        tabs.addTab("🧾 Hóa đơn của tôi", new MyInvoicePanel());
+
+        tabs.addTab("🛒 Bán hàng", salePanel);
+        tabs.addTab("👥 Khách hàng", customerPanel);
+        tabs.addTab("🧾 Hóa đơn của tôi", myInvoicePanel);
 
         add(topBar, BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
     }
 
-    public JButton getLogoutButton(){
-        return this.btnLogout;
+    public JButton getLogoutButton() {
+        return btnLogout;
+    }
+
+    public CustomerPanel getCustomerPanel() {
+        return customerPanel;
+    }
+
+    public SalePanel getSalePanel() {
+        return salePanel;
+    }
+
+    public MyInvoicePanel getMyInvoicePanel() {
+        return myInvoicePanel;
+    }
+
+    public JTabbedPane getTabPane() {
+        return tabs;
     }
 }

@@ -7,7 +7,7 @@ public class CustomerModel {
     private String id;
     private String name;
     private String phone;
-    private Integer point;
+    private Integer point; // ✅ Phải là Integer (nullable) hoặc int với giá trị mặc định
 
     private CustomerModel(Builder builder) {
         this.id = builder.id;
@@ -32,20 +32,44 @@ public class CustomerModel {
     }
 
     public Integer getPoint() {
-        return this.point;
+        return this.point != null ? this.point : 0; // ✅ Trả về 0 nếu null
+    }
+
+    // ========================
+    //        SETTERS (cho Hibernate)
+    // ========================
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setPoint(Integer point) {
+        this.point = point;
     }
 
     // ========================
     //      fromMap()
     // ========================
     public static CustomerModel fromMap(Map<String, Object> data) {
+        Object pointObj = data.get("point");
+        Integer pointValue = 0; // ✅ Mặc định = 0
+
+        if (pointObj instanceof Number) {
+            pointValue = ((Number) pointObj).intValue();
+        }
+
         return new Builder()
                 .id((String) data.get("customerId"))
                 .name((String) data.get("name"))
                 .phone((String) data.get("phone"))
-                .point(data.get("point") instanceof Number
-                        ? ((Number) data.get("point")).intValue()
-                        : 0)
+                .point(pointValue)
                 .build();
     }
 
@@ -57,7 +81,7 @@ public class CustomerModel {
         private String id;
         private String name;
         private String phone;
-        private Integer point;
+        private Integer point = 0; // ✅ Mặc định = 0
 
         public Builder id(String id) {
             this.id = id;
@@ -75,7 +99,7 @@ public class CustomerModel {
         }
 
         public Builder point(Integer point) {
-            this.point = point;
+            this.point = point != null ? point : 0; // ✅ Đảm bảo không null
             return this;
         }
 
