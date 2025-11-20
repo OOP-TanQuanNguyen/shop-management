@@ -129,6 +129,10 @@ public class InvoiceService {
 
         if (invoice.getStatus() != InvoiceModel.InvoiceStatus.PENDING)
             return new InvalidResponse<>("Hóa đơn không ở trạng thái chờ xử lý");
+        if (invoice.getStatus() == InvoiceStatus.COMPLETED) 
+            return new InvalidResponse<>("Hóa đơn đã được xác nhận");
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED)
+            return new InvalidResponse<>("Hóa đơn đã bị hủy");
 
         // Trừ kho chính thức
         for (InvoiceDetailModel detail : invoice.getDetails()) {
@@ -154,8 +158,8 @@ public class InvoiceService {
 
         if (invoice.getStatus() == InvoiceStatus.CANCELLED)
             return new InvalidResponse<>("Hóa đơn đã bị hủy");
-
-        invoice.setStatus(InvoiceStatus.CANCELLED);
+        if (invoice.getStatus() == InvoiceStatus.COMPLETED)
+            return new InvalidResponse<>("Không thể hủy hóa đơn đã xác nhận");
 
         // Rollback tồn kho nếu muốn
         if (invoice.getDetails() != null) {
@@ -171,6 +175,7 @@ public class InvoiceService {
             }
         }
 
+        invoice.setStatus(InvoiceStatus.CANCELLED);
         InvoiceModel updated = invoiceRepo.update(invoice);
         return new SuccessResponse<>("Hủy hóa đơn thành công", mapper.toDTO(updated));
     }
