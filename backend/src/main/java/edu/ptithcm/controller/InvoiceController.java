@@ -57,4 +57,8 @@ public class InvoiceController {
         return SafeExecutor.run(() -> service.confirmInvoice(req.getInvoiceId()));
     }
 
+    // ---------- CANCEL INVOICE ----------
+    public ResponseDTO<InvoiceInfo> cancelInvoice(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.cancelInvoice(req.getInvoiceId()));
+    }
 }

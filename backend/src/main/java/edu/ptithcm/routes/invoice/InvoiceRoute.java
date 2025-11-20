@@ -181,5 +181,24 @@ public class InvoiceRoute {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_CONFIRM.getValue(), e);
             }
         });
+
+        // ---------------- CANCEL INVOICE ----------------
+        server.on(TypeDTTP.INVOICE_CANCEL.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CANCEL.getValue()))
+                    return;
+
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<InvoiceInfo> response = controller.cancelInvoice(request);
+
+                args.reply(TypeDTTP.INVOICE_CANCEL.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.INVOICE_CANCEL.getValue(), e);
+            }
+        });
     }
 }

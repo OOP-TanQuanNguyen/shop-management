@@ -13,6 +13,7 @@ import edu.ptithcm.dto.response.error.NotFoundResponse;
 import edu.ptithcm.dto.response.success.SuccessResponse;
 import edu.ptithcm.dto.response.info_models.InvoiceInfo;
 import edu.ptithcm.models.*;
+import edu.ptithcm.models.InvoiceModel.InvoiceStatus;
 import edu.ptithcm.repository.*;
 import edu.ptithcm.repository.branch.BranchRepository;
 import edu.ptithcm.repository.customer.CustomerRepository;
@@ -143,6 +144,35 @@ public class InvoiceService {
         invoiceRepo.update(invoice);
 
         return new SuccessResponse<>("Xác nhận thanh toán thành công", mapper.toDTO(invoice));
+    }
+
+    // ------------------ Hủy hóa đơn ------------------
+    public ResponseDTO<InvoiceInfo> cancelInvoice(String invoiceId) {
+        InvoiceModel invoice = invoiceRepo.findById(invoiceId);
+        if (invoice == null)
+            return new NotFoundResponse<>("Hóa đơn không tồn tại");
+
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED)
+            return new InvalidResponse<>("Hóa đơn đã bị hủy");
+
+        invoice.setStatus(InvoiceStatus.CANCELLED);
+
+        // Rollback tồn kho nếu muốn
+        if (invoice.getDetails() != null) {
+            for (InvoiceDetailModel d : invoice.getDetails()) {
+                InventoryModel inv = inventoryRepo.findByBranchAndProduct(
+                        invoice.getBranch().getId(),
+                        d.getProduct().getId()
+                );
+                if (inv != null) {
+                    inv.setQuantity(inv.getQuantity() + d.getQuantity());
+                    inventoryRepo.update(inv);
+                }
+            }
+        }
+
+        InvoiceModel updated = invoiceRepo.update(invoice);
+        return new SuccessResponse<>("Hủy hóa đơn thành công", mapper.toDTO(updated));
     }
 
     // ------------------ Cập nhật hóa đơn ------------------
