@@ -17,6 +17,7 @@ import edu.ptithcm.repository.*;
 import edu.ptithcm.repository.branch.BranchRepository;
 import edu.ptithcm.repository.customer.CustomerRepository;
 import edu.ptithcm.repository.employee.EmployeeRepository;
+import edu.ptithcm.repository.inventory.InventoryRepository;
 import edu.ptithcm.repository.invoice.InvoiceRepository;
 import edu.ptithcm.repository.product.ProductRepository;
 import edu.ptithcm.utils.BigDecimalUtil;
@@ -30,6 +31,7 @@ public class InvoiceService {
     private static final BranchRepository branchRepo = Repository.branch();
     private static final CustomerRepository customerRepo = Repository.customer();
     private static final ProductRepository productRepo = Repository.product();
+    private static final InventoryRepository inventoryRepo = Repository.inventory();
     private static final BaseMapper<InvoiceModel, InvoiceInfo> mapper = MapperFactory.invoice();
 
     // ------------------ Lấy tất cả hóa đơn ------------------
@@ -43,30 +45,59 @@ public class InvoiceService {
         if (!req.validForCreate()) 
             return new InvalidResponse<>("Dữ liệu hóa đơn không hợp lệ");
 
-        EmployeeModel employee = employeeRepo.findById(req.getEmployeeId());
-        BranchModel branch = branchRepo.findById(req.getBranchId());
-        CustomerModel customer = customerRepo.findById(req.getCustomerId());
-
+         EmployeeModel employee = employeeRepo.findById(req.getEmployeeId());
         if (employee == null) return new NotFoundResponse<>("Nhân viên không tồn tại");
+
+        BranchModel branch = branchRepo.findById(req.getBranchId());
         if (branch == null) return new NotFoundResponse<>("Chi nhánh không tồn tại");
-        if (customer == null) return new NotFoundResponse<>("Khách hàng không tồn tại");
+
+        if (!employee.getBranch().getId().equals(branch.getId()))
+            return new InvalidResponse<>("Nhân viên không thuộc chi nhánh này");
+
+        CustomerModel customer = null;
+        if (req.getCustomerId() != null)
+            customer = customerRepo.findById(req.getCustomerId());
+
+        if (req.getCustomerId() != null && customer == null)
+            return new NotFoundResponse<>("Khách hàng không tồn tại");
 
         List<InvoiceDetailModel> details = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
 
         for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
-            ProductModel product = productRepo.findById(d.getProductId());
-            if (product == null) return new NotFoundResponse<>("Sản phẩm không tồn tại: " + d.getProductId());
 
-            BigDecimal unitPrice = BigDecimalUtil.safe(
-                    product.getSellPrice() != null ? BigDecimal.valueOf(product.getSellPrice()) : BigDecimal.ZERO
-            );
+            if (d.getQuantity() <= 0)
+                return new InvalidResponse<>("Số lượng sản phẩm phải > 0");
+
+            ProductModel product = productRepo.findById(d.getProductId());
+            if (product == null) 
+                return new NotFoundResponse<>("Sản phẩm không tồn tại: " + d.getProductId());
+
+            // Check tồn kho
+            InventoryModel inv = inventoryRepo.findByBranchAndProduct(branch.getId(), product.getId());
+            if (inv == null || inv.getQuantity() < d.getQuantity())
+                return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + product.getName());
+
+            // Tạm trừ tồn kho
+            inv.setQuantity(inv.getQuantity() - d.getQuantity());
+            inventoryRepo.update(inv);
+
+            // Tính giá
+            BigDecimal unitPrice = BigDecimalUtil.safe(product.getSellPrice());
             InvoiceDetailModel detail = new InvoiceDetailModel(product, null, d.getQuantity(), unitPrice);
+
             details.add(detail);
-            total = total.add(BigDecimalUtil.safe(detail.getTotal()));
+            total = total.add(detail.getTotal());
         }
 
+        // ---------- Tính discount ----------
         BigDecimal discount = BigDecimalUtil.safe(req.getDiscount());
+        if (discount.compareTo(total) > 0)
+            return new InvalidResponse<>("Giảm giá không thể lớn hơn tổng tiền");
+
+        BigDecimal finalTotal = total.subtract(discount);
+
+        // ---------- Tạo invoice ----------
         InvoiceModel invoice = new InvoiceModel.Builder()
                 .id(UUID.randomUUID().toString())
                 .employee(employee)
@@ -76,14 +107,42 @@ public class InvoiceService {
                 .discount(discount)
                 .note(req.getNote())
                 .details(details)
-                .total(total.subtract(discount))
+                .total(finalTotal)
+                .status(InvoiceModel.InvoiceStatus.PENDING)
                 .build();
+    
+        // Set invoice cho detail
+        for (InvoiceDetailModel d : details)
+            d.setInvoice(invoice);
 
-        // Liên kết chi tiết với invoice
-        for (InvoiceDetailModel d : details) d.setInvoice(invoice);
-
+        // ---------- Lưu ----------
         invoiceRepo.save(invoice);
         return new SuccessResponse<>("Tạo hóa đơn thành công", mapper.toDTO(invoice));
+    }
+
+    // ------------------ Xác nhận thanh toán ------------------
+    public ResponseDTO<InvoiceInfo> confirmInvoice(String invoiceId) {
+        InvoiceModel invoice = invoiceRepo.findById(invoiceId);
+        if (invoice == null)
+            return new NotFoundResponse<>("Hóa đơn không tồn tại");
+
+        if (invoice.getStatus() != InvoiceModel.InvoiceStatus.PENDING)
+            return new InvalidResponse<>("Hóa đơn không ở trạng thái chờ xử lý");
+
+        // Trừ kho chính thức
+        for (InvoiceDetailModel detail : invoice.getDetails()) {
+            InventoryModel inv = inventoryRepo.findByBranchAndProduct(invoice.getBranch().getId(), detail.getProduct().getId());
+            if (inv == null || inv.getQuantity() < detail.getQuantity())
+                return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + detail.getProduct().getName());
+
+            inv.setQuantity(inv.getQuantity() - detail.getQuantity());
+            inventoryRepo.update(inv);
+        }
+
+        invoice.setStatus(InvoiceModel.InvoiceStatus.COMPLETED);
+        invoiceRepo.update(invoice);
+
+        return new SuccessResponse<>("Xác nhận thanh toán thành công", mapper.toDTO(invoice));
     }
 
     // ------------------ Cập nhật hóa đơn ------------------
@@ -98,7 +157,12 @@ public class InvoiceService {
         if (req.getBranchId() != null) existing.setBranch(branchRepo.findById(req.getBranchId()));
         if (req.getCustomerId() != null) existing.setCustomer(customerRepo.findById(req.getCustomerId()));
         if (req.getNote() != null) existing.setNote(req.getNote());
-        if (req.getDiscount() != null) existing.setDiscount(BigDecimalUtil.safe(req.getDiscount()));
+        if (req.getDiscount() != null) {
+            BigDecimal discount = BigDecimalUtil.safe(req.getDiscount());
+            if (discount.compareTo(existing.getTotal()) > 0)
+                return new InvalidResponse<>("Giảm giá lớn hơn tổng tiền");
+            existing.setDiscount(discount);
+        }
 
         // Cập nhật chi tiết nếu có
         if (req.getDetails() != null && !req.getDetails().isEmpty()) {

@@ -18,4 +18,8 @@ public class BigDecimalUtil {
     public static BigDecimal safe(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;
     }
+
+    public static BigDecimal safe(Double value) {
+        return value != null ? BigDecimal.valueOf(value) : BigDecimal.ZERO;
+    }
 }

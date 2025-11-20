@@ -2,11 +2,14 @@ package edu.ptithcm.models;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -40,6 +43,10 @@ public class InvoiceModel {
     private BigDecimal discount = BigDecimal.ZERO;
     private String note;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus status = InvoiceStatus.PENDING;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceDetailModel> details;
 
@@ -54,7 +61,8 @@ public class InvoiceModel {
         this.total = builder.total;
         this.discount = builder.discount;
         this.note = builder.note;
-        this.details = builder.details;
+        this.status = builder.status;
+        setDetails(builder.details);
     }
 
     // --- Builder ---
@@ -67,7 +75,8 @@ public class InvoiceModel {
         private BigDecimal total = BigDecimal.ZERO;
         private BigDecimal discount = BigDecimal.ZERO;
         private String note;
-        private List<InvoiceDetailModel> details;
+        private InvoiceStatus status = InvoiceStatus.PENDING;
+        private List<InvoiceDetailModel> details = new ArrayList<>();
 
         public Builder id(String id) { this.id = id; return this; }
         public Builder employee(EmployeeModel employee) { this.employee = employee; return this; }
@@ -77,7 +86,11 @@ public class InvoiceModel {
         public Builder total(BigDecimal total) { this.total = total; return this; }
         public Builder discount(BigDecimal discount) { this.discount = discount; return this; }
         public Builder note(String note) { this.note = note; return this; }
-        public Builder details(List<InvoiceDetailModel> details) { this.details = details; return this; }
+        public Builder status(InvoiceStatus status) { this.status = status; return this; }
+        public Builder details(List<InvoiceDetailModel> details) { 
+            this.details = details != null ? details : new ArrayList<>();
+            return this;
+        }
 
         public InvoiceModel build() { return new InvoiceModel(this); }
     }
@@ -99,8 +112,31 @@ public class InvoiceModel {
     public void setDiscount(BigDecimal discount) { this.discount = discount; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public InvoiceStatus getStatus() { return status; }
+    public void setStatus(InvoiceStatus status) { this.status = status; }
     public List<InvoiceDetailModel> getDetails() { return details; }
-    public void setDetails(List<InvoiceDetailModel> details) { this.details = details; }
+
+    public void addDetail(InvoiceDetailModel detail) {
+        this.details.add(detail);
+        detail.setInvoice(this);
+    }
+
+
+    public void setDetails(List<InvoiceDetailModel> details) {
+        this.details.clear();
+        if (details != null) {
+            for (InvoiceDetailModel d : details) {
+                addDetail(d);
+            }
+        }
+    }
+
+    // --- inner enum ---
+    public enum InvoiceStatus {
+        PENDING,
+        COMPLETED,
+        CANCELLED
+    }
 
     @Override
     public String toString() {

@@ -69,14 +69,14 @@ public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> impl
 
     @Override
     public InventoryModel findByBranchAndProduct(Integer branchId, String productId) {
-        return execute(session -> {
-            Query<InventoryModel> query = session.createQuery(
-                "FROM InventoryModel i " +
-                "WHERE i.branch.id = :branchId AND i.product.id = :productId", InventoryModel.class);
-            query.setParameter("branchId", branchId);
-            query.setParameter("productId", productId);
-            query.setMaxResults(1);
-            return query.uniqueResult();
-        });
+        return execute(session -> session.createQuery(
+                "FROM InventoryModel i WHERE i.branch.id = :branchId AND i.product.id = :productId",
+                InventoryModel.class
+            )
+            .setParameter("branchId", branchId)
+            .setParameter("productId", productId)
+            .setMaxResults(1)
+            .uniqueResult()
+        );
     }
 }

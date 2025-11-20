@@ -162,5 +162,24 @@ public class InvoiceRoute {
                 ReplyUtils.replyError(args, TypeDTTP.INVOICE_GET_BY_EMPLOYEE.getValue(), e);
             }
         });
+
+        // ---------------- CONFIRM INVOICE ----------------
+        server.on(TypeDTTP.INVOICE_CONFIRM.getValue(), args -> {
+            try {
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CONFIRM.getValue()))
+                    return;
+
+                InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
+                ResponseDTO<InvoiceInfo> response = controller.confirmInvoice(request);
+
+                args.reply(TypeDTTP.INVOICE_CONFIRM.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
+
+            } catch (Exception e) {
+                ReplyUtils.replyError(args, TypeDTTP.INVOICE_CONFIRM.getValue(), e);
+            }
+        });
     }
 }

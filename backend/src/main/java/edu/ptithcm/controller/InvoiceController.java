@@ -51,4 +51,10 @@ public class InvoiceController {
     public ResponseDTO<List<InvoiceInfo>> getInvoiceByEmployee(InvoiceRequestDTO req) {
         return SafeExecutor.run(() -> service.getInvoiceByEmployee(req.getEmployeeId()));
     }
+
+    // ---------- CONFIRM INVOICE ----------
+    public ResponseDTO<InvoiceInfo> confirmInvoice(InvoiceRequestDTO req) {
+        return SafeExecutor.run(() -> service.confirmInvoice(req.getInvoiceId()));
+    }
+
 }
