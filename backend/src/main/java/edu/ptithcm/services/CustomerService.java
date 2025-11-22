@@ -11,13 +11,10 @@ import edu.ptithcm.dto.response.error.NotFoundResponse;
 import edu.ptithcm.dto.response.success.SuccessResponse;
 import edu.ptithcm.dto.response.info_models.CustomerInfo;
 import edu.ptithcm.models.CustomerModel;
-import edu.ptithcm.models.EmployeeModel;
 import edu.ptithcm.repository.customer.CustomerRepository;
 import edu.ptithcm.repository.Repository;
 import edu.ptithcm.utils.mapper.BaseMapper;
 import edu.ptithcm.utils.mapper.MapperFactory;
-import edu.ptithcm.middleware.SessionCustomerMap;
-import edu.ptithcm.middleware.SessionManager;
 
 public class CustomerService {
 
@@ -31,15 +28,10 @@ public class CustomerService {
     }
 
     // ------------------ Tạo khách hàng ------------------
-    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req, String sessionId) throws RuntimeException {
+    public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req) throws RuntimeException {
 
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên khách hàng");
-
-        EmployeeModel employee = SessionManager.getCurrentEmployee(sessionId);
-        if (employee == null) {
-            return new InvalidResponse<>("Phiên đăng nhập không hợp lệ");
-        }
 
         CustomerModel customer = new CustomerModel();
         customer.setId(UUID.randomUUID().toString());
@@ -48,32 +40,15 @@ public class CustomerService {
         customer.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
         customerRepo.save(customer);
-        
-        // Thêm customerId vào session map (chỉ staff cần)
-        if (employee.getRole() == EmployeeModel.Role.STAFF) {
-            SessionCustomerMap.addCustomer(employee.getId(), customer.getId());
-        }
 
         return new SuccessResponse<>("Tạo khách hàng thành công", mapper.toDTO(customer));
     }
 
     // ------------------ Cập nhật khách hàng ------------------
-    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req, String sessionId) throws RuntimeException {
+    public ResponseDTO<CustomerInfo> updateCustomer(CustomerRequestDTO req) throws RuntimeException {
 
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID khách hàng");
-
-        EmployeeModel employee = SessionManager.getCurrentEmployee(sessionId);
-        if (employee == null) {
-            return new InvalidResponse<>("Phiên đăng nhập không hợp lệ");
-        }
-
-        boolean isAdmin = employee.getRole() == EmployeeModel.Role.ADMIN;
-
-        // Kiểm tra quyền chỉnh sửa
-        if (!SessionCustomerMap.canEdit(employee.getId(), req.getCustomerId(), isAdmin)) {
-            return new InvalidResponse<>("Bạn không có quyền chỉnh sửa khách hàng này");
-        }
 
         CustomerModel existing = customerRepo.findById(req.getCustomerId());
         if (existing == null)
