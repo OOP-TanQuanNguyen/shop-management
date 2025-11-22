@@ -57,19 +57,31 @@ public class InventoryService {
 
     // Cập nhật
     public ResponseDTO<InventoryInfo> updateInventory(InventoryRequestDTO req) throws RuntimeException {
-        if (!req.validForUpdate()) return new InvalidResponse<>("Dữ liệu không hợp lệ");
+        if (!req.validForUpdate())
+            return new InvalidResponse<>("Dữ liệu không hợp lệ");
 
-        InventoryModel temp = new InventoryModel();
-        temp.setId(req.getId());
+        InventoryModel inventory = inventoryRepo.findById(req.getId());
+        if (inventory == null)
+            return new NotFoundResponse<>("Kho không tồn tại");
 
-        if (req.getBranchId() != null) temp.setBranch(branchRepo.findById(Integer.valueOf(req.getBranchId())));
-        if (req.getProductId() != null) temp.setProduct(productRepo.findById(req.getProductId()));
-        temp.setQuantity(req.getQuantity());
+        if (req.getBranchId() != null) {
+            BranchModel br = branchRepo.findById(Integer.valueOf(req.getBranchId()));
+            if (br == null) return new InvalidResponse<>("Chi nhánh không hợp lệ");
+            inventory.setBranch(br);
+        }
 
-        InventoryModel updated = inventoryRepo.update(temp);
-        if (updated == null) return new NotFoundResponse<>("Kho không tồn tại");
+        if (req.getProductId() != null) {
+            ProductModel p = productRepo.findById(req.getProductId());
+            if (p == null) return new InvalidResponse<>("Sản phẩm không hợp lệ");
+            inventory.setProduct(p);
+        }
 
-        return new SuccessResponse<>("Cập nhật kho thành công", mapper.toDTO(updated));
+        if (req.getQuantity() != null) {
+            inventory.setQuantity(req.getQuantity());
+        }
+
+        inventoryRepo.update(inventory);
+        return new SuccessResponse<>("Cập nhật kho thành công", mapper.toDTO(inventory));
     }
 
     // Xóa

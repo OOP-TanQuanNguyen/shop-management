@@ -16,6 +16,7 @@ import edu.ptithcm.repository.category.CategoryRepository;
 import edu.ptithcm.repository.product.ProductRepository;
 import edu.ptithcm.utils.mapper.BaseMapper;
 import edu.ptithcm.utils.mapper.MapperFactory;
+import edu.ptithcm.utils.SearchUtil;
 
 public class ProductService {
 
@@ -101,14 +102,19 @@ public class ProductService {
     // ------------------ Tìm kiếm theo tên ------------------
     public ResponseDTO<List<ProductInfo>> getProductByName(String keyword) throws RuntimeException {
 
-        if (keyword == null || keyword.isBlank())
+        if (!SearchUtil.isKeywordValid(keyword))
             return new InvalidResponse<>("Thiếu từ khóa tìm kiếm");
+
+        String normalized = SearchUtil.normalize(keyword);
+
+        List<ProductModel> products = productRepo.searchByName(normalized);
 
         return new SuccessResponse<>(
                 "Tìm kiếm sản phẩm thành công",
-                mapper.toDTOList(productRepo.searchByName(keyword))
+                mapper.toDTOList(products)
         );
     }
+
 
     // ------------------ Lấy theo ID ------------------
     public ResponseDTO<ProductInfo> getProductById(ProductRequestDTO req) throws RuntimeException {
