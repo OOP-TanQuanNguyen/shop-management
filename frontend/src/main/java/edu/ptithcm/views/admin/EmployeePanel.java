@@ -44,20 +44,21 @@ public class EmployeePanel extends JPanel {
         add(topBar, BorderLayout.SOUTH);
 
         // ======= TABLE =======
-        // ✅ BỎ cột "Mã NV"
         String[] columns = {
             "Tên nhân viên",
             "Tên đăng nhập",
             "Vai trò",
+            "Chi nhánh",
             "Số điện thoại",
             "Ngày vào làm",
             "Ngày nghỉ việc",
             "Trạng thái"
         };
+
         model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return false; // toàn bộ bảng là read-only
             }
         };
 
@@ -93,13 +94,17 @@ public class EmployeePanel extends JPanel {
     // ===== UPDATE TABLE =====
     public void updateTable(List<UserModel> employees) {
         model.setRowCount(0);
+        if (employees == null) {
+            return;
+        }
 
         for (UserModel emp : employees) {
-            // ✅ BỎ emp.getId()
             Object[] row = new Object[]{
                 emp.getName(),
                 emp.getUsername(),
                 emp.getRole(),
+                // tránh null pointer khi branch = null
+                emp.getBranch() != null ? emp.getBranch() : "N/A",
                 emp.getPhone(),
                 emp.getHireDate() != null ? emp.getHireDate() : "N/A",
                 emp.getEndDate() != null ? emp.getEndDate() : "N/A",

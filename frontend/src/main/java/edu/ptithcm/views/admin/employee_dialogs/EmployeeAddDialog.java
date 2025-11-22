@@ -2,38 +2,39 @@ package edu.ptithcm.views.admin.employee_dialogs;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
-/**
- * Dialog thêm nhân viên mới
- */
 public class EmployeeAddDialog extends EmployeeFormDialog {
 
-    // 🔹 Thêm dòng này để khai báo biến cboRole
-    private JComboBox<String> cboRole;
-
-    public EmployeeAddDialog(Frame owner) {
-        super(owner, "➕ Thêm nhân viên mới");
-        initComponents();
+    public EmployeeAddDialog(Frame owner, List<BranchItem> branches) {
+        super(owner, "Thêm nhân viên mới");
+        initComponents(branches);
     }
 
-    private void initComponents() {
+    private void initComponents(List<BranchItem> branches) {
         JPanel formPanel = createFormPanel();
 
-        // Create fields
+        // Khởi tạo các field
         txtUsername = new JTextField(20);
         txtPassword = new JPasswordField(20);
         txtName = new JTextField(20);
         txtPhone = new JTextField(20);
-        cboRole = new JComboBox<>(new String[]{"STAFF", "ADMIN"}); // ✅ đã khai báo ở trên
 
-        // Add fields to form
-        addField(formPanel, "Tên đăng nhập: *", txtUsername, 0);
-        addField(formPanel, "Mật khẩu: *", txtPassword, 1);
-        addField(formPanel, "Tên nhân viên: *", txtName, 2);
+        initRoleComboBox();           // ✅ Khởi tạo Role dropdown
+        initBranchComboBox(branches); // ✅ Khởi tạo Branch dropdown
+
+        chkStatus = new JCheckBox("Đang làm việc");
+        chkStatus.setSelected(true);
+
+        // Thêm vào panel
+        addField(formPanel, "Tên đăng nhập:", txtUsername, 0);
+        addField(formPanel, "Mật khẩu:", txtPassword, 1);
+        addField(formPanel, "Tên nhân viên:", txtName, 2);
         addField(formPanel, "Số điện thoại:", txtPhone, 3);
-        addField(formPanel, "Chức vụ: *", cboRole, 4);
+        addField(formPanel, "Vai trò:", cmbRole, 4);
+        addField(formPanel, "Chi nhánh:", cmbBranch, 5);
+        addField(formPanel, "Trạng thái:", chkStatus, 6);
 
-        // Layout
         setLayout(new BorderLayout());
         add(formPanel, BorderLayout.CENTER);
         add(createButtonPanel(), BorderLayout.SOUTH);
@@ -41,30 +42,18 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
 
     @Override
     protected void onOkClicked() {
-        if (validateInput()) {
-            confirmed = true;
-            dispose();
+        // Validate
+        if (txtUsername.getText().trim().isEmpty()
+                || txtPassword.getPassword().length == 0
+                || txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Vui lòng điền đầy đủ thông tin bắt buộc!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-    }
 
-    private boolean validateInput() {
-        if (txtUsername.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên đăng nhập!", "Lỗi", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        if (txtPassword.getPassword().length == 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập mật khẩu!", "Lỗi", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        if (txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên nhân viên!", "Lỗi", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        if (cboRole.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn chức vụ!", "Lỗi", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        return true;
+        confirmed = true;
+        dispose();
     }
 
     // Getters
@@ -73,7 +62,7 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
     }
 
     public String getPassword() {
-        return new String(txtPassword.getPassword()).trim();
+        return new String(txtPassword.getPassword());
     }
 
     public String getEmployeeName() {
@@ -85,6 +74,15 @@ public class EmployeeAddDialog extends EmployeeFormDialog {
     }
 
     public String getRole() {
-        return cboRole.getSelectedItem().toString();
+        return (String) cmbRole.getSelectedItem();
+    }
+
+    public Integer getBranchId() {
+        BranchItem selected = (BranchItem) cmbBranch.getSelectedItem();
+        return (selected != null) ? selected.getId() : null;
+    }
+
+    public boolean getStatus() {
+        return chkStatus.isSelected();
     }
 }

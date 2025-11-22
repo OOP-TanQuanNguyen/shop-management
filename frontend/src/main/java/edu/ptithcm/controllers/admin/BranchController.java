@@ -12,18 +12,15 @@ import edu.ptithcm.views.admin.branch_dialogs.BranchEditDialog;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 public class BranchController {
-
-    private static final Logger logger = Logger.getLogger(BranchController.class.getName());
 
     private final BranchPanel view;
     private final BranchService service;
     private final Store store = Store.getInstance();
+
     private List<BranchInfo> currentBranches;
     private boolean isShowingMessage = false;
 
@@ -34,8 +31,6 @@ public class BranchController {
         registerEvents();
         store.subcribe(this::onStateChanged);
         loadBranches();
-
-        logger.info("BranchController initialized");
     }
 
     private void registerEvents() {
@@ -49,206 +44,159 @@ public class BranchController {
         try {
             service.getAllBranches();
         } catch (IOException e) {
-            logger.severe(String.format("Failed to load branches: %s", e.getMessage()));
-            SwingUtilities.invokeLater(()
-                    -> JOptionPane.showMessageDialog(view, "Không thể tải danh sách chi nhánh: " + e.getMessage(),
-                            "Lỗi", JOptionPane.ERROR_MESSAGE)
-            );
+            JOptionPane.showMessageDialog(view,
+                    "Không thể tải danh sách chi nhánh: " + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // ============================================================
+    // ADD
+    // ============================================================
     private void handleAdd() {
-        SwingUtilities.invokeLater(() -> {
-            BranchAddDialog dialog = new BranchAddDialog(getParentFrame());
-            dialog.setVisible(true);
+        BranchAddDialog dialog = new BranchAddDialog(getParentFrame());
+        dialog.setVisible(true);
 
-            if (dialog.isConfirmed()) {
-                Map<String, Object> data = dialog.toMap();
-                logger.info("Branch data to create: " + data);
-                createBranch(data);
-            }
+        if (dialog.isConfirmed()) {
+            Map<String, Object> data = dialog.toMap();
+            createBranch(data);
+        }
 
-            dialog.dispose();
-        });
+        dialog.dispose();
     }
 
+    private void createBranch(Map<String, Object> data) {
+        try {
+            service.createBranch(data);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view,
+                    "Lỗi khi thêm chi nhánh: " + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // ============================================================
+    // EDIT
+    // ============================================================
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
 
         if (row == -1) {
-            JOptionPane.showMessageDialog(view, "Vui lòng chọn chi nhánh để sửa!",
+            JOptionPane.showMessageDialog(view,
+                    "Vui lòng chọn chi nhánh để sửa!",
                     "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        if (currentBranches == null || row >= currentBranches.size()) {
-            JOptionPane.showMessageDialog(view, "Không thể lấy thông tin chi nhánh!",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
+        BranchInfo branch = currentBranches.get(row);
+
+        BranchEditDialog dialog = new BranchEditDialog(
+                getParentFrame(),
+                branch.getId(),
+                branch.getName(),
+                branch.getPhone(),
+                branch.getAddress()
+        );
+
+        dialog.setVisible(true);
+
+        if (dialog.isConfirmed()) {
+            Map<String, Object> data = dialog.toMap();
+
+            // FE giữ branchId là STRING → đúng chuẩn BE
+            data.put("branchId", branch.getId());
+
+            updateBranch(data);
         }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                BranchInfo branch = currentBranches.get(row);
-
-                logger.info(String.format("Editing branch: ID=%s, Name=%s", branch.getId(), branch.getName()));
-
-                BranchEditDialog dialog = new BranchEditDialog(
-                        getParentFrame(),
-                        branch.getId(),
-                        branch.getName(),
-                        branch.getPhone(),
-                        branch.getAddress(),
-                        branch.getIsActive()
-                );
-                dialog.setVisible(true);
-
-                if (dialog.isConfirmed()) {
-                    Map<String, Object> data = new HashMap<>();
-
-                    data.put("branchId", branch.getId());
-                    data.put("name", dialog.getBranchName());
-                    data.put("phone", dialog.getPhone());
-                    data.put("address", dialog.getAddress());
-                    data.put("isActive", dialog.getStatus());
-
-                    logger.info("Branch data to update: " + data);
-                    updateBranch(data);
-                }
-
-                dialog.dispose();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi đọc thông tin chi nhánh: " + e.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
-                logger.severe(String.format("Edit error: %s", e.getMessage()));
-            }
-        });
+        dialog.dispose();
     }
 
+    private void updateBranch(Map<String, Object> data) {
+        try {
+            service.updateBranch(data);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(view,
+                    "Lỗi khi cập nhật chi nhánh: " + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // ============================================================
+    // DELETE
+    // ============================================================
     private void handleDelete() {
         int row = view.getTable().getSelectedRow();
 
         if (row == -1) {
-            JOptionPane.showMessageDialog(view, "Vui lòng chọn chi nhánh để xóa!",
+            JOptionPane.showMessageDialog(view,
+                    "Vui lòng chọn chi nhánh để xóa!",
                     "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        if (currentBranches == null || row >= currentBranches.size()) {
-            JOptionPane.showMessageDialog(view, "Không thể lấy thông tin chi nhánh!",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
+        BranchInfo branch = currentBranches.get(row);
+
+        BranchDeleteConfirmDialog dialog
+                = new BranchDeleteConfirmDialog(getParentFrame(), branch.getName());
+
+        dialog.setVisible(true);
+
+        if (dialog.isConfirmed()) {
+            deleteBranch(branch.getId());
         }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                BranchInfo branch = currentBranches.get(row);
-                String id = branch.getId();
-                String name = branch.getName();
-
-                logger.info(String.format("Attempting to delete branch: ID=%s, Name=%s", id, name));
-
-                BranchDeleteConfirmDialog dialog = new BranchDeleteConfirmDialog(getParentFrame(), name);
-                dialog.setVisible(true);
-
-                if (dialog.isConfirmed()) {
-                    logger.info("Delete confirmed for ID: " + id);
-                    deleteBranch(id);
-                }
-
-                dialog.dispose();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(view, "Lỗi khi xóa chi nhánh: " + e.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
-                logger.severe(String.format("Delete error: %s", e.getMessage()));
-            }
-        });
-    }
-
-    private void createBranch(Map<String, Object> branchData) {
-        try {
-            service.createBranch(branchData);
-            logger.info(String.format("Create branch request sent for: %s", branchData.get("name")));
-        } catch (IOException e) {
-            logger.severe(String.format("Failed to send create request: %s", e.getMessage()));
-            SwingUtilities.invokeLater(()
-                    -> JOptionPane.showMessageDialog(view, "Lỗi khi thêm chi nhánh: " + e.getMessage(),
-                            "Lỗi", JOptionPane.ERROR_MESSAGE)
-            );
-        }
-    }
-
-    private void updateBranch(Map<String, Object> branchData) {
-        try {
-            service.updateBranch(branchData);
-            String id = branchData.containsKey("branchId") ? String.valueOf(branchData.get("branchId")) : "Unknown";
-            logger.info(String.format("Update branch request sent for ID: %s", id));
-        } catch (IOException e) {
-            logger.severe(String.format("Failed to send update request: %s", e.getMessage()));
-            SwingUtilities.invokeLater(()
-                    -> JOptionPane.showMessageDialog(view, "Lỗi khi cập nhật chi nhánh: " + e.getMessage(),
-                            "Lỗi", JOptionPane.ERROR_MESSAGE)
-            );
-        }
+        dialog.dispose();
     }
 
     private void deleteBranch(String id) {
         try {
             service.deleteBranch(id);
-            logger.info(String.format("Delete branch request sent for ID: %s", id));
-        } catch (IOException e) {
-            logger.severe(String.format("Failed to send delete request: %s", e.getMessage()));
-            SwingUtilities.invokeLater(()
-                    -> JOptionPane.showMessageDialog(view, "Lỗi khi xóa chi nhánh: " + e.getMessage(),
-                            "Lỗi", JOptionPane.ERROR_MESSAGE)
-            );
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view,
+                    "Lỗi khi xóa chi nhánh: " + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    // ============================================================
+    // STATE UPDATE
+    // ============================================================
     private void onStateChanged(AppState state) {
-        SwingUtilities.invokeLater(() -> {
-            updateBranchList(state);
-            showMessagesFromState(state);
-        });
+        updateBranchList(state);
+        showMessages(state);
     }
 
     private void updateBranchList(AppState state) {
-        Object branchListObj = state.get("Branches");
-        if (branchListObj instanceof List<?> list) {
+        Object obj = state.get("Branches");
+
+        if (obj instanceof List<?> list) {
             @SuppressWarnings("unchecked")
             List<BranchInfo> branches = (List<BranchInfo>) list;
+
             this.currentBranches = branches;
             view.updateTable(branches);
-            logger.info(String.format("Branch list updated: %d items", branches.size()));
         }
     }
 
-    private void showMessagesFromState(AppState state) {
+    private void showMessages(AppState state) {
         if (isShowingMessage) {
             return;
         }
 
         Object msg = state.get("BranchMessage");
-        if (msg instanceof String message && !message.isEmpty()) {
+        if (msg instanceof String m && !m.isEmpty()) {
             isShowingMessage = true;
             state.set("BranchMessage", "");
-
-            if (message.contains("thành công")) {
-                JOptionPane.showMessageDialog(view, message, "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(view, message, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-            }
-
+            JOptionPane.showMessageDialog(view, m, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             isShowingMessage = false;
         }
 
         Object err = state.get("BranchError");
-        if (err instanceof String error && !error.isEmpty()) {
+        if (err instanceof String e && !e.isEmpty()) {
             isShowingMessage = true;
             state.set("BranchError", "");
-
-            JOptionPane.showMessageDialog(view, error, "Lỗi", JOptionPane.ERROR_MESSAGE);
-
+            JOptionPane.showMessageDialog(view, e, "Lỗi", JOptionPane.ERROR_MESSAGE);
             isShowingMessage = false;
         }
     }

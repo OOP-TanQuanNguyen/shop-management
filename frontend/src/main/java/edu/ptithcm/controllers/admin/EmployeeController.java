@@ -2,41 +2,55 @@ package edu.ptithcm.controllers.admin;
 
 import java.awt.Frame;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
+import edu.ptithcm.models.BranchInfo;
 import edu.ptithcm.models.UserModel;
+import edu.ptithcm.services.admin.BranchService;
 import edu.ptithcm.services.admin.EmployeeService;
 import edu.ptithcm.views.admin.EmployeePanel;
 import edu.ptithcm.views.admin.employee_dialogs.EmployeeAddDialog;
 import edu.ptithcm.views.admin.employee_dialogs.EmployeeDeleteConfirmDialog;
 import edu.ptithcm.views.admin.employee_dialogs.EmployeeEditDialog;
+import edu.ptithcm.views.admin.employee_dialogs.EmployeeFormDialog;
 import edu.ptithcm.views.components.AppMessageBox;
 
 public class EmployeeController {
 
-    private static final Logger logger = Logger.getLogger(EmployeeController.class.getName());
-
     private final EmployeePanel view;
     private final EmployeeService service;
+    private final BranchService branchService;
     private final Store store = Store.getInstance();
 
     private boolean isShowingMessage = false;
-    private List<UserModel> currentEmployees; // ✅ Cache danh sách
 
-    public EmployeeController(EmployeePanel view, EmployeeService service) {
+    private List<UserModel> currentEmployees = new ArrayList<>();
+    private List<EmployeeFormDialog.BranchItem> branches = new ArrayList<>();
+
+    public EmployeeController(EmployeePanel view,
+            EmployeeService service,
+            BranchService branchService) {
+
         this.view = view;
         this.service = service;
+        this.branchService = branchService;
 
         registerEvents();
+
         store.subcribe(this::onStateChanged);
+
+        loadBranches();
         loadEmployees();
     }
 
+    // =====================================================================
+    // EVENT REGISTRATION
+    // =====================================================================
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
@@ -44,103 +58,143 @@ public class EmployeeController {
         view.getBtnReload().addActionListener(e -> loadEmployees());
     }
 
+    private void loadBranches() {
+        try {
+            branchService.getAllBranches();
+        } catch (Exception e) {
+            AppMessageBox.showError("Không thể tải danh sách chi nhánh: " + e.getMessage());
+        }
+    }
+
     private void loadEmployees() {
         try {
             service.getAllEmployees();
         } catch (IOException e) {
-            AppMessageBox.showError("Không thể tải danh sách: " + e.getMessage());
+            AppMessageBox.showError("Không thể tải danh sách nhân viên: " + e.getMessage());
         }
     }
 
-    // ─────────────────────────────────────────────
-    // CRUD
-    // ─────────────────────────────────────────────
+    // =====================================================================
+    // ADD EMPLOYEE
+    // =====================================================================
     private void handleAdd() {
-        EmployeeAddDialog dl = new EmployeeAddDialog(getParentFrame());
-        dl.showDialog();
 
-        if (dl.isConfirmed()) {
+        if (branches == null || branches.isEmpty()) {
+            AppMessageBox.showWarning("Danh sách chi nhánh đang được tải. Vui lòng thử lại sau.");
+            return;
+        }
+
+        EmployeeAddDialog dialog = new EmployeeAddDialog(getParentFrame(), branches);
+        dialog.showDialog();
+
+        if (dialog.isConfirmed()) {
             try {
                 service.createEmployee(
-                        dl.getUsername(),
-                        dl.getPassword(),
-                        dl.getEmployeeName(),
-                        dl.getPhone(),
-                        dl.getRole()
+                        dialog.getUsername(),
+                        dialog.getPassword(),
+                        dialog.getEmployeeName(),
+                        dialog.getPhone(),
+                        dialog.getRole(),
+                        dialog.getBranchId()
                 );
             } catch (IOException e) {
-                AppMessageBox.showError("Lỗi: " + e.getMessage());
+                AppMessageBox.showError("Lỗi thêm nhân viên: " + e.getMessage());
             }
         }
     }
 
+    // =====================================================================
+    // EDIT EMPLOYEE
+    // =====================================================================
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
+
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
+            AppMessageBox.showWarning("Vui lòng chọn nhân viên để chỉnh sửa!");
             return;
         }
 
-        // ✅ Lấy employee từ list cache thay vì từ table
         if (currentEmployees == null || row >= currentEmployees.size()) {
             AppMessageBox.showError("Dữ liệu không hợp lệ!");
             return;
         }
 
+        if (branches == null || branches.isEmpty()) {
+            AppMessageBox.showWarning("Danh sách chi nhánh đang được tải. Vui lòng thử lại sau.");
+            return;
+        }
+
         UserModel employee = currentEmployees.get(row);
-        String id = employee.getId();
-        String name = employee.getName();
-        String role = employee.getRole();
-        String phone = employee.getPhone();
-        boolean status = employee.getStatus() != null ? employee.getStatus() : false;
 
-        EmployeeEditDialog dl = new EmployeeEditDialog(getParentFrame(), id, name, phone, role, status);
-        dl.showDialog();
+        EmployeeEditDialog dialog = new EmployeeEditDialog(
+                getParentFrame(),
+                employee.getId(),
+                employee.getName(),
+                employee.getPhone(),
+                employee.getRole(),
+                employee.getBranchId(),
+                employee.getBranch(),
+                Boolean.TRUE.equals(employee.getStatus()),
+                branches
+        );
 
-        if (dl.isConfirmed()) {
+        dialog.showDialog();
+
+        if (dialog.isConfirmed()) {
             try {
-                service.updateEmployee(id, dl.getEmployeeName(), dl.getPhone(), dl.getRole(), dl.getStatus());
+                service.updateEmployee(
+                        dialog.getEmployeeId(),
+                        dialog.getEmployeeName(),
+                        dialog.getPhone(),
+                        dialog.getRole(),
+                        dialog.getBranchId(),
+                        dialog.getStatus()
+                );
             } catch (IOException e) {
-                AppMessageBox.showError("Lỗi cập nhật: " + e.getMessage());
+                AppMessageBox.showError("Lỗi cập nhật nhân viên: " + e.getMessage());
             }
         }
     }
 
+    // =====================================================================
+    // DELETE EMPLOYEE
+    // =====================================================================
     private void handleDelete() {
         int row = view.getTable().getSelectedRow();
+
         if (row == -1) {
-            AppMessageBox.showWarning("Vui lòng chọn nhân viên!");
+            AppMessageBox.showWarning("Vui lòng chọn nhân viên để xóa!");
             return;
         }
 
-        // ✅ Lấy employee từ list cache thay vì từ table
         if (currentEmployees == null || row >= currentEmployees.size()) {
             AppMessageBox.showError("Dữ liệu không hợp lệ!");
             return;
         }
 
         UserModel employee = currentEmployees.get(row);
-        String id = employee.getId();
-        String name = employee.getName();
 
-        EmployeeDeleteConfirmDialog dl = new EmployeeDeleteConfirmDialog(getParentFrame(), name);
-        dl.showDialog();
+        EmployeeDeleteConfirmDialog dialog
+                = new EmployeeDeleteConfirmDialog(getParentFrame(), employee.getName());
 
-        if (dl.isConfirmed()) {
+        dialog.showDialog();
+
+        if (dialog.isConfirmed()) {
             try {
-                service.deleteEmployee(id);
+                service.deleteEmployee(employee.getId());
             } catch (IOException e) {
-                AppMessageBox.showError("Lỗi xóa: " + e.getMessage());
+                AppMessageBox.showError("Lỗi xóa nhân viên: " + e.getMessage());
             }
         }
     }
 
-    // ─────────────────────────────────────────────
-    // STATE CHANGE
-    // ─────────────────────────────────────────────
+    // =====================================================================
+    // STATE LISTENER
+    // =====================================================================
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateEmployeeList(state);
+            updateBranchList(state);
             showMessages(state);
         });
     }
@@ -148,35 +202,73 @@ public class EmployeeController {
     @SuppressWarnings("unchecked")
     private void updateEmployeeList(AppState state) {
         Object listObj = state.get("Employees");
+
         if (listObj instanceof List<?> list) {
-            currentEmployees = (List<UserModel>) list; // ✅ Cache lại
+            currentEmployees = (List<UserModel>) list;
             view.updateTable(currentEmployees);
         }
     }
 
+    // =====================================================================
+    // UPDATE BRANCH LIST (CHUẨN BranchInfo)
+    // =====================================================================
+    private void updateBranchList(AppState state) {
+
+        Object branchObj = state.get("Branches");
+
+        if (branchObj instanceof List<?> list) {
+
+            branches = new ArrayList<>();
+
+            for (Object item : list) {
+                if (item instanceof BranchInfo b) {
+
+                    Integer branchId = null;
+
+                    // Convert String → Integer (an toàn)
+                    try {
+                        if (b.getId() != null && !b.getId().isBlank()) {
+                            branchId = Integer.parseInt(b.getId());
+                        }
+                    } catch (Exception ignored) {
+                    }
+
+                    branches.add(new EmployeeFormDialog.BranchItem(
+                            branchId, // luôn là INTEGER cho ComboBox
+                            b.getName()
+                    ));
+                }
+            }
+
+            System.out.println("[DEBUG] Branch list loaded: " + branches.size());
+        }
+    }
+
+    // =====================================================================
+    // MESSAGES
+    // =====================================================================
     private void showMessages(AppState state) {
+
         if (isShowingMessage) {
             return;
         }
 
-        String msg = (String) state.get("EmployeeMessage");
-        if (msg != null && !msg.isEmpty()) {
+        String successMsg = (String) state.get("EmployeeMessage");
+        if (successMsg != null && !successMsg.isEmpty()) {
+
             isShowingMessage = true;
-
             state.set("EmployeeMessage", "");
-            AppMessageBox.showSuccess(msg);
-
+            AppMessageBox.showSuccess(successMsg);
             isShowingMessage = false;
             return;
         }
 
-        String err = (String) state.get("EmployeeError");
-        if (err != null && !err.isEmpty()) {
+        String errorMsg = (String) state.get("EmployeeError");
+        if (errorMsg != null && !errorMsg.isEmpty()) {
+
             isShowingMessage = true;
-
             state.set("EmployeeError", "");
-            AppMessageBox.showError(err);
-
+            AppMessageBox.showError(errorMsg);
             isShowingMessage = false;
         }
     }

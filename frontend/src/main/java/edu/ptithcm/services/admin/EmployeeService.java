@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import edu.ptithcm.app.actions.EmployeeAction;
 import edu.ptithcm.app.store.Store;
-import edu.ptithcm.models.UserModel;
 import edu.ptithcm.protocols.DTTP;
 
 public class EmployeeService {
@@ -18,8 +17,7 @@ public class EmployeeService {
     private static final String ERROR = "ERROR";
     private static final String REQUEST = "REQUEST";
     private static final String EMPLOYEES_KEY = "employees";
-
-    private static final int RELOAD_DELAY = 120;
+    private static final int RELOAD_DELAY = 12;
 
     private static final Logger logger = Logger.getLogger(EmployeeService.class.getName());
 
@@ -38,57 +36,76 @@ public class EmployeeService {
         client.on("EMPLOYEE_UPDATE", this::handleUpdateResponse);
         client.on("EMPLOYEE_DELETE", this::handleDeleteResponse);
         client.on("EMPLOYEE_FILTER", this::handleFilterResponse);
-        client.on("EMPLOYEE_SEARCH", this::handleSearchResponse);
     }
 
     // ─────────────────────────────────────────────
     // RESPONSE HANDLERS
     // ─────────────────────────────────────────────
+    @SuppressWarnings("unchecked")
     private void handleGetAllResponse(DTTP.DTTPArgs args) {
+        logger.info("EMPLOYEE_GET_ALL response: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
-            List<Map<String, Object>> employees = extractList(args.data);
-            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            if (args.data != null) {
+                List<Map<String, Object>> employees
+                        = (List<Map<String, Object>>) args.data.get(EMPLOYEES_KEY);
+
+                store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            }
         } else {
             setError(args.message);
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleGetActiveResponse(DTTP.DTTPArgs args) {
+        logger.info("EMPLOYEE_GET_ACTIVE response: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
-            List<Map<String, Object>> list = extractList(args.data);
-            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), list);
+            if (args.data != null) {
+                List<Map<String, Object>> list
+                        = (List<Map<String, Object>>) args.data.get(EMPLOYEES_KEY);
+
+                store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), list);
+            }
         } else {
             setError(args.message);
         }
     }
 
     private void handleCreateResponse(DTTP.DTTPArgs args) {
+        logger.info("EMPLOYEE_CREATE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Thêm nhân viên thành công!");
                 reloadEmployeeList();
             }
             case INVALID ->
-                setError("Thiếu thông tin bắt buộc!");
+                setError(args.message != null ? args.message : "Thiếu thông tin bắt buộc!");
             case ERROR ->
                 setError("Lỗi: " + args.message);
         }
     }
 
     private void handleUpdateResponse(DTTP.DTTPArgs args) {
+        logger.info("EMPLOYEE_UPDATE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Cập nhật nhân viên thành công!");
                 reloadEmployeeList();
             }
             case INVALID ->
-                setError("Thiếu ID hoặc dữ liệu không hợp lệ!");
+                setError(args.message != null ? args.message : "Thiếu ID hoặc dữ liệu không hợp lệ!");
             case ERROR ->
                 setError("Lỗi: " + args.message);
         }
     }
 
     private void handleDeleteResponse(DTTP.DTTPArgs args) {
+        logger.info("EMPLOYEE_DELETE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Xóa nhân viên thành công!");
@@ -101,17 +118,17 @@ public class EmployeeService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleFilterResponse(DTTP.DTTPArgs args) {
-        if (SUCCESS.equals(args.status)) {
-            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), extractList(args.data));
-        } else {
-            setError(args.message);
-        }
-    }
+        logger.info("EMPLOYEE_FILTER response: " + args.status);
 
-    private void handleSearchResponse(DTTP.DTTPArgs args) {
         if (SUCCESS.equals(args.status)) {
-            store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), extractList(args.data));
+            if (args.data != null) {
+                List<Map<String, Object>> employees
+                        = (List<Map<String, Object>>) args.data.get(EMPLOYEES_KEY);
+
+                store.dispatch(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), employees);
+            }
         } else {
             setError(args.message);
         }
@@ -120,15 +137,12 @@ public class EmployeeService {
     // ─────────────────────────────────────────────
     // HELPERS
     // ─────────────────────────────────────────────
-    private List<Map<String, Object>> extractList(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get(EMPLOYEES_KEY);
-    }
-
     private void setMessage(String msg) {
         store.getAppState().set("EmployeeMessage", msg);
     }
 
     private void setError(String err) {
+        logger.warning("Employee Error: " + err);
         store.getAppState().set("EmployeeError", err);
     }
 
@@ -155,13 +169,20 @@ public class EmployeeService {
     // PUBLIC API
     // ─────────────────────────────────────────────
     public void getAllEmployees() throws IOException {
+        logger.info("Sending EMPLOYEE_GET_ALL request");
         checkConnection();
-        client.send("EMPLOYEE_GET_ALL", null, REQUEST, "");
+        client.send("EMPLOYEE_GET_ALL", null, REQUEST, "Yêu cầu danh sách nhân viên");
     }
 
-    public void createEmployee(String username, String password, String name, String phone, String role) throws IOException {
+    public void getActiveEmployees() throws IOException {
+        logger.info("Sending EMPLOYEE_GET_ACTIVE request");
         checkConnection();
-        UserModel user = (UserModel) store.getAppState().get("user");
+        client.send("EMPLOYEE_GET_ACTIVE", null, REQUEST, "Yêu cầu nhân viên đang hoạt động");
+    }
+
+    public void createEmployee(String username, String password, String name, String phone, String role, Integer branchId) throws IOException {
+        logger.info("Sending EMPLOYEE_CREATE request");
+        checkConnection();
 
         Map<String, Object> data = new HashMap<>();
         data.put("username", username);
@@ -169,17 +190,21 @@ public class EmployeeService {
         data.put("name", name);
         data.put("phone", phone);
         data.put("role", role);
-        data.put("branchId", user.getBranchId());
+        data.put("branchId", branchId);
         data.put("status", true);
 
-        client.send("EMPLOYEE_CREATE", data, REQUEST, "");
+        client.send("EMPLOYEE_CREATE", data, REQUEST, "Tạo nhân viên");
     }
 
-    public void updateEmployee(String id, String name, String phone, String role, Boolean status) throws IOException {
+    public void updateEmployee(String id, String name, String phone, String role, Integer branchId, Boolean status) throws IOException {
+        logger.info("Sending EMPLOYEE_UPDATE request for id: " + id);
         checkConnection();
 
         Map<String, Object> data = new HashMap<>();
+
+        // FIX KEY: từ employeeId → id (đúng với BE DTO)
         data.put("id", id);
+
         if (name != null) {
             data.put("name", name);
         }
@@ -189,24 +214,30 @@ public class EmployeeService {
         if (role != null) {
             data.put("role", role);
         }
+        if (branchId != null) {
+            data.put("branchId", branchId);
+        }
         if (status != null) {
             data.put("status", status);
         }
 
-        client.send("EMPLOYEE_UPDATE", data, REQUEST, "");
+        client.send("EMPLOYEE_UPDATE", data, REQUEST, "Cập nhật nhân viên");
     }
 
     public void deleteEmployee(String id) throws IOException {
+        logger.info("Sending EMPLOYEE_DELETE request for id: " + id);
         checkConnection();
-        client.send("EMPLOYEE_DELETE", Map.of("id", id), REQUEST, "");
-    }
 
-    public void searchEmployees(String keyword) throws IOException {
-        checkConnection();
-        client.send("EMPLOYEE_SEARCH", Map.of("keyword", keyword), REQUEST, "");
+        Map<String, Object> data = new HashMap<>();
+
+        // FIX KEY: employeeId → id
+        data.put("id", id);
+
+        client.send("EMPLOYEE_DELETE", data, REQUEST, "Xóa nhân viên");
     }
 
     public void filterEmployees(String name, String role, Integer branchId, Boolean status) throws IOException {
+        logger.info("Sending EMPLOYEE_FILTER request");
         checkConnection();
 
         Map<String, Object> data = new HashMap<>();
@@ -223,6 +254,16 @@ public class EmployeeService {
             data.put("status", status);
         }
 
-        client.send("EMPLOYEE_FILTER", data, REQUEST, "");
+        client.send("EMPLOYEE_FILTER", data, REQUEST, "Lọc nhân viên");
+    }
+
+    public void searchEmployees(String keyword) throws IOException {
+        logger.info("Sending EMPLOYEE_FILTER (search) request");
+        checkConnection();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", keyword);
+
+        client.send("EMPLOYEE_FILTER", data, REQUEST, "Tìm kiếm nhân viên");
     }
 }

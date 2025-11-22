@@ -9,11 +9,12 @@ import java.util.List;
 
 public class BranchPanel extends JPanel {
 
-    private JTable table;
-    private JButton btnAdd, btnEdit, btnDelete, btnReload;
-    private DefaultTableModel model;
+    private final JTable table;
+    private final JButton btnAdd, btnEdit, btnDelete, btnReload;
+    private final DefaultTableModel model;
 
     public BranchPanel() {
+
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
@@ -33,22 +34,23 @@ public class BranchPanel extends JPanel {
         topBar.add(btnReload);
         add(topBar, BorderLayout.SOUTH);
 
-        // ✅ BỎ cột "ID"
-        String[] columns = {"Tên chi nhánh", "Số điện thoại", "Địa chỉ", "Ngày mở cửa", "Trạng thái"};
-        model = new DefaultTableModel(columns, 0) {
+        model = new DefaultTableModel(
+                new String[]{"Tên", "SĐT", "Địa chỉ"}, 0
+        ) {
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int r, int c) {
                 return false;
             }
         };
 
         table = new JTable(model);
         table.setRowHeight(26);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        JScrollPane scroll = new JScrollPane(table);
-        add(scroll, BorderLayout.CENTER);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    public JTable getTable() {
+        return table;
     }
 
     public JButton getBtnAdd() {
@@ -67,27 +69,23 @@ public class BranchPanel extends JPanel {
         return btnReload;
     }
 
-    public JTable getTable() {
-        return table;
-    }
+    public void updateTable(List<BranchInfo> list) {
 
-    public void updateTable(List<BranchInfo> branches) {
+        System.out.println("[DEBUG][Panel] updateTable size = "
+                + (list == null ? 0 : list.size()));
+
         model.setRowCount(0);
 
-        if (branches == null || branches.isEmpty()) {
+        if (list == null) {
             return;
         }
 
-        for (BranchInfo branch : branches) {
-            // ✅ BỎ branch.getId()
-            Object[] row = new Object[]{
-                branch.getName(),
-                branch.getPhone() != null ? branch.getPhone() : "N/A",
-                branch.getAddress() != null ? branch.getAddress() : "N/A",
-                branch.getOpenDate() != null ? branch.getOpenDate() : "N/A",
-                branch.getStatusText()
-            };
-            model.addRow(row);
+        for (BranchInfo b : list) {
+            model.addRow(new Object[]{
+                b.getName(),
+                b.getPhone() != null ? b.getPhone() : "N/A",
+                b.getAddress() != null ? b.getAddress() : "N/A"
+            });
         }
     }
 }

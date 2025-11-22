@@ -14,29 +14,32 @@ public class EmployeeReducer {
     public static void register(Store store) {
 
         store.registerReducer(EmployeeAction.EMPLOYEE_UPDATE_LIST.toString(), payload -> {
-            if (payload instanceof List<?>) {
-                List<Map<String, Object>> raw = (List<Map<String, Object>>) payload;
+            if (payload instanceof List<?> rawList) {
+
+                List<Map<String, Object>> raw = (List<Map<String, Object>>) rawList;
+
                 List<UserModel> list = raw.stream()
                         .map(UserModel::fromMap)
                         .collect(Collectors.toList());
+
                 store.getAppState().set("Employees", list);
             }
         });
 
-        store.registerReducer(EmployeeAction.EMPLOYEE_ADD_SUCCESS.toString(), payload
-                -> store.getAppState().set("EmployeeMessage", "Thêm nhân viên thành công!")
+        store.registerReducer(EmployeeAction.EMPLOYEE_ADD_SUCCESS.toString(),
+                payload -> store.getAppState().set("EmployeeMessage", "Thêm nhân viên thành công!")
         );
 
-        store.registerReducer(EmployeeAction.EMPLOYEE_UPDATE_SUCCESS.toString(), payload
-                -> store.getAppState().set("EmployeeMessage", "Cập nhật nhân viên thành công!")
+        store.registerReducer(EmployeeAction.EMPLOYEE_UPDATE_SUCCESS.toString(),
+                payload -> store.getAppState().set("EmployeeMessage", "Cập nhật nhân viên thành công!")
         );
 
-        store.registerReducer(EmployeeAction.EMPLOYEE_DELETE_SUCCESS.toString(), payload
-                -> store.getAppState().set("EmployeeMessage", "Xóa nhân viên thành công!")
+        store.registerReducer(EmployeeAction.EMPLOYEE_DELETE_SUCCESS.toString(),
+                payload -> store.getAppState().set("EmployeeMessage", "Xóa nhân viên thành công!")
         );
 
-        store.registerReducer(EmployeeAction.EMPLOYEE_ERROR.toString(), payload
-                -> store.getAppState().set("EmployeeError", payload)
+        store.registerReducer(EmployeeAction.EMPLOYEE_ERROR.toString(),
+                payload -> store.getAppState().set("EmployeeError", payload)
         );
     }
 }

@@ -28,68 +28,90 @@ public class UserModel {
         this.branch = builder.branch;
     }
 
-    // ===================================
-    // BỔ SUNG CÁC GETTER CÒN THIẾU Ở ĐÂY
-    // ===================================
+    // ========= GETTERS =========
     public String getId() {
-        return this.id;
+        return id;
     }
 
     public Integer getBranchId() {
-        return this.branchId;
+        return branchId;
     }
 
     public String getUsername() {
-        return this.username;
+        return username;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public String getPhone() {
-        return this.phone;
+        return phone;
     }
 
     public String getRole() {
-        return this.role;
+        return role;
     }
 
     public String getHireDate() {
-        return this.hireDate;
+        return hireDate;
     }
 
     public String getEndDate() {
-        return this.endDate;
+        return endDate;
     }
 
     public Boolean getStatus() {
-        return this.status;
+        return status;
     }
 
     public String getBranch() {
-        return this.branch;
+        return branch;
     }
 
+    // ========= FIXED MAPPING =========
     public static UserModel fromMap(Map<String, Object> data) {
+
+        // branchId mapping
+        Integer branchId = null;
+        Object branchObj = data.get("branchId");
+        if (branchObj instanceof Number n) {
+            branchId = n.intValue();
+        } else if (branchObj instanceof String s && !s.isBlank()) {
+            try {
+                branchId = Integer.parseInt(s);
+            } catch (Exception ignored) {
+            }
+        }
+
+        // status mapping
+        Boolean status = null;
+        Object st = data.get("status");
+        if (st instanceof Boolean b) {
+            status = b;
+        } else if (st instanceof Number n) {
+            status = n.intValue() == 1;
+        } else if (st instanceof String s) {
+            status = Boolean.parseBoolean(s);
+        }
+
         return new Builder()
                 .id((String) data.get("id"))
-                .branchId(data.get("branch_id") instanceof Number
-                        ? ((Number) data.get("branch_id")).intValue() : null)
+                .branchId(branchId)
                 .username((String) data.get("username"))
                 .name((String) data.get("name"))
                 .phone((String) data.get("phone"))
                 .role((String) data.get("role"))
                 .hireDate((String) data.get("hireDate"))
                 .endDate((String) data.get("endDate"))
-                .status((Boolean) data.get("status"))
-                .branch((String) data.get("branch"))
+                .status(status)
+                .branch((String) data.get("branch")) // BE trả đúng key này
                 .build();
     }
 
+    // ========= BUILDER =========
     public static class Builder {
 
-        // ... (Nội dung Builder không thay đổi)
         private String id;
         private Integer branchId;
         private String username;

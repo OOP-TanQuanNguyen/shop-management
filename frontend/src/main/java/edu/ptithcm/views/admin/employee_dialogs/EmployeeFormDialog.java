@@ -12,7 +12,8 @@ public abstract class EmployeeFormDialog extends JDialog {
     protected JPasswordField txtPassword;
     protected JTextField txtName;
     protected JTextField txtPhone;
-    protected JTextField txtRole;
+    protected JComboBox<String> cmbRole;
+    protected JComboBox<BranchItem> cmbBranch;
     protected JCheckBox chkStatus;
 
     protected JButton btnOk;
@@ -23,22 +24,22 @@ public abstract class EmployeeFormDialog extends JDialog {
     public EmployeeFormDialog(Frame owner, String title) {
         super(owner, title, true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(400, 400);
+        setSize(450, 500);
         setLocationRelativeTo(owner);
     }
 
+    /**
+     * Tạo form panel dùng GridBagLayout
+     */
     protected JPanel createFormPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.WEST;
-
         return panel;
     }
 
+    /**
+     * Thêm một label + field vào panel theo GridBag
+     */
     protected void addField(JPanel panel, String label, JComponent field, int row) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -48,6 +49,7 @@ public abstract class EmployeeFormDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = row;
         gbc.weightx = 0;
+        gbc.anchor = GridBagConstraints.WEST;
         panel.add(new JLabel(label), gbc);
 
         // Field
@@ -56,6 +58,9 @@ public abstract class EmployeeFormDialog extends JDialog {
         panel.add(field, gbc);
     }
 
+    /**
+     * Tạo panel chứa nút OK + Cancel
+     */
     protected JPanel createButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
@@ -71,6 +76,9 @@ public abstract class EmployeeFormDialog extends JDialog {
         return panel;
     }
 
+    /**
+     * Sự kiện khi bấm OK - do class con xử lý
+     */
     protected abstract void onOkClicked();
 
     protected void onCancelClicked() {
@@ -84,5 +92,54 @@ public abstract class EmployeeFormDialog extends JDialog {
 
     public void showDialog() {
         setVisible(true);
+    }
+
+    // ---------------------------------------------------------
+    // ROLE COMBOBOX
+    // ---------------------------------------------------------
+    protected void initRoleComboBox() {
+        cmbRole = new JComboBox<>(new String[]{"ADMIN", "STAFF"});
+        cmbRole.setSelectedIndex(1);
+    }
+
+    // ---------------------------------------------------------
+    // BRANCH COMBOBOX
+    // ---------------------------------------------------------
+    protected void initBranchComboBox(java.util.List<BranchItem> branches) {
+        cmbBranch = new JComboBox<>();
+        cmbBranch.addItem(new BranchItem(null, "-- Chọn chi nhánh --"));
+
+        if (branches != null) {
+            for (BranchItem b : branches) {
+                cmbBranch.addItem(b);
+            }
+        }
+    }
+
+    /**
+     * Object đại diện cho từng chi nhánh trong dropdown
+     */
+    public static class BranchItem {
+
+        private final Integer id;
+        private final String name;
+
+        public BranchItem(Integer id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name; // hiển thị tên chi nhánh trong combo
+        }
     }
 }

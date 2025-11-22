@@ -30,6 +30,9 @@ public class CustomerService {
         registerHandlers();
     }
 
+    // ====================================================
+    // REGISTER EVENT HANDLERS
+    // ====================================================
     private void registerHandlers() {
         client.on("CUSTOMER_GET_ALL", this::handleGetAllResponse);
         client.on("CUSTOMER_CREATE", this::handleCreateResponse);
@@ -38,19 +41,30 @@ public class CustomerService {
         client.on("CUSTOMER_SEARCH", this::handleSearchResponse);
     }
 
-    // ─────────────────────────────────────────────
+    // ====================================================
     // RESPONSE HANDLERS
-    // ─────────────────────────────────────────────
+    // ====================================================
+    @SuppressWarnings("unchecked")
     private void handleGetAllResponse(DTTP.DTTPArgs args) {
+
+        logger.info("CUSTOMER_GET_ALL response: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
-            List<Map<String, Object>> customers = extractList(args.data);
+
+            List<Map<String, Object>> customers
+                    = (List<Map<String, Object>>) args.data.get(CUSTOMERS_KEY);
+
             store.dispatch(CustomerAction.CUSTOMER_UPDATE_LIST.toString(), customers);
+
         } else {
             setError(args.message);
         }
     }
 
     private void handleCreateResponse(DTTP.DTTPArgs args) {
+
+        logger.info("CUSTOMER_CREATE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Thêm khách hàng thành công!");
@@ -64,6 +78,9 @@ public class CustomerService {
     }
 
     private void handleUpdateResponse(DTTP.DTTPArgs args) {
+
+        logger.info("CUSTOMER_UPDATE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Cập nhật khách hàng thành công!");
@@ -77,6 +94,9 @@ public class CustomerService {
     }
 
     private void handleDeleteResponse(DTTP.DTTPArgs args) {
+
+        logger.info("CUSTOMER_DELETE response: " + args.status);
+
         switch (args.status) {
             case SUCCESS -> {
                 setMessage("Xóa khách hàng thành công!");
@@ -89,27 +109,38 @@ public class CustomerService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void handleSearchResponse(DTTP.DTTPArgs args) {
+
+        logger.info("CUSTOMER_SEARCH response: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
-            store.dispatch(CustomerAction.CUSTOMER_UPDATE_LIST.toString(), extractList(args.data));
+            List<Map<String, Object>> customers
+                    = (List<Map<String, Object>>) args.data.get(CUSTOMERS_KEY);
+
+            store.dispatch(CustomerAction.CUSTOMER_UPDATE_LIST.toString(), customers);
+
         } else {
             setError(args.message);
         }
     }
 
-    // ─────────────────────────────────────────────
+    // ====================================================
     // HELPERS
-    // ─────────────────────────────────────────────
-    private List<Map<String, Object>> extractList(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get(CUSTOMERS_KEY);
-    }
-
+    // ====================================================
     private void setMessage(String msg) {
         store.getAppState().set("CustomerMessage", msg);
     }
 
     private void setError(String err) {
+        logger.warning("Customer error: " + err);
         store.getAppState().set("CustomerError", err);
+    }
+
+    private void checkConnection() throws IOException {
+        if (client == null) {
+            throw new IOException("DTTP client is null");
+        }
     }
 
     private void reloadCustomerList() {
@@ -119,24 +150,18 @@ public class CustomerService {
                 try {
                     getAllCustomers();
                 } catch (IOException e) {
-                    setError("Không thể load lại danh sách: " + e.getMessage());
+                    setError("Không thể tải lại danh sách: " + e.getMessage());
                 }
             }
         }, RELOAD_DELAY);
     }
 
-    private void checkConnection() throws IOException {
-        if (client == null) {
-            throw new IOException("DTTP client null");
-        }
-    }
-
-    // ─────────────────────────────────────────────
+    // ====================================================
     // PUBLIC API
-    // ─────────────────────────────────────────────
+    // ====================================================
     public void getAllCustomers() throws IOException {
         checkConnection();
-        client.send("CUSTOMER_GET_ALL", null, REQUEST, "");
+        client.send("CUSTOMER_GET_ALL", null, REQUEST, "Load customer list");
     }
 
     public void createCustomer(String name, String phone, Integer point) throws IOException {
@@ -147,7 +172,9 @@ public class CustomerService {
         data.put("phone", phone);
         data.put("point", point != null ? point : 0);
 
-        client.send("CUSTOMER_CREATE", data, REQUEST, "");
+        logger.info("Sending CUSTOMER_CREATE: " + data);
+
+        client.send("CUSTOMER_CREATE", data, REQUEST, "Create customer");
     }
 
     public void updateCustomer(String customerId, String name, String phone, Integer point) throws IOException {
@@ -155,6 +182,7 @@ public class CustomerService {
 
         Map<String, Object> data = new HashMap<>();
         data.put("customerId", customerId);
+
         if (name != null) {
             data.put("name", name);
         }
@@ -165,16 +193,30 @@ public class CustomerService {
             data.put("point", point);
         }
 
-        client.send("CUSTOMER_UPDATE", data, REQUEST, "");
+        logger.info("Sending CUSTOMER_UPDATE: " + data);
+
+        client.send("CUSTOMER_UPDATE", data, REQUEST, "Update customer");
     }
 
     public void deleteCustomer(String customerId) throws IOException {
         checkConnection();
-        client.send("CUSTOMER_DELETE", Map.of("customerId", customerId), REQUEST, "");
+        logger.info("Sending CUSTOMER_DELETE id=" + customerId);
+
+        client.send("CUSTOMER_DELETE",
+                Map.of("customerId", customerId),
+                REQUEST,
+                "Delete customer"
+        );
     }
 
     public void searchCustomers(String keyword) throws IOException {
         checkConnection();
-        client.send("CUSTOMER_SEARCH", Map.of("keyword", keyword), REQUEST, "");
+        logger.info("Sending CUSTOMER_SEARCH keyword=" + keyword);
+
+        client.send("CUSTOMER_SEARCH",
+                Map.of("keyword", keyword),
+                REQUEST,
+                "Search customer"
+        );
     }
 }
