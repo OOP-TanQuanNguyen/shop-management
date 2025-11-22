@@ -3,8 +3,6 @@ package edu.ptithcm;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import edu.ptithcm.configs.Config;
 import edu.ptithcm.configs.databases.HibernateUtil;
@@ -14,59 +12,66 @@ import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.routes.RouteManager;
 
 public class Server {
+
     private static final int PORT = Config.AppConfig.SERVER_PORT;
     private static final DTTPStateManager MANAGER = new DTTPStateManager();
     private static volatile boolean running = true;
 
     public static void main(String[] args) {
+
         try {
             HibernateUtil.getInstance().init();
         } catch (Exception e) {
-            System.err.println("[ORM] Lỗi khởi tạo Hibernate: " + e.getMessage());
-            return; // dừng luôn nếu ORM fail
+            System.err.println("[ORM] Init error: " + e.getMessage());
+            return;
         }
 
-        ExecutorService pool = Executors.newCachedThreadPool();
-
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("[SERVER] Listening on port " + PORT);
+            System.out.println("[SERVER] Listening on " + PORT);
 
             while (running && !serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.printf("[SERVER] Client mới: %s | port=%d%n",
-                        clientSocket.getInetAddress(), clientSocket.getPort());
+                System.out.println("[SERVER] New client: " + clientSocket.getRemoteSocketAddress());
 
-                pool.submit(() -> handleClient(clientSocket));
+                handleClient(clientSocket);
             }
 
         } catch (IOException e) {
-            System.err.println("[SERVER] Lỗi: " + e.getMessage());
+            System.err.println("[SERVER] IO ERROR: " + e.getMessage());
         } finally {
-            pool.shutdown();
             HibernateUtil.getInstance().shutdown();
-            System.out.println("[SERVER] Đã shutdown thread pool và ORM.");
+            System.out.println("[SERVER] Shutdown complete.");
         }
     }
+
 
     private static void handleClient(Socket clientSocket) {
         try {
-            DTTP server = new DTTP(clientSocket);
-            SystemMiddleWare.replyClientCheck(server);
+            DTTP dttp = new DTTP(clientSocket);
 
-            RouteManager routeManager = new RouteManager(server, MANAGER);
+            // System middleware
+            SystemMiddleWare.replyClientCheck(dttp);
+
+            // Register routes
+            RouteManager routeManager = new RouteManager(dttp, MANAGER);
             routeManager.registerRoutes();
 
-            server.setOnDisconnect(() -> MANAGER.removeConnection(server));
-            server.listen();
+            // Disconnect callback
+            dttp.setOnDisconnect(() -> MANAGER.removeConnection(dttp));
 
-            System.out.println("Đã đăng kí sự kiện cho client " + server.getConnection().getAddress());
+            // Start listener thread
+            dttp.listen();
+
+            System.out.println("[SERVER] Listener ready for " + dttp.getConnection().getAddress());
+
         } catch (IOException e) {
-            System.err.println("[SERVER] Lỗi khi xử lý client: " + e.getMessage());
+            System.err.println("[SERVER] Client handler failed: " + e.getMessage());
         }
     }
 
+
     public static void stop() {
         running = false;
-        System.out.println("[SERVER] Đang tắt server...");
+        System.out.println("[SERVER] Stopping server...");
     }
 }

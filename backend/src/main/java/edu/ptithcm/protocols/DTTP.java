@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import com.google.gson.Gson;
@@ -19,31 +21,35 @@ public class DTTP {
     private final DTTPconnection conn;
     private final DTTPBandwidthMonitor monitor = new DTTPBandwidthMonitor();
 
-    private boolean running = false;
+    // Virtual thread pool for handlers
+    private final ExecutorService handlerPool = Executors.newVirtualThreadPerTaskExecutor();
+
+    private volatile boolean running = false;
     private Runnable onDisconnect = null;
 
-    private final Map<String, Consumer<DTTPArgs>> routes = new HashMap<>();
+    // Routing table
+    private final ConcurrentHashMap<String, Consumer<DTTPArgs>> routes = new ConcurrentHashMap<>();
 
-    /** Client */
+
+    /** Client mode */
     public DTTP(String host, int port) throws IOException {
         this.conn = new DTTPconnection(new Socket(host, port), monitor);
     }
 
-    /** Server */
+    /** Server mode */
     public DTTP(Socket socket) throws IOException {
         this.conn = new DTTPconnection(socket, monitor);
     }
 
-    /** Args giữ nguyên API */
+
     public static class DTTPArgs {
         public final String type;
         public final String status;
         public final String message;
-        public final Map<String,Object> data;
-
+        public final Map<String, Object> data;
         private final DTTPconnection conn;
 
-        public DTTPArgs(DTTPconnection conn, String type, String status, String message, Map<String,Object> data) {
+        public DTTPArgs(DTTPconnection conn, String type, String status, String message, Map<String, Object> data) {
             this.conn = conn;
             this.type = type;
             this.status = status;
@@ -51,8 +57,7 @@ public class DTTP {
             this.data = data;
         }
 
-        /** Giữ nguyên API */
-        public void reply(String type, Map<String,Object> data, String status, String message) throws IOException {
+        public void reply(String type, Map<String, Object> data, String status, String message) throws IOException {
             DTTPmsg msg = new DTTPmsg(type, data, status, message);
             String json = new Gson().toJson(msg);
 
@@ -70,19 +75,17 @@ public class DTTP {
                     Base64.getEncoder().encodeToString(raw));
 
             String wrapperJson = new Gson().toJson(wrapper);
-
             String enc = DTTPEncryptor.encrypt(wrapperJson, SHARED_KEY);
+
             conn.send(enc);
         }
     }
 
-    /** Đăng ký handler – giữ nguyên */
     public void on(String type, Consumer<DTTPArgs> handler) {
         routes.put(type, handler);
     }
 
-    /** Gửi message – GIỮ NGUYÊN API, chỉ thêm nén */
-    public void send(String type, Map<String,Object> data, String status, String message) throws IOException {
+    public void send(String type, Map<String, Object> data, String status, String message) throws IOException {
 
         DTTPmsg msg = new DTTPmsg(type, data, status, message);
         String json = gson.toJson(msg);
@@ -103,73 +106,86 @@ public class DTTP {
         );
 
         String wrapperJson = gson.toJson(wrapper);
-
         String enc = DTTPEncryptor.encrypt(wrapperJson, SHARED_KEY);
+
         conn.send(enc);
     }
 
-    /** LẮNG NGHE – không thay đổi API */
     public void listen() {
         running = true;
 
-        new Thread(() -> {
-            while (running) {
-                try {
-                    String encrypted = conn.readJson();
-                    if (encrypted == null) continue;
-
-                    String dec = DTTPEncryptor.decrypt(encrypted, SHARED_KEY);
-                    if (dec == null) continue;
-
-                    // parse wrapper
-                    DTTPCompressedMsg wrapper = gson.fromJson(dec, DTTPCompressedMsg.class);
-
-                    byte[] raw = Base64.getDecoder().decode(wrapper.payload);
-
-                    if (wrapper.compressed) {
-                        try {
-                            raw = GzipCompression.decompress(raw);
-                        } catch (Exception ignored) {}
-                    }
-
-                    String json = new String(raw, StandardCharsets.UTF_8);
-
-                    DTTPmsg msg = gson.fromJson(json, DTTPmsg.class);
-                    Consumer<DTTPArgs> handler = routes.get(msg.getType());
-
-                    if (handler != null) {
-                        handler.accept(new DTTPArgs(
-                                conn, msg.getType(), msg.getStatus(), msg.getMessage(), msg.getData()
-                        ));
-                    }
-
-                } catch (IOException e) {
-                    stop();
-                    if (onDisconnect != null) onDisconnect.run();
-                    break;
-                }
-
-            }
-        }, "DTTP-Listener-" + conn.getAddress()).start();
+        Thread.ofVirtual()
+                .name("DTTP-Listener-" + conn.getAddress())
+                .start(this::listenLoop);
     }
 
-    /** GIỮ NGUYÊN */
+
+    private void listenLoop() {
+        while (running) {
+            try {
+                String encrypted = conn.readJson();
+                if (encrypted == null) continue;
+
+                String decrypted = DTTPEncryptor.decrypt(encrypted, SHARED_KEY);
+                if (decrypted == null) continue;
+
+                DTTPCompressedMsg wrapper = gson.fromJson(decrypted, DTTPCompressedMsg.class);
+
+                byte[] raw = Base64.getDecoder().decode(wrapper.payload);
+                if (wrapper.compressed) {
+                    try {
+                        raw = GzipCompression.decompress(raw);
+                    } catch (Exception ignored) {}
+                }
+
+                String json = new String(raw, StandardCharsets.UTF_8);
+
+                DTTPmsg msg = gson.fromJson(json, DTTPmsg.class);
+
+                dispatch(msg); //excecute function was registered from route
+
+            } catch (IOException e) {
+                stop();
+                if (onDisconnect != null) onDisconnect.run();
+                break;
+            }
+        }
+    }
+
+
+    private void dispatch(DTTPmsg msg) {
+        Consumer<DTTPArgs> handler = routes.get(msg.getType());
+
+        if (handler != null) {
+            handlerPool.submit(() -> {
+                try {
+                    handler.accept(new DTTPArgs(
+                            conn,
+                            msg.getType(),
+                            msg.getStatus(),
+                            msg.getMessage(),
+                            msg.getData()
+                    ));
+                } catch (Exception ex) {
+                    System.err.println("Dispatch DTTTP Error : "+ex.getMessage());
+                }
+            });
+        }
+    }
+
     public void stop() {
         running = false;
         conn.close();
     }
 
-    /** GIỮ NGUYÊN */
     public void setOnDisconnect(Runnable cb) {
         this.onDisconnect = cb;
     }
 
-    /** GIỮ NGUYÊN */
     public DTTPBandwidthMonitor getMonitor() {
         return monitor;
     }
 
-    /** GIỮ NGUYÊN */
     public DTTPconnection getConnection() {
         return conn;
     }

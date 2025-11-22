@@ -1,8 +1,0 @@
-edu\ptithcm\test\protocols\DTTPEncryptor.class
-edu\ptithcm\test\protocols\DTTPconnection.class
-edu\ptithcm\test\protocols\DTTPStateManager.class
-edu\ptithcm\test\DTTPLoginBenchmark.class
-edu\ptithcm\test\protocols\DTTP$DTTPArgs.class
-edu\ptithcm\test\protocols\DTTP.class
-edu\ptithcm\test\EmployeeRouteTest.class
-edu\ptithcm\test\protocols\DTTPmsg.class

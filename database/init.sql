@@ -9,6 +9,7 @@ INSERT INTO category (category_id, name) VALUES
 (UUID(), 'Personal Care'),
 (UUID(), 'Cleaning Supplies');
 
+
 -- =========================
 -- BRANCH
 -- =========================
