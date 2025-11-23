@@ -106,7 +106,7 @@ public class ProductAddDialog extends ProductFormDialog {
         String expiry = getExpiryDate();
         if (expiry != null && !expiry.isEmpty()) {
             try {
-                data.put("expiryDate", java.sql.Date.valueOf(expiry));
+                data.put("expiryDate", (expiry == null || expiry.isEmpty()) ? null : expiry);
             } catch (IllegalArgumentException e) {
                 data.put("expiryDate", null);
             }

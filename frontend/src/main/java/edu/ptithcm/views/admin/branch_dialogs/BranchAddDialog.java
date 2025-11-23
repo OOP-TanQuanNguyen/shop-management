@@ -57,7 +57,6 @@ public class BranchAddDialog extends BranchFormDialog {
         data.put("name", getBranchName());
         data.put("phone", getPhone());
         data.put("address", getAddress());
-        data.put("isActive", getStatus());
 
         return data;
     }

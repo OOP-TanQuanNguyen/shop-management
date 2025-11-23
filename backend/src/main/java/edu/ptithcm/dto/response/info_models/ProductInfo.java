@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProductInfo {
+
     private final String productId;
     private final String name;
     private final String categoryId;
@@ -31,14 +32,37 @@ public class ProductInfo {
     // ==========================
     // Getters
     // ==========================
-    public String getProductId() { return this.productId; }
-    public String getName() { return this.name; }
-    public String getCategoryId() { return this.categoryId; }
-    public String getCategoryName() { return this.categoryName; }
-    public double getCostPrice() { return this.costPrice; }
-    public double getSellPrice() { return this.sellPrice; }
-    public Date getExpiryDate() { return this.expiryDate; }
-    public Boolean getIsActive() { return this.isActive; }
+    public String getProductId() {
+        return this.productId;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getCategoryId() {
+        return this.categoryId;
+    }
+
+    public String getCategoryName() {
+        return this.categoryName;
+    }
+
+    public double getCostPrice() {
+        return this.costPrice;
+    }
+
+    public double getSellPrice() {
+        return this.sellPrice;
+    }
+
+    public Date getExpiryDate() {
+        return this.expiryDate;
+    }
+
+    public Boolean getIsActive() {
+        return this.isActive;
+    }
 
     // ==========================
     // Map converter
@@ -48,14 +72,22 @@ public class ProductInfo {
         map.put("productId", this.productId);
         map.put("name", this.name);
         map.put("categoryId", this.categoryId);
+
+        // BỔ SUNG categoryName
+        map.put("categoryName", this.categoryName);
+
         map.put("costPrice", this.costPrice);
         map.put("sellPrice", this.sellPrice);
-        map.put("expiryDate", this.expiryDate);
+
+        // FIX QUAN TRỌNG: chuyển Date → String yyyy-MM-dd
+        map.put("expiryDate", this.expiryDate != null ? this.expiryDate.toString() : null);
+
         map.put("isActive", this.isActive);
         return map;
     }
 
     public static class Builder {
+
         private String productId;
         private String name;
         private String categoryId;
@@ -65,14 +97,45 @@ public class ProductInfo {
         private Date expiryDate;
         private Boolean isActive;
 
-        public Builder productId(String productId) { this.productId = productId; return this; }
-        public Builder name(String name) { this.name = name; return this; }
-        public Builder categoryId(String categoryId) { this.categoryId = categoryId; return this; }
-        public Builder categoryName(String categoryName) { this.categoryName = categoryName; return this; } 
-        public Builder costPrice(double costPrice) { this.costPrice = costPrice; return this; }
-        public Builder sellPrice(double sellPrice) { this.sellPrice = sellPrice; return this; }
-        public Builder expiryDate(Date expiryDate) { this.expiryDate = expiryDate; return this; }
-        public Builder isActive(Boolean isActive) { this.isActive = isActive; return this; }
+        public Builder productId(String productId) {
+            this.productId = productId;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder categoryId(String categoryId) {
+            this.categoryId = categoryId;
+            return this;
+        }
+
+        public Builder categoryName(String categoryName) {
+            this.categoryName = categoryName;
+            return this;
+        }
+
+        public Builder costPrice(double costPrice) {
+            this.costPrice = costPrice;
+            return this;
+        }
+
+        public Builder sellPrice(double sellPrice) {
+            this.sellPrice = sellPrice;
+            return this;
+        }
+
+        public Builder expiryDate(Date expiryDate) {
+            this.expiryDate = expiryDate;
+            return this;
+        }
+
+        public Builder isActive(Boolean isActive) {
+            this.isActive = isActive;
+            return this;
+        }
 
         public ProductInfo build() {
             return new ProductInfo(this);
