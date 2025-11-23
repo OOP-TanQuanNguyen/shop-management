@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import edu.ptithcm.models.CategoryInfo;
+import edu.ptithcm.models.CategoryModel;
 
 import java.awt.*;
 import java.util.List;
@@ -70,13 +70,13 @@ public class CategoryPanel extends JPanel {
         return table;
     }
 
-    public void updateTable(List<CategoryInfo> categories) {
+    public void updateTable(List<CategoryModel> categories) {
         model.setRowCount(0);
         if (categories == null) {
             return;
         }
 
-        for (CategoryInfo c : categories) {
+        for (CategoryModel c : categories) {
             model.addRow(new Object[]{c.getName()});
         }
     }

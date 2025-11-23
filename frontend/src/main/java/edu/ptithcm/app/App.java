@@ -46,7 +46,7 @@ public class App {
                 ProductReducer.register(store);
                 BranchReducer.register(store);
                 CustomerReducer.register(store);
-                //CategoryReducer.register(store);
+                CategoryReducer.register(store);
                 // --- Kết nối socket ---
                 client = new DTTP("127.0.0.1", 2025);
                 client.listen();

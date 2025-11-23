@@ -2,6 +2,7 @@ package edu.ptithcm.app.actions;
 
 public enum CategoryAction {
     CATEGORY_UPDATE_LIST,
+    CATEGORY_GET_BY_ID_SUCCESS,
     CATEGORY_ADD_SUCCESS,
     CATEGORY_UPDATE_SUCCESS,
     CATEGORY_DELETE_SUCCESS,

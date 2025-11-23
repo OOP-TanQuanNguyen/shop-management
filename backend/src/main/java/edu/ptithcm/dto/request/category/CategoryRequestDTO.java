@@ -14,8 +14,13 @@ public class CategoryRequestDTO {
     }
 
     // Getters
-    public String getCategoryId() { return categoryId; }
-    public String getName() { return name; }
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public String getName() {
+        return name;
+    }
 
     // Validate trước khi tạo
     public boolean validForCreate() {
