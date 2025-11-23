@@ -20,11 +20,25 @@ public class BranchRequestDTO {
     }
 
     // Getters
-    public Integer getBranchId() { return branchId; }
-    public String getName() { return name; }
-    public String getPhone() { return phone; }
-    public String getAddress() { return address; }
-    public Boolean getIsActive() { return isActive; }
+    public Integer getBranchId() {
+        return branchId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
 
     // Validate
     public boolean validForCreate() {
