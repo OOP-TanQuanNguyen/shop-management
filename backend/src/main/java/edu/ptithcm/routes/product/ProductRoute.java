@@ -15,6 +15,7 @@ import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.utils.ReplyUtils;
 
 public class ProductRoute {
+
     private final DTTP server;
     private final DTTPStateManager manager;
     private final ProductController controller;
@@ -29,15 +30,17 @@ public class ProductRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.PRODUCT_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_GET_ALL.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_GET_ALL.getValue())) {
+                    return;
+                }
 
                 ResponseDTO<List<ProductInfo>> response = controller.getAllProducts();
                 List<Map<String, Object>> products = null;
                 if (response.getData() != null) {
                     products = response.getData()
-                                       .stream()
-                                       .map(ProductInfo::toMap)
-                                       .toList();
+                            .stream()
+                            .map(ProductInfo::toMap)
+                            .toList();
                 }
 
                 Map<String, Object> payload = Map.of("products", products);
@@ -51,7 +54,9 @@ public class ProductRoute {
         // ---------------- CREATE ----------------
         server.on(TypeDTTP.PRODUCT_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_CREATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_CREATE.getValue())) {
+                    return;
+                }
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.createProduct(request);
@@ -69,7 +74,9 @@ public class ProductRoute {
         // ---------------- UPDATE ----------------
         server.on(TypeDTTP.PRODUCT_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_UPDATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_UPDATE.getValue())) {
+                    return;
+                }
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.updateProduct(request);
@@ -87,7 +94,9 @@ public class ProductRoute {
         // ---------------- DELETE ----------------
         server.on(TypeDTTP.PRODUCT_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_DELETE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_DELETE.getValue())) {
+                    return;
+                }
 
                 ProductRequestDTO request = new ProductRequestDTO(args.data);
                 ResponseDTO<ProductInfo> response = controller.deleteProduct(request);
@@ -99,29 +108,38 @@ public class ProductRoute {
             }
         });
 
+        // ---------------- GET BY ID ----------------
         server.on(TypeDTTP.PRODUCT_GET_BY_ID.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_DELETE.getValue())) return;
+                // FIX BUG: dùng PRODUCT_GET_BY_ID thay vì PRODUCT_DELETE
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_GET_BY_ID.getValue())) {
+                    return;
+                }
 
-                    ProductRequestDTO request = new ProductRequestDTO(args.data);
-                    ResponseDTO<ProductInfo> response = controller.getProductById(request);
-                    args.reply(TypeDTTP.PRODUCT_GET_BY_ID.getValue(),
+                ProductRequestDTO request = new ProductRequestDTO(args.data);
+                ResponseDTO<ProductInfo> response = controller.getProductById(request);
+
+                args.reply(TypeDTTP.PRODUCT_GET_BY_ID.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
                         response.getMessage());
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.PRODUCT_GET_BY_ID.getValue(), e);
             }
         });
 
+        // ---------------- GET BY NAME ----------------
         server.on(TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), args -> {
             try {
                 String keyword = args.data.get("keyword").toString();
                 ResponseDTO<List<ProductInfo>> response = controller.getProductByName(keyword);
-                List<Map<String,Object>> products = response.getData() != null ?
-                response.getData().stream().map(ProductInfo::toMap).toList() : null;
+                List<Map<String, Object>> products = response.getData() != null
+                        ? response.getData().stream().map(ProductInfo::toMap).toList() : null;
+
                 args.reply(TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), Map.of("products", products),
-                    response.getStatus(), response.getMessage());
+                        response.getStatus(), response.getMessage());
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.PRODUCT_GET_BY_NAME.getValue(), e);
             }
