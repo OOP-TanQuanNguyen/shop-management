@@ -48,9 +48,7 @@ public class InventoryController {
         try {
             service.getAllInventories();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(view,
-                    "Không tải được kho: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            view.showMessage("⚠️ Không tải được dữ liệu kho: " + e.getMessage());
         }
     }
 
@@ -69,11 +67,8 @@ public class InventoryController {
     // ---------------------------------------
     private void handleAdd() {
 
-        if (branches == null || products == null
-                || branches.isEmpty() || products.isEmpty()) {
-            JOptionPane.showMessageDialog(view,
-                    "Danh sách chi nhánh hoặc sản phẩm chưa tải!",
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (branches == null || products == null || branches.isEmpty() || products.isEmpty()) {
+            view.showMessage("⚠️ Danh sách chi nhánh hoặc sản phẩm chưa tải!");
             return;
         }
 
@@ -91,9 +86,7 @@ public class InventoryController {
                     dlg.getQuantity()
             );
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(view,
-                    "Lỗi tạo kho: " + ex.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            view.showMessage("⚠️ Lỗi tạo kho: " + ex.getMessage());
         }
     }
 
@@ -103,9 +96,7 @@ public class InventoryController {
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(view,
-                    "Vui lòng chọn dòng!",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            view.showMessage("⚠️ Vui lòng chọn một dòng để sửa!");
             return;
         }
 
@@ -132,9 +123,7 @@ public class InventoryController {
                     dlg.getQuantity()
             );
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(view,
-                    "Lỗi cập nhật: " + ex.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            view.showMessage("⚠️ Lỗi cập nhật: " + ex.getMessage());
         }
     }
 
@@ -145,17 +134,17 @@ public class InventoryController {
         int row = view.getTable().getSelectedRow();
 
         if (row == -1) {
-            JOptionPane.showMessageDialog(view,
-                    "Vui lòng chọn dòng!",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            view.showMessage("⚠️ Vui lòng chọn một dòng để xóa!");
             return;
         }
 
         InventoryModel item = inventories.get(row);
 
-        InventoryDeleteConfirmDialog dlg
-                = new InventoryDeleteConfirmDialog(getFrame(),
-                        item.getBranchName(), item.getProductName());
+        InventoryDeleteConfirmDialog dlg = new InventoryDeleteConfirmDialog(
+                getFrame(),
+                item.getBranchName(),
+                item.getProductName()
+        );
 
         dlg.showDialog();
         if (!dlg.isConfirmed()) {
@@ -165,9 +154,7 @@ public class InventoryController {
         try {
             service.deleteInventory(item.getId());
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(view,
-                    "Lỗi xóa: " + ex.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            view.showMessage("⚠️ Lỗi xóa: " + ex.getMessage());
         }
     }
 
@@ -209,7 +196,7 @@ public class InventoryController {
     }
 
     // ---------------------------------------
-    //  MESSAGES
+    //  MESSAGES - SHOW ON PANEL (NO POPUP)
     // ---------------------------------------
     private void showMessages(AppState state) {
 
@@ -217,19 +204,39 @@ public class InventoryController {
             return;
         }
 
+        // Success message
         String msg = (String) state.get("InventoryMessage");
         if (msg != null && !msg.isEmpty()) {
             isShowingMessage = true;
             state.set("InventoryMessage", "");
-            JOptionPane.showMessageDialog(view, msg);
+
+            view.showMessage(msg);
+
+            new java.util.Timer().schedule(new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(() -> view.clearMessage());
+                }
+            }, 4000);
+
             isShowingMessage = false;
         }
 
+        // Error message
         String err = (String) state.get("InventoryError");
         if (err != null && !err.isEmpty()) {
             isShowingMessage = true;
             state.set("InventoryError", "");
-            JOptionPane.showMessageDialog(view, err, "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+            view.showMessage("⚠️ " + err);
+
+            new java.util.Timer().schedule(new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(() -> view.clearMessage());
+                }
+            }, 5000);
+
             isShowingMessage = false;
         }
     }

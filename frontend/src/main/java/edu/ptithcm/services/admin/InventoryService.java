@@ -61,7 +61,7 @@ public class InventoryService {
                 reloadInventoryList();
             }
             case INVALID ->
-                setError("Dữ liệu không hợp lệ!");
+                setError(args.message);
             case ERROR ->
                 setError("Lỗi: " + args.message);
         }
@@ -113,12 +113,12 @@ public class InventoryService {
     // HELPERS
     // ─────────────────────────────────────────────
     private void setMessage(String msg) {
-        store.getAppState().set("InventoryMessage", msg);
+        store.dispatch(InventoryAction.INVENTORY_MESSAGE.toString(), msg);
     }
 
     private void setError(String err) {
         logger.warning("Inventory Error: " + err);
-        store.getAppState().set("InventoryError", err);
+        store.dispatch(InventoryAction.INVENTORY_ERROR.toString(), err);
     }
 
     private void reloadInventoryList() {

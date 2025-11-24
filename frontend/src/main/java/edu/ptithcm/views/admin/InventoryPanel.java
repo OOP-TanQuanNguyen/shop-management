@@ -14,14 +14,31 @@ public class InventoryPanel extends JPanel {
     private JButton btnAdd, btnEdit, btnDelete, btnReload;
     private DefaultTableModel model;
 
+    // ===== NEW: Label hiển thị thông báo =====
+    private JLabel lblMessage;
+
     public InventoryPanel() {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
+        // ===== TITLE =====
         JLabel title = new JLabel("📦 Quản lý kho hàng", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        add(title, BorderLayout.NORTH);
 
+        // ===== NEW: MESSAGE LABEL =====
+        lblMessage = new JLabel("");
+        lblMessage.setForeground(new Color(200, 0, 0)); // Màu đỏ cảnh báo
+        lblMessage.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblMessage.setBorder(new EmptyBorder(5, 10, 5, 10));
+
+        // Gói Title + Message vào 1 panel
+        JPanel topWrapper = new JPanel(new BorderLayout());
+        topWrapper.add(title, BorderLayout.NORTH);
+        topWrapper.add(lblMessage, BorderLayout.SOUTH);
+
+        add(topWrapper, BorderLayout.NORTH);
+
+        // ===== BUTTONS =====
         JPanel top = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         btnAdd = new JButton("➕ Thêm");
         btnEdit = new JButton("✏️ Sửa");
@@ -33,10 +50,11 @@ public class InventoryPanel extends JPanel {
         top.add(btnReload);
         add(top, BorderLayout.SOUTH);
 
+        // ===== TABLE =====
         String[] columns = {
             "Chi nhánh",
             "Sản phẩm",
-            "Số lượng", // "Cập nhật"
+            "Số lượng"
         };
 
         model = new DefaultTableModel(columns, 0) {
@@ -51,6 +69,8 @@ public class InventoryPanel extends JPanel {
 
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
+
+    // ===== PUBLIC GETTERS =====
 
     public JTable getTable() {
         return table;
@@ -72,6 +92,18 @@ public class InventoryPanel extends JPanel {
         return btnReload;
     }
 
+    // ===== PUBLIC MESSAGE FUNCTIONS =====
+
+    public void showMessage(String msg) {
+        lblMessage.setText(msg);
+    }
+
+    public void clearMessage() {
+        lblMessage.setText("");
+    }
+
+    // ===== UPDATE TABLE =====
+
     public void updateTable(List<InventoryModel> list) {
         model.setRowCount(0);
         if (list == null) {
@@ -82,7 +114,7 @@ public class InventoryPanel extends JPanel {
             model.addRow(new Object[]{
                 item.getBranchName(),
                 item.getProductName(),
-                item.getQuantity(), //item.getUpdatedAt()
+                item.getQuantity()
             });
         }
     }
