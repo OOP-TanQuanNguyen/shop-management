@@ -38,6 +38,8 @@ public class CategoryModel {
     public CategoryModel(String id, String name) {
         this.id = id;
         this.name = name;
+        this.createdAt = LocalDateTime.now(); 
+        this.active = true;
     }
 
     // --- Getters & Setters ---

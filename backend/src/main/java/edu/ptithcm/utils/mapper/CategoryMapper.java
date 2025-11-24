@@ -11,6 +11,8 @@ public class CategoryMapper implements BaseMapper<CategoryModel, CategoryInfo> {
         return new CategoryInfo.Builder()
                 .categoryId(entity.getId())
                 .name(entity.getName())
+                .active(entity.isActive())
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 }
