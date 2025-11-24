@@ -1,6 +1,7 @@
 package edu.ptithcm.dto.request.employee;
 
 import java.util.Map;
+
 import edu.ptithcm.models.EmployeeModel;
 import edu.ptithcm.utils.RequestUtil;
 
@@ -31,8 +32,13 @@ public class EmployeeRequestDTO {
             this.role = EmployeeModel.Role.STAFF; // default
         }
 
+        System.out.println("Im before line convert to Integer");
+
         // --- Branch ID handling ---
         this.branchId = RequestUtil.toInt(data.get("branchId"));
+    
+        System.out.println("DTO : "+ this.branchId);
+
         
         // --- Status handling ---
         Object statusValue = data.get("status");

@@ -54,6 +54,8 @@ public class EmployeeService {
                 ? branchRepo.findById(req.getBranchId())
                 : null;
 
+        System.out.println("SERVICES : "+ branch);
+
         EmployeeModel employee = new EmployeeModel.Builder()
                 .id(UUID.randomUUID().toString())
                 .username(req.getUsername())

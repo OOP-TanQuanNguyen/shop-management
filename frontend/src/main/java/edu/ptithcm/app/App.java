@@ -1,14 +1,11 @@
 package edu.ptithcm.app;
 
-import java.io.IOException;
-
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import edu.ptithcm.app.reducers.AuthReducer;
 import edu.ptithcm.app.reducers.BranchReducer;
-import edu.ptithcm.app.reducers.CategoryReducer;
 import edu.ptithcm.app.reducers.CustomerReducer;
 import edu.ptithcm.app.reducers.EmployeeReducer;
 import edu.ptithcm.app.reducers.ProductReducer;
@@ -142,11 +139,7 @@ public class App {
 
             // ✅ Xử lý đăng xuất
             if (Boolean.TRUE.equals(isLogout)) {
-                try {
-                    client.send("LOGOUT", null, "REQUEST", "message");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                client.send("LOGOUT", null, "REQUEST", "message");
                 openLoginForm();
 
                 Store store = Store.getInstance();

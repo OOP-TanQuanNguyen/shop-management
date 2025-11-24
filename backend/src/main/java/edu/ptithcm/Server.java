@@ -6,7 +6,6 @@ import java.net.Socket;
 
 import edu.ptithcm.configs.Config;
 import edu.ptithcm.configs.databases.HibernateUtil;
-import edu.ptithcm.middleware.SystemMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.routes.RouteManager;
@@ -50,8 +49,7 @@ public class Server {
             DTTP dttp = new DTTP(clientSocket);
 
             // System middleware
-            SystemMiddleWare.replyClientCheck(dttp);
-
+            
             // Register routes
             RouteManager routeManager = new RouteManager(dttp, MANAGER);
             routeManager.registerRoutes();

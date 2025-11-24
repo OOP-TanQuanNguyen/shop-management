@@ -6,12 +6,15 @@ import java.sql.Date;
 public class RequestUtil {
 
     public static Integer toInt(Object value) {
-        if (value == null) {
-            return null;
+        if (value == null) return null;
+
+        if (value instanceof Number n) {
+            return n.intValue();
         }
+
         try {
-            return Integer.valueOf(value.toString());
-        } catch (Exception e) {
+            return Integer.parseInt(value.toString());
+        } catch (NumberFormatException e) {
             return null;
         }
     }

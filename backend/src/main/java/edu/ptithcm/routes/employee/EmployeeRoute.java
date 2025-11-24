@@ -73,9 +73,10 @@ public class EmployeeRoute {
         // ---------------- CREATE ----------------
         server.on(TypeDTTP.EMPLOYEE_CREATE.getValue(), args -> {
             try {
+                System.out.println("ROUTE : " + args.data);
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.EMPLOYEE_CREATE.getValue())) return;
-
                 EmployeeRequestDTO request = new EmployeeRequestDTO(args.data);
+                System.out.println("Created DTO");
                 ResponseDTO<EmployeeInfo> response = controller.createEmployee(request);
 
                 args.reply(TypeDTTP.EMPLOYEE_CREATE.getValue(),
