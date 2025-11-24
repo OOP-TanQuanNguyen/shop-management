@@ -76,6 +76,19 @@ public class InventoryService {
             inventory.setProduct(p);
         }
 
+        BranchModel currentBranch = inventory.getBranch();
+        ProductModel currentProduct = inventory.getProduct();
+
+        List<InventoryModel> branchInventories = inventoryRepo.findByBranch(currentBranch.getId());
+        if (branchInventories != null) {
+            boolean exists = branchInventories.stream()
+                    .anyMatch(inv -> inv.getProduct().getId().equals(currentProduct.getId())
+                                    && !inv.getId().equals(inventory.getId()));
+            if (exists) {
+                return new InvalidResponse<>("Sản phẩm đã tồn tại trong kho của chi nhánh này");
+            }
+        }
+        
         if (req.getQuantity() != null) {
             inventory.setQuantity(req.getQuantity());
         }
