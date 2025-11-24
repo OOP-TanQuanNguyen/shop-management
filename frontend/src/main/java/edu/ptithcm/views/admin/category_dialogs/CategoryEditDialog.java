@@ -10,7 +10,6 @@ public class CategoryEditDialog extends JDialog {
     private final String categoryId;
 
     private JTextField txtName;
-    private JButton btnOk, btnCancel;
     private boolean confirmed = false;
 
     public CategoryEditDialog(Frame owner, String id, String name) {
@@ -39,10 +38,9 @@ public class CategoryEditDialog extends JDialog {
         gbc.gridx = 1;
         panel.add(txtName, gbc);
 
-        // BUTTON PANEL
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnOk = new JButton("OK");
-        btnCancel = new JButton("Hủy");
+        JButton btnOk = new JButton("OK");
+        JButton btnCancel = new JButton("Hủy");
 
         btnOk.addActionListener(e -> onOkClicked());
         btnCancel.addActionListener(e -> {
@@ -58,33 +56,38 @@ public class CategoryEditDialog extends JDialog {
     }
 
     private void onOkClicked() {
-        if (validateInput()) {
-            confirmed = true;
-            setVisible(false);
+        if (txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tên danh mục không được để trống!",
+                    "Lỗi", JOptionPane.WARNING_MESSAGE);
+            return;
         }
+        confirmed = true;
+        setVisible(false);
     }
 
-    private boolean validateInput() {
-        if (txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Tên danh mục không được để trống!",
-                    "Lỗi",
-                    JOptionPane.WARNING_MESSAGE
-            );
-            return false;
-        }
-        return true;
+    // ========================
+    // PUBLIC API FOR CONTROLLER
+    // ========================
+    public void showDialog() {
+        setVisible(true);
     }
 
     public boolean isConfirmed() {
         return confirmed;
     }
 
+    public String getCategoryId() {
+        return categoryId;
+    }
+
+    public String getCategoryName() {
+        return txtName.getText().trim();
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("categoryId", categoryId);
-        map.put("name", txtName.getText().trim());
+        map.put("name", getCategoryName());
         return map;
     }
 }

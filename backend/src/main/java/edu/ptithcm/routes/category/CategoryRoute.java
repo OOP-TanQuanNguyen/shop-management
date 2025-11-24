@@ -30,7 +30,9 @@ public class CategoryRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.CATEGORY_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_GET_ALL.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_GET_ALL.getValue())) {
+                    return;
+                }
 
                 ResponseDTO<List<CategoryInfo>> response = controller.getAllCategories();
                 List<Map<String, Object>> categories = null;
@@ -49,7 +51,9 @@ public class CategoryRoute {
         // ---------------- CREATE ----------------
         server.on(TypeDTTP.CATEGORY_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_CREATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_CREATE.getValue())) {
+                    return;
+                }
 
                 CategoryRequestDTO request = new CategoryRequestDTO(args.data);
                 ResponseDTO<CategoryInfo> response = controller.createCategory(request);
@@ -67,7 +71,9 @@ public class CategoryRoute {
         // ---------------- UPDATE ----------------
         server.on(TypeDTTP.CATEGORY_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_UPDATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_UPDATE.getValue())) {
+                    return;
+                }
 
                 CategoryRequestDTO request = new CategoryRequestDTO(args.data);
                 ResponseDTO<CategoryInfo> response = controller.updateCategory(request);
@@ -85,7 +91,9 @@ public class CategoryRoute {
         // ---------------- DELETE ----------------
         server.on(TypeDTTP.CATEGORY_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_DELETE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_DELETE.getValue())) {
+                    return;
+                }
 
                 CategoryRequestDTO request = new CategoryRequestDTO(args.data);
                 ResponseDTO<CategoryInfo> response = controller.deleteCategory(request);
@@ -100,15 +108,17 @@ public class CategoryRoute {
         // ---------------- GET BY ID ----------------
         server.on(TypeDTTP.CATEGORY_GET_BY_ID.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_GET_BY_ID.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.CATEGORY_GET_BY_ID.getValue())) {
+                    return;
+                }
 
-                    CategoryRequestDTO request = new CategoryRequestDTO(args.data);
-                    ResponseDTO<CategoryInfo> response = controller.getCategoriesById(request);
+                CategoryRequestDTO request = new CategoryRequestDTO(args.data);
+                ResponseDTO<CategoryInfo> response = controller.getCategoriesById(request);
 
-                    args.reply(TypeDTTP.CATEGORY_GET_BY_ID.getValue(),
-                            response.getData() != null ? response.getData().toMap() : null,
-                            response.getStatus(),
-                            response.getMessage());
+                args.reply(TypeDTTP.CATEGORY_GET_BY_ID.getValue(),
+                        response.getData() != null ? response.getData().toMap() : null,
+                        response.getStatus(),
+                        response.getMessage());
 
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.CATEGORY_GET_BY_ID.getValue(), e);

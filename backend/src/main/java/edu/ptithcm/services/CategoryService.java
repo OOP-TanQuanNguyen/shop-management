@@ -47,6 +47,16 @@ public class CategoryService {
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID category");
 
+        if (categoryRepo.existsByName(req.getName())) {
+            CategoryModel current = categoryRepo.findById(req.getCategoryId());
+            if (current == null)
+                return new NotFoundResponse<>("Không tìm thấy category để cập nhật");
+
+            if (!current.getName().equals(req.getName())) {
+                return new InvalidResponse<>("Tên category đã tồn tại");
+            }
+        }
+
         CategoryModel temp = new CategoryModel(req.getCategoryId(), req.getName());
         CategoryModel updated = categoryRepo.update(temp);
 

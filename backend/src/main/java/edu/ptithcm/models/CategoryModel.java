@@ -1,6 +1,7 @@
 package edu.ptithcm.models;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,6 +24,13 @@ public class CategoryModel {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductModel> products;
 
+    
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "active", nullable = false)
+    private boolean active = true;
+
 
     // --- Constructors ---
     private CategoryModel() {}
@@ -41,6 +49,9 @@ public class CategoryModel {
 
     public List<ProductModel> getProducts() { return products; }
     public void setProducts(List<ProductModel> products) { this.products = products; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public boolean isActive() { return active; }
 
     // --- toString ---
     @Override
