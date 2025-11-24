@@ -1,0 +1,11 @@
+package edu.ptithcm.app.actions;
+
+public enum InventoryAction {
+
+    INVENTORY_UPDATE_LIST,
+    INVENTORY_CREATE_SUCCESS,
+    INVENTORY_UPDATE_SUCCESS,
+    INVENTORY_DELETE_SUCCESS,
+    INVENTORY_ERROR,
+    INVENTORY_MESSAGE
+}

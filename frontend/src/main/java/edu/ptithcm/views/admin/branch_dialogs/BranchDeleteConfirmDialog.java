@@ -8,33 +8,53 @@ public class BranchDeleteConfirmDialog extends JDialog {
     private boolean confirmed = false;
 
     public BranchDeleteConfirmDialog(Frame owner, String name) {
-        super(owner, "Xác nhận xoá", true);
+        super(owner, "🗑️ Xác nhận xoá chi nhánh", true);
 
-        JLabel label = new JLabel(
-                "Bạn có chắc chắn muốn xoá chi nhánh: " + name + " ?",
-                SwingConstants.CENTER
+        initComponents(name);
+
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(400, 150);
+        setLocationRelativeTo(owner);
+    }
+
+    private void initComponents(String name) {
+
+        setLayout(new BorderLayout(10, 10));
+
+        // MESSAGE PANEL
+        JPanel messagePanel = new JPanel();
+        messagePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+        JLabel lblMessage = new JLabel(
+                "<html>Bạn có chắc muốn xóa chi nhánh:<br/><b>"
+                + name + "</b>?</html>"
         );
 
-        JButton ok = new JButton("Xóa");
-        JButton cancel = new JButton("Huỷ");
+        lblMessage.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
+        lblMessage.setIconTextGap(10);
 
-        ok.addActionListener(e -> {
+        messagePanel.add(lblMessage);
+
+        // BUTTON PANEL
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton btnYes = new JButton("Xóa");
+        JButton btnNo = new JButton("Hủy");
+
+        btnYes.addActionListener(e -> {
             confirmed = true;
-            setVisible(false);
+            dispose();
         });
 
-        cancel.addActionListener(e -> setVisible(false));
+        btnNo.addActionListener(e -> {
+            confirmed = false;
+            dispose();
+        });
 
-        JPanel btn = new JPanel(new FlowLayout());
-        btn.add(ok);
-        btn.add(cancel);
+        buttonPanel.add(btnYes);
+        buttonPanel.add(btnNo);
 
-        setLayout(new BorderLayout());
-        add(label, BorderLayout.CENTER);
-        add(btn, BorderLayout.SOUTH);
-
-        setSize(350, 150);
-        setLocationRelativeTo(owner);
+        add(messagePanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
     }
 
     public boolean isConfirmed() {

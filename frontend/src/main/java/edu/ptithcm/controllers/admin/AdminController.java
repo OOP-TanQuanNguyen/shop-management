@@ -10,6 +10,7 @@ import edu.ptithcm.services.admin.ProductService;
 import edu.ptithcm.services.admin.BranchService;
 import edu.ptithcm.services.admin.CustomerService;
 import edu.ptithcm.services.admin.CategoryService;
+import edu.ptithcm.services.admin.InventoryService;
 
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.admin.EmployeePanel;
@@ -17,6 +18,7 @@ import edu.ptithcm.views.admin.ProductPanel;
 import edu.ptithcm.views.admin.BranchPanel;
 import edu.ptithcm.views.admin.CustomerPanel;
 import edu.ptithcm.views.admin.CategoryPanel;
+import edu.ptithcm.views.admin.InventoryPanel;
 
 public class AdminController {
 
@@ -34,11 +36,12 @@ public class AdminController {
 
         registerEvent();
 
-        // ORDER VERY IMPORTANT
+        // ===== ORDER VERY IMPORTANT =====
         initBranchModule();
-        initCategoryModule();   // must run BEFORE Product + Employee
-        initEmployeeModule();
-        initProductModule();
+        initCategoryModule();
+        initEmployeeModule();     // needs Branch
+        initProductModule();      // needs Category
+        initInventoryModule();    // needs Product & Category
         initCustomerModule();
 
         store.subcribe(this::handleState);
@@ -83,10 +86,7 @@ public class AdminController {
         try {
             EmployeePanel employeePanel = view.getEmployeePanel();
             EmployeeService employeeService = new EmployeeService(client);
-
-            // pass BranchService to EmployeeController
             new EmployeeController(employeePanel, employeeService, branchService);
-
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to init EmployeeController: " + e.getMessage());
             e.printStackTrace();
@@ -100,11 +100,23 @@ public class AdminController {
         try {
             ProductPanel productPanel = view.getProductPanel();
             ProductService productService = new ProductService(client);
-
             new ProductController(productPanel, productService);
-
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to init ProductController: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // ==============================
+    // MODULE INVENTORY (NEEDS PRODUCT + CATEGORY)
+    // ==============================
+    private void initInventoryModule() {
+        try {
+            InventoryPanel inventoryPanel = view.getInventoryPanel();
+            InventoryService inventoryService = new InventoryService(client);
+            new InventoryController(inventoryPanel, inventoryService);
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to init InventoryController: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -124,6 +136,6 @@ public class AdminController {
     }
 
     private void handleState(AppState state) {
-        // you can handle global states here
+        // Global state handling
     }
 }

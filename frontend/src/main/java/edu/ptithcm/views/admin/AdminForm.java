@@ -20,6 +20,7 @@ public class AdminForm extends JFrame {
     private final BranchPanel branchPanel = new BranchPanel();
     private final CustomerPanel customerPanel = new CustomerPanel();
     private final CategoryPanel categoryPanel = new CategoryPanel();
+    private final InventoryPanel inventoryPanel = new InventoryPanel();
 
     public AdminForm(UserModel userData) {
         setTitle("🏢 Hệ thống quản trị mini market");
@@ -55,6 +56,7 @@ public class AdminForm extends JFrame {
         tabPane.addTab("📚 Danh mục", categoryPanel);
         tabPane.addTab("🏬 Chi nhánh", branchPanel); // ✅ DÙNG BIẾN, KHÔNG new BranchPanel()
         tabPane.addTab("👥 Khách hàng", customerPanel);
+        tabPane.addTab("📋 Quản lý kho", inventoryPanel);
         tabPane.addTab("📈 Thống kê", new StatisticPanel());
         tabPane.addTab("⚙️ Cài đặt", new SettingPanel());
 
@@ -84,6 +86,10 @@ public class AdminForm extends JFrame {
 
     public CategoryPanel getCategoryPanel() {
         return categoryPanel;
+    }
+
+    public InventoryPanel getInventoryPanel() {
+        return inventoryPanel;
     }
 
     public JTabbedPane getTabPane() {

@@ -1,24 +1,25 @@
-package edu.ptithcm.views.admin.category_dialogs;
+package edu.ptithcm.views.admin.inventory_dialogs;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class CategoryDeleteConfirmDialog extends JDialog {
+public class InventoryDeleteConfirmDialog extends JDialog {
 
     private boolean confirmed = false;
 
-    public CategoryDeleteConfirmDialog(Frame owner, String categoryName) {
-        super(owner, "🗑️ Xác nhận xóa danh mục", true);
+    public InventoryDeleteConfirmDialog(Frame owner,
+            String branchName,
+            String productName) {
+        super(owner, "🗑️ Xóa kho", true);
 
-        initComponents(categoryName);
+        initComponents(branchName, productName);
 
-        // Canh giữa dialog
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(400, 150);
+        setSize(420, 160);
         setLocationRelativeTo(owner);
     }
 
-    private void initComponents(String categoryName) {
+    private void initComponents(String branchName, String productName) {
 
         setLayout(new BorderLayout(10, 10));
 
@@ -27,11 +28,11 @@ public class CategoryDeleteConfirmDialog extends JDialog {
         messagePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
         JLabel lblMessage = new JLabel(
-                "<html>Bạn có chắc muốn xóa danh mục:<br/><b>"
-                + categoryName + "</b>?</html>"
+                "<html>Bạn có chắc muốn xóa sản phẩm:<br/>"
+                + "<b>" + productName + "</b><br/>"
+                + "tại chi nhánh <b>" + branchName + "</b>?</html>"
         );
 
-        // dùng icon warning giống EmployeeDialog
         lblMessage.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
         lblMessage.setIconTextGap(10);
 
@@ -40,21 +41,21 @@ public class CategoryDeleteConfirmDialog extends JDialog {
         // BUTTON PANEL
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton btnYes = new JButton("Xóa");
-        JButton btnNo = new JButton("Hủy");
+        JButton yes = new JButton("Xóa");
+        JButton no = new JButton("Hủy");
 
-        btnYes.addActionListener(e -> {
+        yes.addActionListener(e -> {
             confirmed = true;
             dispose();
         });
 
-        btnNo.addActionListener(e -> {
+        no.addActionListener(e -> {
             confirmed = false;
             dispose();
         });
 
-        buttonPanel.add(btnYes);
-        buttonPanel.add(btnNo);
+        buttonPanel.add(yes);
+        buttonPanel.add(no);
 
         add(messagePanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
