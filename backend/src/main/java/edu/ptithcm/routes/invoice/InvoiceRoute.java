@@ -52,7 +52,7 @@ public class InvoiceRoute {
         // ---------------- CREATE ----------------
         server.on(TypeDTTP.INVOICE_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CREATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.STAFF.getValue(), args, TypeDTTP.INVOICE_CREATE.getValue())) return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
                 ResponseDTO<InvoiceInfo> response = controller.createInvoice(request);
@@ -70,7 +70,7 @@ public class InvoiceRoute {
         // ---------------- UPDATE ----------------
         server.on(TypeDTTP.INVOICE_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_UPDATE.getValue())) return;
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.STAFF.getValue(), args, TypeDTTP.INVOICE_UPDATE.getValue())) return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
                 ResponseDTO<InvoiceInfo> response = controller.updateInvoice(request);
@@ -166,7 +166,7 @@ public class InvoiceRoute {
         // ---------------- CONFIRM INVOICE ----------------
         server.on(TypeDTTP.INVOICE_CONFIRM.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CONFIRM.getValue()))
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.STAFF.getValue(), args, TypeDTTP.INVOICE_CONFIRM.getValue()))
                     return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
@@ -185,7 +185,7 @@ public class InvoiceRoute {
         // ---------------- CANCEL INVOICE ----------------
         server.on(TypeDTTP.INVOICE_CANCEL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVOICE_CANCEL.getValue()))
+                if (!AuthenMiddleWare.hasPermission(manager, server, Role.STAFF.getValue(), args, TypeDTTP.INVOICE_CANCEL.getValue()))
                     return;
 
                 InvoiceRequestDTO request = new InvoiceRequestDTO((Map<String, Object>) args.data);
