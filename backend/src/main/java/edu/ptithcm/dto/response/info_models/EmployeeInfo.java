@@ -11,6 +11,8 @@ public class EmployeeInfo {
     private final String role;
     private final Integer branchId;
     private final String branch;
+    private final java.sql.Timestamp startAt;
+    private final java.sql.Timestamp endAt;
     private final boolean status;
 
     private EmployeeInfo(Builder b) {
@@ -21,6 +23,8 @@ public class EmployeeInfo {
         this.role = b.role;
         this.branchId = b.branchId;
         this.branch = b.branch;
+        this.startAt = b.startAt;
+        this.endAt = b.endAt;
         this.status = b.status;
     }
 
@@ -34,6 +38,8 @@ public class EmployeeInfo {
     public String getRole() { return role; }
     public Integer getBranchId() { return branchId; }
     public String getBranch() { return branch; }
+    public java.sql.Timestamp getStartAt() { return startAt; }
+    public java.sql.Timestamp getEndAt() { return endAt; }
     public boolean isStatus() { return status; }
 
     // ==========================
@@ -48,6 +54,8 @@ public class EmployeeInfo {
         map.put("role", role);
         map.put("branchId", branchId);
         map.put("branch", branch);
+        map.put("hireDate", startAt);   
+        map.put("endDate", endAt); 
         map.put("status", status);
         return map;
     }
@@ -63,6 +71,8 @@ public class EmployeeInfo {
         private String role;
         private Integer branchId;
         private String branch;
+        private java.sql.Timestamp startAt;
+        private java.sql.Timestamp endAt;
         private boolean status;
 
         public Builder id(String id) { this.id = id; return this; }
@@ -72,6 +82,8 @@ public class EmployeeInfo {
         public Builder role(String role) { this.role = role; return this; }
         public Builder branchId(Integer branchId) { this.branchId = branchId; return this; }
         public Builder branch(String branch) { this.branch = branch; return this; }
+        public Builder startAt(java.sql.Timestamp startAt) { this.startAt = startAt; return this; }
+        public Builder endAt(java.sql.Timestamp endAt) { this.endAt = endAt; return this; }
         public Builder status(boolean status) { this.status = status; return this; }
 
         public EmployeeInfo build() {

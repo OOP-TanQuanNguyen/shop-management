@@ -22,6 +22,8 @@ final class EmployeeMapper implements BaseMapper<EmployeeModel, EmployeeInfo> {
                 .role(e.getRole() != null ? e.getRole().name() : null)
                 .branchId(e.getBranch() != null ? e.getBranch().getId() : null)
                 .branch(e.getBranch() != null ? e.getBranch().getName() : null)
+                .startAt(e.getStartAt())
+                .endAt(e.getEndAt())
                 .status(e.isStatus())
                 .build();
     }

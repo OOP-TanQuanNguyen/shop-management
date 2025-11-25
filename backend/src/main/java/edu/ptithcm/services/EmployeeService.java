@@ -65,6 +65,7 @@ public class EmployeeService {
                 .branch(branch)
                 .role(req.getRole())
                 .status(true)
+                .startAt(new java.sql.Timestamp(System.currentTimeMillis()))
                 .build();
 
         employeeRepo.save(employee);
@@ -78,6 +79,26 @@ public class EmployeeService {
         if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID hoặc dữ liệu cập nhật");
 
+        EmployeeModel current = employeeRepo.findById(req.getEmployeeId());
+        if (current == null)
+            return new NotFoundResponse<>("Nhân viên không tồn tại!");
+
+        boolean newStatus = req.getStatus() != null ? req.getStatus() : current.isStatus();
+        java.sql.Timestamp startAt = current.getStartAt();
+        java.sql.Timestamp endAt = current.getEndAt();
+
+        if (current.isStatus() && !newStatus) {
+            endAt = new java.sql.Timestamp(System.currentTimeMillis());
+        }
+        else if (!current.isStatus() && newStatus) {
+            startAt = new java.sql.Timestamp(System.currentTimeMillis()); 
+            endAt = null; 
+        }
+        else {
+            startAt = current.getStartAt();
+            endAt = current.getEndAt();
+        }
+
         EmployeeModel temp = new EmployeeModel.Builder()
                 .id(req.getEmployeeId())
                 .name(req.getName())
@@ -85,9 +106,11 @@ public class EmployeeService {
                 .role(req.getRole())
                 .password(req.getPassword() != null ? CryptoUtil.hash(req.getPassword()) : null)
                 .branch(req.getBranchId() != null ? branchRepo.findById(req.getBranchId()) : null)
-                .status(req.getStatus() != null ? req.getStatus() : true)
+                .status(newStatus)
+                .startAt(startAt)
+                .endAt(endAt)
                 .build();
-
+      
         EmployeeModel updated = employeeRepo.update(temp);
 
         if (updated == null)
