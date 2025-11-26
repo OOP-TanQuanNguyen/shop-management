@@ -97,10 +97,6 @@ public class InvoiceService {
             if (inv == null || inv.getQuantity() < d.getQuantity())
                 return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + product.getName());
 
-            // Tạm trừ tồn kho
-            inv.setQuantity(inv.getQuantity() - d.getQuantity());
-            inventoryRepo.update(inv);
-
             // Tính giá
             BigDecimal unitPrice = BigDecimalUtil.safe(product.getSellPrice());
             InvoiceDetailModel detail = new InvoiceDetailModel(product, null, d.getQuantity(), unitPrice);
@@ -160,6 +156,17 @@ public class InvoiceService {
         }
 
         draft.setStatus(InvoiceModel.InvoiceStatus.COMPLETED);
+        
+        // Trừ tồn kho thật sự khi confirm
+        for (InvoiceDetailModel detail : draft.getDetails()) {
+            InventoryModel inv = inventoryRepo.findByBranchAndProduct(
+                draft.getBranch().getId(), 
+                detail.getProduct().getId()
+            );
+            inv.setQuantity(inv.getQuantity() - detail.getQuantity());
+            inventoryRepo.update(inv);
+        }
+        
         invoiceRepo.save(draft);
 
         return new SuccessResponse<>("Xác nhận thanh toán thành công", mapper.toDTO(draft));
