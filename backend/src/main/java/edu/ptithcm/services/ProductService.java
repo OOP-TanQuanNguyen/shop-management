@@ -26,15 +26,15 @@ public class ProductService {
 
     // ------------------ Lấy tất cả ------------------
     public ResponseDTO<List<ProductInfo>> getAllProducts() throws RuntimeException {
-        return new SuccessResponse<>(
-                "Lấy toàn bộ sản phẩm thành công",
-                mapper.toDTOList(productRepo.findAll())
-        );
+        List<ProductModel> products = productRepo.findAll();
+        products.forEach(p -> {
+            if (p.getCategory() == null) p.setCategory(new CategoryModel());
+        });
+        return new SuccessResponse<>("Lấy toàn bộ sản phẩm thành công", mapper.toDTOList(products));
     }
 
     // ------------------ Tạo sản phẩm ------------------
     public ResponseDTO<ProductInfo> createProduct(ProductRequestDTO req) throws RuntimeException {
-
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên sản phẩm");
 
@@ -60,27 +60,24 @@ public class ProductService {
     // ------------------ Cập nhật sản phẩm ------------------
     public ResponseDTO<ProductInfo> updateProduct(ProductRequestDTO req) throws RuntimeException {
 
-        if (!req.validForUpdate())
+        if (!req.validForUpdate() || req.getProductId() == null || req.getProductId().isBlank())
             return new InvalidResponse<>("Thiếu ID sản phẩm");
 
-        CategoryModel category = req.getCategoryId() != null
-                ? categoryRepo.findById(req.getCategoryId())
-                : null;
-
-        ProductModel temp = new ProductModel.Builder()
-                .id(req.getProductId())
-                .name(req.getName())
-                .category(category)
-                .costPrice(req.getCostPrice())
-                .sellPrice(req.getSellPrice())
-                .expiryDate(req.getExpiryDate())
-                .isActive(req.getIsActive() != null ? req.getIsActive() : true)
-                .build();
-
-        ProductModel updated = productRepo.update(temp);
-
-        if (updated == null)
+        ProductModel existing = productRepo.findById(req.getProductId()); 
+        if (existing == null) 
             return new NotFoundResponse<>("Không tìm thấy sản phẩm để cập nhật");
+        if (req.getCategoryId() != null) { 
+            CategoryModel category = categoryRepo.findById(req.getCategoryId()); 
+            existing.setCategory(category); 
+        }
+
+        if (req.getName() != null) existing.setName(req.getName());
+        if (req.getCostPrice() != null) existing.setCostPrice(req.getCostPrice());
+        if (req.getSellPrice() != null) existing.setSellPrice(req.getSellPrice());
+        if (req.getExpiryDate() != null) existing.setExpiryDate(req.getExpiryDate());
+        existing.setActive(req.getIsActive() != null ? req.getIsActive() : existing.isActive());
+
+        ProductModel updated = productRepo.update(existing);
 
         return new SuccessResponse<>("Cập nhật sản phẩm thành công", mapper.toDTO(updated));
     }
@@ -118,7 +115,8 @@ public class ProductService {
 
     // ------------------ Lấy theo ID ------------------
     public ResponseDTO<ProductInfo> getProductById(ProductRequestDTO req) throws RuntimeException {
-
+        if (req.getProductId() == null || req.getProductId().isBlank()) 
+            return new InvalidResponse<>("Thiếu ID sản phẩm");
         ProductModel product = productRepo.findById(req.getProductId());
 
         if (product == null)

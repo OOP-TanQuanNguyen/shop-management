@@ -5,7 +5,6 @@ import java.util.UUID;
 import java.sql.Timestamp;
 import java.time.Instant;
 
-import edu.ptithcm.dto.request.loyalty.LoyaltyRequestDTO;
 import edu.ptithcm.dto.response.base.ResponseDTO;
 import edu.ptithcm.dto.response.error.InvalidResponse;
 import edu.ptithcm.dto.response.error.NotFoundResponse;

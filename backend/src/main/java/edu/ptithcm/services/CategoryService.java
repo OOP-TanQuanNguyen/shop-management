@@ -22,7 +22,12 @@ public class CategoryService {
 
     // ------------------ Lấy tất cả ------------------
     public ResponseDTO<List<CategoryInfo>> getAllCategories() throws RuntimeException {
-        return new SuccessResponse<>("Lấy danh sách category thành công", mapper.toDTOList(categoryRepo.findAll()));
+        List<CategoryModel> categories = categoryRepo.findAll();
+        categories.forEach(c -> {
+            if (c.getName() == null) c.setName(""); 
+            if (c.getId() == null) c.setId("");
+        });
+        return new SuccessResponse<>("Lấy danh sách category thành công", mapper.toDTOList(categories));
     }
 
     // ------------------ Tạo category ------------------
@@ -32,7 +37,7 @@ public class CategoryService {
             return new InvalidResponse<>("Thiếu tên category");
 
         // check trùng tên
-        if (categoryRepo.existsByName(req.getName()))
+        if (req.getName() == null || categoryRepo.existsByName(req.getName()))
             return new InvalidResponse<>("Tên category đã tồn tại");
 
         CategoryModel category = new CategoryModel(UUID.randomUUID().toString(), req.getName());
@@ -44,7 +49,7 @@ public class CategoryService {
     // ------------------ Cập nhật category ------------------
     public ResponseDTO<CategoryInfo> updateCategory(CategoryRequestDTO req) throws RuntimeException {
 
-        if (!req.validForUpdate())
+        if (!req.validForUpdate() || req.getCategoryId() == null || req.getCategoryId().isBlank()) 
             return new InvalidResponse<>("Thiếu ID category");
 
         if (categoryRepo.existsByName(req.getName())) {
@@ -52,7 +57,7 @@ public class CategoryService {
             if (current == null)
                 return new NotFoundResponse<>("Không tìm thấy category để cập nhật");
 
-            if (!current.getName().equals(req.getName())) {
+            if (current.getName() != null && !current.getName().equals(req.getName())) {
                 return new InvalidResponse<>("Tên category đã tồn tại");
             }
         }
@@ -82,9 +87,14 @@ public class CategoryService {
 
     // ------------------ Lấy theo ID ------------------
     public ResponseDTO<CategoryInfo> getCategoriesById(CategoryRequestDTO req) throws RuntimeException {
+        if (req.getCategoryId() == null || req.getCategoryId().isBlank()) 
+            return new InvalidResponse<>("Thiếu ID category");
         CategoryModel category = categoryRepo.findById(req.getCategoryId());
         if (category == null)
             return new NotFoundResponse<>("Không tìm thấy category");
+
+        if (category.getId() == null) category.setId("");
+        if (category.getName() == null) category.setName("");
 
         return new SuccessResponse<>("Lấy category thành công", mapper.toDTO(category));
     }
