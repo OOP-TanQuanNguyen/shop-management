@@ -30,10 +30,6 @@ public class ProductRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.PRODUCT_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.PRODUCT_GET_ALL.getValue())) {
-                    return;
-                }
-
                 ResponseDTO<List<ProductInfo>> response = controller.getAllProducts();
                 List<Map<String, Object>> products = null;
                 if (response.getData() != null) {

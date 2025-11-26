@@ -5,7 +5,6 @@ import java.util.Map;
 import edu.ptithcm.configs.Role;
 import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.controller.LoyaltyController;
-import edu.ptithcm.dto.request.loyalty.LoyaltyRequestDTO;
 import edu.ptithcm.dto.response.base.ResponseDTO;
 import edu.ptithcm.dto.response.info_models.LoyaltyInfo;
 import edu.ptithcm.middleware.AuthenMiddleWare;
@@ -28,9 +27,6 @@ public class LoyaltyRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.LOYALTY_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_GET_ALL.getValue()))
-                    return;
-
                 ResponseDTO<List<LoyaltyInfo>> response = controller.getAllLoyalty();
                 List<Map<String, Object>> loyalties = null;
                 if (response.getData() != null) {
@@ -49,8 +45,8 @@ public class LoyaltyRoute {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue()))
                     return;
 
-                LoyaltyRequestDTO request = new LoyaltyRequestDTO(args.data);
-                ResponseDTO<LoyaltyInfo> response = controller.getLoyaltyByCustomer(request);
+                String customerId = (String) args.data.get("customerId");
+                ResponseDTO<LoyaltyInfo> response = controller.getLoyaltyByCustomer(customerId);
 
                 args.reply(TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
@@ -64,11 +60,8 @@ public class LoyaltyRoute {
         // ---------------- CREATE ----------------
         server.on(TypeDTTP.LOYALTY_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_CREATE.getValue()))
-                    return;
-
-                LoyaltyRequestDTO request = new LoyaltyRequestDTO(args.data);
-                ResponseDTO<LoyaltyInfo> response = controller.createLoyalty(request);
+                String customerId = (String) args.data.get("customerId");
+                ResponseDTO<LoyaltyInfo> response = controller.createLoyalty(customerId);
 
                 args.reply(TypeDTTP.LOYALTY_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
@@ -82,11 +75,10 @@ public class LoyaltyRoute {
         // ---------------- UPDATE ----------------
         server.on(TypeDTTP.LOYALTY_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_UPDATE.getValue()))
-                    return;
-
-                LoyaltyRequestDTO request = new LoyaltyRequestDTO(args.data);
-                ResponseDTO<LoyaltyInfo> response = controller.updateLoyalty(request);
+                String customerId = (String) args.data.get("customerId"); 
+                Integer pointsChange = (Integer) args.data.get("pointsChange");
+                if (pointsChange == null) pointsChange = 0;
+                ResponseDTO<LoyaltyInfo> response = controller.updateLoyalty(customerId, pointsChange);
 
                 args.reply(TypeDTTP.LOYALTY_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
@@ -103,8 +95,8 @@ public class LoyaltyRoute {
                 if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_DELETE.getValue()))
                     return;
 
-                LoyaltyRequestDTO request = new LoyaltyRequestDTO(args.data);
-                ResponseDTO<LoyaltyInfo> response = controller.deleteLoyalty(request);
+                String customerId = (String) args.data.get("customerId"); 
+                ResponseDTO<LoyaltyInfo> response = controller.deleteLoyalty(customerId);
 
                 args.reply(TypeDTTP.LOYALTY_DELETE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,

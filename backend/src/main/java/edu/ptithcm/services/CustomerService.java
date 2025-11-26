@@ -19,6 +19,7 @@ import edu.ptithcm.utils.mapper.MapperFactory;
 public class CustomerService {
 
     private static final CustomerRepository customerRepo = Repository.customer();
+    private static final LoyaltyService loyaltyService = new LoyaltyService();
     private static final BaseMapper<CustomerModel, CustomerInfo> mapper = MapperFactory.customer();
 
     // ------------------ Lấy toàn bộ ------------------
@@ -29,9 +30,12 @@ public class CustomerService {
 
     // ------------------ Tạo khách hàng ------------------
     public ResponseDTO<CustomerInfo> createCustomer(CustomerRequestDTO req) throws RuntimeException {
-
         if (!req.validForCreate())
             return new InvalidResponse<>("Thiếu tên khách hàng");
+
+        CustomerModel existing = customerRepo.findByPhone(req.getPhone()); 
+        if (existing != null) 
+            return new InvalidResponse<>("Khách hàng đã tồn tại");
 
         CustomerModel customer = new CustomerModel();
         customer.setId(UUID.randomUUID().toString());
@@ -40,6 +44,8 @@ public class CustomerService {
         customer.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 
         customerRepo.save(customer);
+
+        loyaltyService.createLoyalty(customer.getId());
 
         return new SuccessResponse<>("Tạo khách hàng thành công", mapper.toDTO(customer));
     }
@@ -67,6 +73,8 @@ public class CustomerService {
 
         if (req.getCustomerId() == null || req.getCustomerId().isBlank())
             return new InvalidResponse<>("Thiếu ID khách hàng");
+
+        loyaltyService.deleteLoyalty(req.getCustomerId());
 
         CustomerModel deleted = customerRepo.delete(req.getCustomerId());
 

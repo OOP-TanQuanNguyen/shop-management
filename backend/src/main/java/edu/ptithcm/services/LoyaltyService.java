@@ -3,6 +3,7 @@ package edu.ptithcm.services;
 import java.util.List;
 import java.util.UUID;
 import java.sql.Timestamp;
+import java.time.Instant;
 
 import edu.ptithcm.dto.request.loyalty.LoyaltyRequestDTO;
 import edu.ptithcm.dto.response.base.ResponseDTO;
@@ -13,6 +14,7 @@ import edu.ptithcm.dto.response.info_models.LoyaltyInfo;
 import edu.ptithcm.models.CustomerModel;
 import edu.ptithcm.models.LoyaltyModel;
 import edu.ptithcm.repository.Repository;
+import edu.ptithcm.repository.customer.CustomerRepository;
 import edu.ptithcm.repository.loyalty.LoyaltyRepository;
 import edu.ptithcm.utils.mapper.BaseMapper;
 import edu.ptithcm.utils.mapper.MapperFactory;
@@ -20,6 +22,7 @@ import edu.ptithcm.utils.mapper.MapperFactory;
 public class LoyaltyService {
 
     private static final LoyaltyRepository loyaltyRepo = Repository.loyalty();
+    private static final CustomerRepository customerRepo = Repository.customer();
     private static final BaseMapper<LoyaltyModel, LoyaltyInfo> mapper = MapperFactory.loyalty();
 
     public ResponseDTO<List<LoyaltyInfo>> getAllLoyalty() throws RuntimeException {
@@ -27,57 +30,72 @@ public class LoyaltyService {
                 mapper.toDTOList(loyaltyRepo.findAll()));
     }
 
-    public ResponseDTO<LoyaltyInfo> getLoyaltyByCustomer(LoyaltyRequestDTO req) throws RuntimeException {
-        if (req.getCustomerId() == null || req.getCustomerId().isBlank())
+    public ResponseDTO<LoyaltyInfo> getLoyaltyByCustomer(String customerId) throws RuntimeException {
+        if (customerId == null || customerId.isBlank())
             return new InvalidResponse<>("Thiếu ID khách hàng");
 
-        LoyaltyModel loyalty = loyaltyRepo.findByCustomerId(req.getCustomerId());
+        LoyaltyModel loyalty = loyaltyRepo.findByCustomerId(customerId);
         if (loyalty == null)
             return new NotFoundResponse<>("Không tìm thấy thông tin loyalty");
 
         return new SuccessResponse<>("Lấy loyalty thành công", mapper.toDTO(loyalty));
     }
 
-    public ResponseDTO<LoyaltyInfo> createLoyalty(LoyaltyRequestDTO req) throws RuntimeException {
-        if (req.getCustomerId() == null || req.getCustomerId().isBlank())
+    public ResponseDTO<LoyaltyInfo> createLoyalty(String customerId) throws RuntimeException {
+        if (customerId == null || customerId.isBlank()) 
             return new InvalidResponse<>("Thiếu ID khách hàng");
 
-        CustomerModel customer = Repository.customer().findById(req.getCustomerId());
-        if (customer == null)
+        CustomerModel customer = customerRepo.findById(customerId);
+        if (customer == null) 
             return new NotFoundResponse<>("Không tìm thấy khách hàng");
+
+        LoyaltyModel existing = loyaltyRepo.findByCustomerId(customerId);
+        if (existing != null) 
+            return new InvalidResponse<>("Khách hàng đã có thông tin");
 
         LoyaltyModel loyalty = new LoyaltyModel();
         loyalty.setId(UUID.randomUUID().toString());
         loyalty.setCustomer(customer);
-        loyalty.setTotalPoints(req.getTotalPoints() != null ? req.getTotalPoints() : 0);
-        loyalty.setLastUpdate(new Timestamp(System.currentTimeMillis()));
+        loyalty.setTotalPoints(0);
+        loyalty.setLastUpdate(Timestamp.from(Instant.now()));
 
         loyaltyRepo.save(loyalty);
 
         return new SuccessResponse<>("Tạo loyalty thành công", mapper.toDTO(loyalty));
     }
 
-    public ResponseDTO<LoyaltyInfo> updateLoyalty(LoyaltyRequestDTO req) throws RuntimeException {
-        if (req.getLoyaltyId() == null || req.getLoyaltyId().isBlank())
-            return new InvalidResponse<>("Thiếu ID loyalty");
+    public ResponseDTO<LoyaltyInfo> updateLoyalty(String customerId, int pointsChange) throws RuntimeException {
+        if (customerId == null || customerId.isBlank()) 
+            return new InvalidResponse<>("Thiếu ID khách hàng");
+        LoyaltyModel loyalty = loyaltyRepo.findByCustomerId(customerId);
+        if (loyalty == null) 
+            return new InvalidResponse<>("Không tìm thấy loyalty của khách hàng");
 
-        LoyaltyModel temp = new LoyaltyModel();
-        temp.setId(req.getLoyaltyId());
-        temp.setTotalPoints(req.getTotalPoints() != null ? req.getTotalPoints() : 0);
-        temp.setLastUpdate(new Timestamp(System.currentTimeMillis()));
+        int newPoints = loyalty.getTotalPoints() + pointsChange;
 
-        LoyaltyModel updated = loyaltyRepo.update(temp);
+        if (newPoints < 0) 
+            return new InvalidResponse<>("Điểm không thể âm");
+
+        loyalty.setTotalPoints(newPoints); 
+        loyalty.setLastUpdate(Timestamp.from(Instant.now()));
+
+        LoyaltyModel updated = loyaltyRepo.update(loyalty);
         if (updated == null)
             return new NotFoundResponse<>("Không tìm thấy loyalty để cập nhật");
 
         return new SuccessResponse<>("Cập nhật loyalty thành công", mapper.toDTO(updated));
     }
 
-    public ResponseDTO<LoyaltyInfo> deleteLoyalty(LoyaltyRequestDTO req) throws RuntimeException {
-        if (req.getLoyaltyId() == null || req.getLoyaltyId().isBlank())
-            return new InvalidResponse<>("Thiếu ID loyalty");
+    public ResponseDTO<LoyaltyInfo> deleteLoyalty(String customerId) throws RuntimeException {
+        if (customerId == null || customerId.isBlank()) 
+            return new InvalidResponse<>("Thiếu ID khách hàng");
 
-        LoyaltyModel deleted = loyaltyRepo.delete(req.getLoyaltyId());
+        LoyaltyModel loyalty = loyaltyRepo.findByCustomerId(customerId);
+        if (loyalty == null)
+            return new SuccessResponse<>("Không có loyalty để xóa", null);
+        
+        LoyaltyModel deleted = loyaltyRepo.delete(loyalty.getId());
+
         if (deleted == null)
             return new NotFoundResponse<>("Không tìm thấy loyalty để xóa");
 

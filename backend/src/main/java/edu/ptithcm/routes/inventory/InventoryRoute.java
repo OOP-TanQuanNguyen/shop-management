@@ -30,9 +30,6 @@ public class InventoryRoute {
         // ---------------- GET ALL ----------------
         server.on(TypeDTTP.INVENTORY_GET_ALL.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_GET_ALL.getValue()))
-                    return;
-
                 ResponseDTO<List<InventoryInfo>> response = controller.getAllInventories();
                 List<Map<String, Object>> inventories = response.getData() != null
                         ? response.getData().stream().map(InventoryInfo::toMap).toList()

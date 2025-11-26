@@ -74,11 +74,11 @@ public class InvoiceService {
             return new InvalidResponse<>("Nhân viên không thuộc chi nhánh này");
 
         CustomerModel customer = null;
-        if (req.getCustomerId() != null)
+        if (req.getCustomerId() != null && !req.getCustomerId().isBlank()) {
             customer = customerRepo.findById(req.getCustomerId());
-
-        if (req.getCustomerId() != null && customer == null)
-            return new NotFoundResponse<>("Khách hàng không tồn tại");
+            if (customer == null)
+                return new NotFoundResponse<>("Khách hàng không tồn tại");
+        }
 
         List<InvoiceDetailModel> details = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;

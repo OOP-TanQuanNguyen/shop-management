@@ -33,7 +33,6 @@ public class CategoryModel {
 
 
     // --- Constructors ---
-    private CategoryModel() {}
 
     public CategoryModel(String id, String name) {
         this.id = id;

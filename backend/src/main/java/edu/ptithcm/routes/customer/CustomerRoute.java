@@ -27,7 +27,6 @@ public class CustomerRoute {
     public void register() {
         server.on("CUSTOMER_GET_ALL", args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, "CUSTOMER_GET_ALL")) return;
                 ResponseDTO<List<CustomerInfo>> response = controller.getAllCustomers();
                 List<Map<String,Object>> customers = response.getData() != null ?
                         response.getData().stream().map(CustomerInfo::toMap).toList() : null;
@@ -40,8 +39,6 @@ public class CustomerRoute {
 
         server.on("CUSTOMER_CREATE", args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, "CUSTOMER_CREATE")) return;
-
                 CustomerRequestDTO request = new CustomerRequestDTO(args.data);
                 var response = controller.createCustomer(request);
                 args.reply("CUSTOMER_CREATE",
@@ -55,8 +52,6 @@ public class CustomerRoute {
 
         server.on("CUSTOMER_UPDATE", args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, "CUSTOMER_UPDATE")) return;
-
                 CustomerRequestDTO request = new CustomerRequestDTO(args.data);
                 var response = controller.updateCustomer(request);
                 args.reply("CUSTOMER_UPDATE",
