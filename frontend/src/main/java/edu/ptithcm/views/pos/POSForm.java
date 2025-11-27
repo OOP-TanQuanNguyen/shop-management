@@ -90,6 +90,10 @@ public class POSForm extends JFrame {
         return myInvoicePanel;
     }
 
+    public void switchToMyInvoiceTab() {
+        tabs.setSelectedComponent(myInvoicePanel);
+    }
+
     public JTabbedPane getTabPane() {
         return tabs;
     }

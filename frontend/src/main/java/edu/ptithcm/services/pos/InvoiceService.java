@@ -1,7 +1,6 @@
 package edu.ptithcm.services.pos;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -49,12 +48,16 @@ public class InvoiceService {
     }
 
     /* ======================================================
-       HANDLE LIST RESPONSES
+       HANDLE LIST RESPONSES 
     ====================================================== */
     @SuppressWarnings("unchecked")
     private void handleListResponse(DTTP.DTTPArgs args, InvoiceAction action) {
 
-        logger.info(action + " response: " + args.status);
+        logger.info("---------- LIST EVENT: " + action + " ----------");
+        logger.info(action + " status = " + args.status);
+        logger.info("message=" + args.message);
+        logger.info("data=" + args.data);
+        logger.info("----------------------------------------");
 
         if (SUCCESS.equals(args.status)) {
 
@@ -72,7 +75,11 @@ public class InvoiceService {
        CREATE (DRAFT)
     ====================================================== */
     private void handleCreate(DTTP.DTTPArgs args) {
-        logger.info("INVOICE_CREATE response: " + args.status);
+        logger.info("========== INVOICE_CREATE RESPONSE ==========");
+        logger.info("Status  = " + args.status);
+        logger.info("Message = " + args.message);
+        logger.info("Data    = " + args.data);
+        logger.info("=============================================");
 
         if (SUCCESS.equals(args.status)) {
             store.dispatch(InvoiceAction.INVOICE_CREATE.toString(), args.data);
@@ -83,10 +90,14 @@ public class InvoiceService {
     }
 
     /* ======================================================
-       UPDATE (DRAFT)
+       UPDATE
     ====================================================== */
     private void handleUpdate(DTTP.DTTPArgs args) {
-        logger.info("INVOICE_UPDATE response: " + args.status);
+        logger.info("========== INVOICE_UPDATE RESPONSE ==========");
+        logger.info("Status  = " + args.status);
+        logger.info("Message = " + args.message);
+        logger.info("Data    = " + args.data);
+        logger.info("=============================================");
 
         if (SUCCESS.equals(args.status)) {
             store.dispatch(InvoiceAction.INVOICE_UPDATE.toString(), args.data);
@@ -100,7 +111,11 @@ public class InvoiceService {
        DELETE
     ====================================================== */
     private void handleDelete(DTTP.DTTPArgs args) {
-        logger.info("INVOICE_DELETE response: " + args.status);
+        logger.info("========== INVOICE_DELETE RESPONSE ==========");
+        logger.info("Status  = " + args.status);
+        logger.info("Message = " + args.message);
+        logger.info("Data    = " + args.data);
+        logger.info("=============================================");
 
         if (SUCCESS.equals(args.status)) {
             store.dispatch(InvoiceAction.INVOICE_DELETE.toString(), null);
@@ -115,7 +130,11 @@ public class InvoiceService {
        CONFIRM
     ====================================================== */
     private void handleConfirm(DTTP.DTTPArgs args) {
-        logger.info("INVOICE_CONFIRM response: " + args.status);
+        logger.info("========== INVOICE_CONFIRM RESPONSE ==========");
+        logger.info("Status  = " + args.status);
+        logger.info("Message = " + args.message);
+        logger.info("Data    = " + args.data);
+        logger.info("=============================================");
 
         if (SUCCESS.equals(args.status)) {
             store.dispatch(InvoiceAction.INVOICE_CONFIRM.toString(), args.data);
@@ -130,7 +149,11 @@ public class InvoiceService {
        CANCEL
     ====================================================== */
     private void handleCancel(DTTP.DTTPArgs args) {
-        logger.info("INVOICE_CANCEL response: " + args.status);
+        logger.info("========== INVOICE_CANCEL RESPONSE ==========");
+        logger.info("Status  = " + args.status);
+        logger.info("Message = " + args.message);
+        logger.info("Data    = " + args.data);
+        logger.info("=============================================");
 
         if (SUCCESS.equals(args.status)) {
             store.dispatch(InvoiceAction.INVOICE_CANCEL.toString(), args.data);
@@ -145,12 +168,16 @@ public class InvoiceService {
        AUTO RELOAD LIST
     ====================================================== */
     private void reloadAll() {
+        logger.info("[AUTO-RELOAD] Scheduling reload after " + RELOAD_DELAY + "ms");
+
         new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 try {
+                    logger.info("[AUTO-RELOAD] Reloading invoices for employee...");
                     getInvoicesForEmployee();
                 } catch (IOException e) {
+                    logger.warning("[AUTO-RELOAD] ERROR: " + e.getMessage());
                     store.dispatch(InvoiceAction.INVOICE_ERROR.toString(),
                             "Không thể tải lại danh sách hóa đơn");
                 }
@@ -160,6 +187,7 @@ public class InvoiceService {
 
     private void ensureClient() throws IOException {
         if (client == null) {
+            logger.severe("DTTP client = NULL!");
             throw new IOException("DTTP client null");
         }
     }
@@ -169,42 +197,51 @@ public class InvoiceService {
     ====================================================== */
     public void getInvoicesForEmployee() throws IOException {
         ensureClient();
-        logger.info("Sending INVOICE_GET_BY_EMPLOYEE");
+        logger.info(">>> Sending INVOICE_GET_BY_EMPLOYEE");
         client.send("INVOICE_GET_BY_EMPLOYEE", Map.of(), REQUEST, "Lấy hóa đơn nhân viên");
     }
 
     public void getInvoicesByCustomer(String customerId) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_GET_BY_CUSTOMER: " + customerId);
         client.send("INVOICE_GET_BY_CUSTOMER", Map.of("customerId", customerId), REQUEST, "Lấy hóa đơn theo khách");
     }
 
     public void getInvoicesByBranch(Integer branchId) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_GET_BY_BRANCH: " + branchId);
         client.send("INVOICE_GET_BY_BRANCH", Map.of("branchId", branchId), REQUEST, "Lấy hóa đơn theo chi nhánh");
     }
 
     public void createInvoice(Map<String, Object> payload) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_CREATE");
+        logger.info("Payload = " + payload);
         client.send("INVOICE_CREATE", payload, REQUEST, "Tạo hóa đơn (draft)");
     }
 
     public void updateInvoice(Map<String, Object> payload) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_UPDATE");
+        logger.info("Payload = " + payload);
         client.send("INVOICE_UPDATE", payload, REQUEST, "Cập nhật hóa đơn draft");
     }
 
     public void confirmInvoice(String invoiceId) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_CONFIRM: " + invoiceId);
         client.send("INVOICE_CONFIRM", Map.of("invoiceId", invoiceId), REQUEST, "Xác nhận hóa đơn");
     }
 
     public void cancelInvoice(String invoiceId) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_CANCEL: " + invoiceId);
         client.send("INVOICE_CANCEL", Map.of("invoiceId", invoiceId), REQUEST, "Hủy hóa đơn");
     }
 
     public void deleteInvoice(String invoiceId) throws IOException {
         ensureClient();
+        logger.info(">>> Sending INVOICE_DELETE: " + invoiceId);
         client.send("INVOICE_DELETE", Map.of("invoiceId", invoiceId), REQUEST, "Xóa hóa đơn");
     }
 }

@@ -21,16 +21,23 @@ public class InvoiceController {
     private List<InvoiceInfo> invoiceList;
     private boolean isShowingMessage = false;
 
-    // =============================== FIXED CONSTRUCTOR ================================
     public InvoiceController(MyInvoicePanel view, InvoiceService service) {
         this.view = view;
         this.service = service;
 
         registerEvents();
         store.subcribe(this::onStateChanged);
+
+        // Load hóa đơn lần đầu
+        try {
+            service.getInvoicesForEmployee();
+        } catch (Exception ignored) {
+        }
     }
 
-    // =============================== REGISTER EVENTS ================================
+    /* ==========================================================
+       REGISTER EVENTS
+    ========================================================== */
     private void registerEvents() {
 
         view.getBtnReload().addActionListener(e -> {
@@ -45,8 +52,11 @@ public class InvoiceController {
         view.getBtnCancel().addActionListener(e -> handleCancel());
     }
 
-    // =============================== CONFIRM / CANCEL ================================
+    /* ==========================================================
+       CONFIRM
+    ========================================================== */
     private void handleConfirm() {
+
         String id = view.getSelectedInvoiceId();
         if (id == null) {
             view.showMessage("Hãy chọn hóa đơn cần xác nhận");
@@ -60,17 +70,23 @@ public class InvoiceController {
         }
     }
 
+    /* ==========================================================
+       CANCEL
+    ========================================================== */
     private void handleCancel() {
+
         String id = view.getSelectedInvoiceId();
         if (id == null) {
             view.showMessage("Hãy chọn hóa đơn để hủy");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(view,
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
                 "Bạn chắc chắn muốn hủy hóa đơn này?",
                 "Hủy hóa đơn",
-                JOptionPane.YES_NO_OPTION);
+                JOptionPane.YES_NO_OPTION
+        );
 
         if (confirm != JOptionPane.YES_OPTION) {
             return;
@@ -83,23 +99,34 @@ public class InvoiceController {
         }
     }
 
-    // =============================== STORE LISTENER ================================
+    /* ==========================================================
+       STATE LISTENER
+    ========================================================== */
     @SuppressWarnings("unchecked")
     private void onStateChanged(AppState state) {
+
         SwingUtilities.invokeLater(() -> {
             updateInvoiceList(state);
             showMessagesFromState(state);
         });
     }
 
+    /* ==========================================================
+       UPDATE TABLE LIST
+    ========================================================== */
     private void updateInvoiceList(AppState state) {
-        Object obj = state.get("Invoices");
+
+        Object obj = state.get("Invoices");  // KEY CHUẨN từ InvoiceReducer
+
         if (obj instanceof List<?> list) {
             invoiceList = (List<InvoiceInfo>) list;
             view.updateTable(invoiceList);
         }
     }
 
+    /* ==========================================================
+       SHOW MESSAGES
+    ========================================================== */
     private void showMessagesFromState(AppState state) {
 
         if (isShowingMessage) {
@@ -108,17 +135,22 @@ public class InvoiceController {
 
         String msg = (String) state.get("InvoiceMessage");
         if (msg != null && !msg.isEmpty()) {
+
             isShowingMessage = true;
             state.set("InvoiceMessage", "");
+
             JOptionPane.showMessageDialog(view, msg);
             isShowingMessage = false;
+
             return;
         }
 
         String err = (String) state.get("InvoiceError");
         if (err != null && !err.isEmpty()) {
+
             isShowingMessage = true;
             state.set("InvoiceError", "");
+
             JOptionPane.showMessageDialog(view, err, "Lỗi", JOptionPane.ERROR_MESSAGE);
             isShowingMessage = false;
         }

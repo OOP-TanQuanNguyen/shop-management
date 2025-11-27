@@ -43,7 +43,6 @@ public class InvoiceReducer {
                 InvoiceInfo info = InvoiceInfo.fromMap((Map<String, Object>) map);
                 store.getAppState().set("Invoice", info);
             }
-            store.getAppState().set("InvoiceMessage", "Draft hóa đơn đã tạo");
         });
 
         // ====================================================
@@ -54,7 +53,6 @@ public class InvoiceReducer {
                 InvoiceInfo info = InvoiceInfo.fromMap((Map<String, Object>) map);
                 store.getAppState().set("Invoice", info);
             }
-            store.getAppState().set("InvoiceMessage", "Draft hóa đơn đã cập nhật");
         });
 
         // ====================================================
@@ -62,7 +60,6 @@ public class InvoiceReducer {
         // ====================================================
         store.registerReducer(InvoiceAction.INVOICE_CONFIRM.toString(), payload -> {
             store.getAppState().set("Invoice", null);
-            store.getAppState().set("InvoiceMessage", "Xác nhận thanh toán thành công");
         });
 
         // ====================================================
@@ -70,7 +67,22 @@ public class InvoiceReducer {
         // ====================================================
         store.registerReducer(InvoiceAction.INVOICE_CANCEL.toString(), payload -> {
             store.getAppState().set("Invoice", null);
-            store.getAppState().set("InvoiceMessage", "Đã hủy hóa đơn");
+        });
+
+        // ====================================================
+        // DELETE
+        // ====================================================
+        store.registerReducer(InvoiceAction.INVOICE_DELETE.toString(), payload -> {
+            store.getAppState().set("Invoice", null);
+        });
+
+        // ====================================================
+        // ✅ FIX: THÊM INVOICE_MESSAGE HANDLER
+        // ====================================================
+        store.registerReducer(InvoiceAction.INVOICE_MESSAGE.toString(), payload -> {
+            if (payload != null) {
+                store.getAppState().set("InvoiceMessage", payload.toString());
+            }
         });
 
         // ====================================================

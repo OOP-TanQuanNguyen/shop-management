@@ -7,7 +7,7 @@ import java.awt.Window;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
+import java.util.Timer;
 import java.math.BigDecimal;
 
 import edu.ptithcm.app.AppState;
@@ -40,8 +40,9 @@ public class SaleController {
     private String currentDraftId = null;
     private CustomerModel selectedCustomer = null;
 
-    private long lastDraftUpdate = 0;
-    private static final long DRAFT_UPDATE_DELAY = 200;
+    // ✅ FIX: Dùng Timer để debounce draft updates
+    private Timer draftUpdateTimer = null;
+    private static final long DRAFT_UPDATE_DELAY = 300;
 
     /* ------------------------ Cart Item ------------------------ */
     private static class CartItem {
@@ -83,7 +84,7 @@ public class SaleController {
             // 2. Lấy user để biết chi nhánh
             UserModel user = (UserModel) store.getAppState().get("user");
             if (user != null) {
-                inventoryService.getInventoriesByBranch(user.getBranchId());  // === FIX CHUẨN ===
+                inventoryService.getInventoriesByBranch(user.getBranchId());
             }
 
             // 3. Load danh sách khách hàng
@@ -266,6 +267,7 @@ public class SaleController {
     }
 
     /* ======================================================================================= */
+    @SuppressWarnings("unchecked")
     private CustomerModel showDialogSelectCustomer() {
 
         Window w = SwingUtilities.getWindowAncestor(view);
@@ -282,7 +284,7 @@ public class SaleController {
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
-                    return c; // load từ admin
+                    return c;
                 }
             }
         }
@@ -325,15 +327,20 @@ public class SaleController {
     }
 
     /* ======================================================================================= */
+    // ✅ FIX: Dùng Timer để debounce thay vì throttle thủ công
     private void scheduleDraftUpdate() {
 
-        long now = System.currentTimeMillis();
-        if (now - lastDraftUpdate < DRAFT_UPDATE_DELAY) {
-            return;
+        if (draftUpdateTimer != null) {
+            draftUpdateTimer.cancel();
         }
 
-        lastDraftUpdate = now;
-        SwingUtilities.invokeLater(this::updateDraft);
+        draftUpdateTimer = new Timer();
+        draftUpdateTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> updateDraft());
+            }
+        }, DRAFT_UPDATE_DELAY);
     }
 
     /* ======================================================================================= */
@@ -366,6 +373,8 @@ public class SaleController {
     }
 
     /* ======================================================================================= */
+    // ✅ FIX: Gọi confirmInvoice() thay vì chỉ chuyển tab
+    // ====================== HANDLE PAY ===========================
     private void handlePay() {
 
         if (currentDraftId == null) {
@@ -373,42 +382,70 @@ public class SaleController {
             return;
         }
 
-        // Tải lại danh sách hóa đơn để MyInvoicePanel update
+        // Xác nhận trước khi thanh toán
+        int confirm = JOptionPane.showConfirmDialog(
+                view,
+                "Xác nhận thanh toán hóa đơn?\n"
+                + "Mã HĐ: " + currentDraftId + "\n"
+                + "Tổng tiền: " + view.getLblTotal().getText(),
+                "Xác nhận thanh toán",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
         try {
+            // === Gửi yêu cầu xác nhận hóa đơn ===
+            invoiceService.confirmInvoice(currentDraftId);
+
+            JOptionPane.showMessageDialog(
+                    view,
+                    "Thanh toán thành công!\n"
+                    + "Mã hóa đơn: " + currentDraftId,
+                    "Thành công",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // ==== Reset sale panel ====
+            cart.clear();
+            currentDraftId = null;
+            selectedCustomer = null;
+
+            view.getLblCustomerName().setText("Khách hàng: Chưa chọn");
+            refreshCart();
+
+            // ==== Load lại danh sách hóa đơn của nhân viên ====
             invoiceService.getInvoicesForEmployee();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(view, "Không thể tải danh sách hóa đơn.");
-        }
 
-        // CHUYỂN TAB: MyInvoicePanel
-        Window w = SwingUtilities.getWindowAncestor(view);
-        if (w instanceof JFrame frame) {
-
-            JTabbedPane tabs = null;
-            for (java.awt.Component comp : frame.getContentPane().getComponents()) {
-                if (comp instanceof JTabbedPane) {
-                    tabs = (JTabbedPane) comp;
-                    break;
+            // ==== CHUYỂN SANG TAB "Hóa đơn của tôi" ====
+            SwingUtilities.invokeLater(() -> {
+                // Lấy POSForm cha
+                Window win = SwingUtilities.getWindowAncestor(view);
+                if (win instanceof edu.ptithcm.views.pos.POSForm posForm) {
+                    posForm.switchToMyInvoiceTab();
                 }
-            }
+            });
 
-            if (tabs != null) {
-                tabs.setSelectedIndex(2); // Tab "Hóa đơn của tôi"
-            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(
+                    view,
+                    "Không thể xác nhận thanh toán:\n" + ex.getMessage(),
+                    "Lỗi kết nối",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                    view,
+                    "Lỗi xác nhận thanh toán:\n" + ex.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
-
-        JOptionPane.showMessageDialog(view,
-                "Hóa đơn đã được tạo ở trạng thái Draft.\n"
-                + "Vui lòng sang tab 'Hóa đơn của tôi' để xác nhận thanh toán.");
-
-        // Reset dữ liệu UI
-        cart.clear();
-        currentDraftId = null;
-        selectedCustomer = null;
-
-        view.getLblCustomerName().setText("Khách hàng: Chưa chọn");
-        refreshCart();
     }
+
 
     /* ======================================================================================= */
     private ProductInfo findProduct(String id) {

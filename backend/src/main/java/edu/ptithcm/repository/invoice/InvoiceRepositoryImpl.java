@@ -8,14 +8,13 @@ import edu.ptithcm.models.InvoiceModel;
 import edu.ptithcm.repository.BaseRepository;
 import edu.ptithcm.utils.BigDecimalUtil;
 
-
 public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implements InvoiceRepository {
 
     // -------------------- SAVE --------------------
     @Override
     public void save(InvoiceModel entity) {
         execute(session -> {
-            session.persist(entity);
+            session.merge(entity);
             return null;
         });
     }
@@ -25,22 +24,36 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public InvoiceModel update(InvoiceModel newData) {
         return execute(session -> {
             InvoiceModel managed = session.get(InvoiceModel.class, newData.getId());
-            if (managed == null) return null;
+            if (managed == null) {
+                return null;
+            }
 
             // Dirty-checking: Hibernate tự flush khi commit
-            if (newData.getEmployee() != null) managed.setEmployee(newData.getEmployee());
-            if (newData.getBranch() != null) managed.setBranch(newData.getBranch());
-            if (newData.getCustomer() != null) managed.setCustomer(newData.getCustomer());
+            if (newData.getEmployee() != null) {
+                managed.setEmployee(newData.getEmployee());
+            }
+            if (newData.getBranch() != null) {
+                managed.setBranch(newData.getBranch());
+            }
+            if (newData.getCustomer() != null) {
+                managed.setCustomer(newData.getCustomer());
+            }
 
             // BigDecimal so sánh hiệu quả
-            if (!BigDecimalUtil.isZero(newData.getTotal())) managed.setTotal(newData.getTotal());
-            if (!BigDecimalUtil.isZero(newData.getDiscount())) managed.setDiscount(newData.getDiscount());
+            if (!BigDecimalUtil.isZero(newData.getTotal())) {
+                managed.setTotal(newData.getTotal());
+            }
+            if (!BigDecimalUtil.isZero(newData.getDiscount())) {
+                managed.setDiscount(newData.getDiscount());
+            }
 
-            if (newData.getNote() != null && !newData.getNote().isBlank()) 
+            if (newData.getNote() != null && !newData.getNote().isBlank()) {
                 managed.setNote(newData.getNote());
+            }
 
-            if (newData.getDetails() != null && !newData.getDetails().isEmpty())
+            if (newData.getDetails() != null && !newData.getDetails().isEmpty()) {
                 managed.setDetails(newData.getDetails());
+            }
 
             return managed;
         });
@@ -51,7 +64,9 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public InvoiceModel delete(String id) {
         return execute(session -> {
             InvoiceModel managed = session.get(InvoiceModel.class, id);
-            if (managed == null) return null;
+            if (managed == null) {
+                return null;
+            }
             session.remove(managed);
             return managed;
         });
@@ -60,20 +75,20 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     // -------------------- FIND BY ID --------------------
     @Override
     public InvoiceModel findById(String id) {
-        return execute(session -> session.get(InvoiceModel.class, id));                                                                                                                                                                         
+        return execute(session -> session.get(InvoiceModel.class, id));
     }
 
     // -------------------- FIND ALL --------------------
     @Override
     public List<InvoiceModel> findAll() {
-        return execute(session ->
-            session.createQuery(
-                "SELECT i FROM InvoiceModel i " +
-                "LEFT JOIN FETCH i.customer c " +
-                "LEFT JOIN FETCH i.employee e " +
-                "LEFT JOIN FETCH i.branch b " +
-                "ORDER BY i.createdAt DESC", InvoiceModel.class
-            ).list()
+        return execute(session
+                -> session.createQuery(
+                        "SELECT i FROM InvoiceModel i "
+                        + "LEFT JOIN FETCH i.customer c "
+                        + "LEFT JOIN FETCH i.employee e "
+                        + "LEFT JOIN FETCH i.branch b "
+                        + "ORDER BY i.createdAt DESC", InvoiceModel.class
+                ).list()
         );
     }
 
@@ -82,10 +97,10 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public List<InvoiceModel> findByCustomer(String customerId) {
         return execute(session -> {
             Query<InvoiceModel> query = session.createQuery(
-                "SELECT i FROM InvoiceModel i " +
-                "JOIN FETCH i.customer c " +
-                "WHERE c.id = :customerId " +
-                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+                    "SELECT i FROM InvoiceModel i "
+                    + "JOIN FETCH i.customer c "
+                    + "WHERE c.id = :customerId "
+                    + "ORDER BY i.createdAt DESC", InvoiceModel.class);
             query.setParameter("customerId", customerId);
             return query.list();
         });
@@ -96,10 +111,10 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public List<InvoiceModel> findByBranch(Integer branchId) {
         return execute(session -> {
             Query<InvoiceModel> query = session.createQuery(
-                "SELECT i FROM InvoiceModel i " +
-                "JOIN FETCH i.branch b " +
-                "WHERE b.id = :branchId " +
-                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+                    "SELECT i FROM InvoiceModel i "
+                    + "JOIN FETCH i.branch b "
+                    + "WHERE b.id = :branchId "
+                    + "ORDER BY i.createdAt DESC", InvoiceModel.class);
             query.setParameter("branchId", branchId);
             return query.list();
         });
@@ -110,10 +125,10 @@ public class InvoiceRepositoryImpl extends BaseRepository<InvoiceModel> implemen
     public List<InvoiceModel> findByEmployee(String employeeId) {
         return execute(session -> {
             Query<InvoiceModel> query = session.createQuery(
-                "SELECT i FROM InvoiceModel i " +
-                "JOIN FETCH i.employee e " +
-                "WHERE e.id = :employeeId " +
-                "ORDER BY i.createdAt DESC", InvoiceModel.class);
+                    "SELECT i FROM InvoiceModel i "
+                    + "JOIN FETCH i.employee e "
+                    + "WHERE e.id = :employeeId "
+                    + "ORDER BY i.createdAt DESC", InvoiceModel.class);
             query.setParameter("employeeId", employeeId);
             return query.list();
         });

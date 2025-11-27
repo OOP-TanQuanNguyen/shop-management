@@ -49,8 +49,9 @@ public class MyInvoicePanel extends JPanel {
     ============================================================ */
     private void initTable() {
 
+        // ✅ FIX: THÊM cột "Trạng thái"
         model = new DefaultTableModel(
-                new Object[]{"Mã HĐ", "Thời gian", "Khách hàng", "Tổng tiền"}, 0) {
+                new Object[]{"Mã HĐ", "Thời gian", "Khách hàng", "Tổng tiền", "Trạng thái"}, 0) {
 
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -161,6 +162,24 @@ public class MyInvoicePanel extends JPanel {
                 : customerId;
     }
 
+    // ✅ FIX: THÊM formatStatus()
+    private String formatStatus(String status) {
+        if (status == null || status.isEmpty()) {
+            return "";
+        }
+
+        return switch (status) {
+            case "PENDING" ->
+                "⏳ Chờ xử lý";
+            case "COMPLETED" ->
+                "✅ Hoàn thành";
+            case "CANCELLED" ->
+                "❌ Đã hủy";
+            default ->
+                status;
+        };
+    }
+
     /* ============================================================
        UPDATE TABLE
     ============================================================ */
@@ -170,12 +189,14 @@ public class MyInvoicePanel extends JPanel {
             return;
         }
 
+        // ✅ FIX: THÊM cột Status
         for (InvoiceInfo inv : list) {
             model.addRow(new Object[]{
                 inv.getInvoiceId(),
                 formatTime(inv.getCreatedAt()),
                 formatCustomer(inv.getCustomerId()),
-                formatMoney(inv.getTotal())
+                formatMoney(inv.getTotal()),
+                formatStatus(inv.getStatus()) // ← THÊM cột này
             });
         }
     }
