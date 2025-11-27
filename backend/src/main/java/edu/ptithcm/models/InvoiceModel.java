@@ -5,16 +5,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "invoice")
@@ -48,10 +39,12 @@ public class InvoiceModel {
     private InvoiceStatus status = InvoiceStatus.PENDING;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InvoiceDetailModel> details;
+    private List<InvoiceDetailModel> details = new ArrayList<>();   // ✔ FIX 1: ALWAYS INIT
 
-    // --- Constructors ---
-    public InvoiceModel() {}
+    // ===== Constructors =====
+    public InvoiceModel() {
+    }
+
     private InvoiceModel(Builder builder) {
         this.id = builder.id;
         this.employee = builder.employee;
@@ -62,11 +55,13 @@ public class InvoiceModel {
         this.discount = builder.discount;
         this.note = builder.note;
         this.status = builder.status;
-        setDetails(builder.details);
+
+        setDetails(builder.details);   // safe setter
     }
 
-    // --- Builder ---
+    // ===== Builder Pattern =====
     public static class Builder {
+
         private String id;
         private EmployeeModel employee;
         private BranchModel branch;
@@ -76,62 +71,160 @@ public class InvoiceModel {
         private BigDecimal discount = BigDecimal.ZERO;
         private String note;
         private InvoiceStatus status = InvoiceStatus.PENDING;
+
         private List<InvoiceDetailModel> details = new ArrayList<>();
 
-        public Builder id(String id) { this.id = id; return this; }
-        public Builder employee(EmployeeModel employee) { this.employee = employee; return this; }
-        public Builder branch(BranchModel branch) { this.branch = branch; return this; }
-        public Builder customer(CustomerModel customer) { this.customer = customer; return this; }
-        public Builder createdAt(Timestamp createdAt) { this.createdAt = createdAt; return this; }
-        public Builder total(BigDecimal total) { this.total = total; return this; }
-        public Builder discount(BigDecimal discount) { this.discount = discount; return this; }
-        public Builder note(String note) { this.note = note; return this; }
-        public Builder status(InvoiceStatus status) { this.status = status; return this; }
-        public Builder details(List<InvoiceDetailModel> details) { 
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder employee(EmployeeModel employee) {
+            this.employee = employee;
+            return this;
+        }
+
+        public Builder branch(BranchModel branch) {
+            this.branch = branch;
+            return this;
+        }
+
+        public Builder customer(CustomerModel customer) {
+            this.customer = customer;
+            return this;
+        }
+
+        public Builder createdAt(Timestamp createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder total(BigDecimal total) {
+            this.total = total;
+            return this;
+        }
+
+        public Builder discount(BigDecimal discount) {
+            this.discount = discount;
+            return this;
+        }
+
+        public Builder note(String note) {
+            this.note = note;
+            return this;
+        }
+
+        public Builder status(InvoiceStatus status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder details(List<InvoiceDetailModel> details) {
             this.details = details != null ? details : new ArrayList<>();
             return this;
         }
 
-        public InvoiceModel build() { return new InvoiceModel(this); }
+        public InvoiceModel build() {
+            return new InvoiceModel(this);
+        }
     }
 
-    // --- Getters & Setters ---
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public EmployeeModel getEmployee() { return employee; }
-    public void setEmployee(EmployeeModel employee) { this.employee = employee; }
-    public BranchModel getBranch() { return branch; }
-    public void setBranch(BranchModel branch) { this.branch = branch; }
-    public CustomerModel getCustomer() { return customer; }
-    public void setCustomer(CustomerModel customer) { this.customer = customer; }
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
-    public BigDecimal getTotal() { return total; }
-    public void setTotal(BigDecimal total) { this.total = total; }
-    public BigDecimal getDiscount() { return discount; }
-    public void setDiscount(BigDecimal discount) { this.discount = discount; }
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
-    public InvoiceStatus getStatus() { return status; }
-    public void setStatus(InvoiceStatus status) { this.status = status; }
-    public List<InvoiceDetailModel> getDetails() { return details; }
+    // ===== Getters / Setters =====
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public EmployeeModel getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(EmployeeModel employee) {
+        this.employee = employee;
+    }
+
+    public BranchModel getBranch() {
+        return branch;
+    }
+
+    public void setBranch(BranchModel branch) {
+        this.branch = branch;
+    }
+
+    public CustomerModel getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(CustomerModel customer) {
+        this.customer = customer;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public InvoiceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(InvoiceStatus status) {
+        this.status = status;
+    }
+
+    public List<InvoiceDetailModel> getDetails() {
+        if (details == null) {                // ✔ FIX 2: SAFE GETTER
+            details = new ArrayList<>();
+        }
+        return details;
+    }
 
     public void addDetail(InvoiceDetailModel detail) {
-        this.details.add(detail);
+        getDetails().add(detail);             // SAFE
         detail.setInvoice(this);
     }
 
+    public void setDetails(List<InvoiceDetailModel> newDetails) {
+        // ✔ FIX 3: SAFE CLEAR + ADD
+        getDetails().clear();                 // now safe because details always initialized
 
-    public void setDetails(List<InvoiceDetailModel> details) {
-        this.details.clear();
-        if (details != null) {
-            for (InvoiceDetailModel d : details) {
+        if (newDetails != null) {
+            for (InvoiceDetailModel d : newDetails) {
                 addDetail(d);
             }
         }
     }
 
-    // --- inner enum ---
     public enum InvoiceStatus {
         PENDING,
         COMPLETED,
@@ -140,10 +233,10 @@ public class InvoiceModel {
 
     @Override
     public String toString() {
-        return "InvoiceModel{" +
-                "id='" + id + '\'' +
-                ", total=" + total +
-                ", discount=" + discount +
-                '}';
+        return "InvoiceModel{"
+                + "id='" + id + '\''
+                + ", total=" + total
+                + ", discount=" + discount
+                + '}';
     }
 }
