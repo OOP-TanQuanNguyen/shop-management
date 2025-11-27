@@ -145,8 +145,4 @@ public class InvoiceRequestDTO {
     public boolean validForUpdate() {
         return invoiceId != null && !invoiceId.isBlank();
     }
-
-    public boolean validForDraft() {
-        return employeeId != null && !employeeId.isBlank() && branchId != null;
-    }
 }
