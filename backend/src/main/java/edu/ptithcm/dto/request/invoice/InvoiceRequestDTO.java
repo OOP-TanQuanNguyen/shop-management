@@ -59,7 +59,7 @@ public class InvoiceRequestDTO {
         this.invoiceId = RequestUtil.toStr(data.get("invoiceId"));
         this.employeeId = RequestUtil.toStr(data.get("employeeId"));
         this.branchId = RequestUtil.toInt(data.get("branchId"));
-        this.customerId = RequestUtil.toStr(data.get("customerId"));
+        this.customerId = data.get("customerId") != null ? RequestUtil.toStr(data.get("customerId")) : null;
         this.note = RequestUtil.toStr(data.get("note"));
         this.discount = RequestUtil.toBigDecimal(data.get("discount"));
 
@@ -68,9 +68,11 @@ public class InvoiceRequestDTO {
             this.details = new ArrayList<>();
             for (Object o : (List<?>) detailsObj) {
                 if (o instanceof Map<?, ?> m) {
-                    String productId = RequestUtil.toStr(m.get("productId"));
+                    String productId = m.get("productId") != null ? RequestUtil.toStr(m.get("productId")) : null;
                     int quantity = m.get("quantity") != null ? ((Number) m.get("quantity")).intValue() : 0;
-                    this.details.add(new InvoiceDetailRequest(productId, quantity));
+                    if (productId != null && quantity > 0) {
+                        this.details.add(new InvoiceDetailRequest(productId, quantity));
+                    }
                 }
             }
         }
@@ -142,5 +144,9 @@ public class InvoiceRequestDTO {
 
     public boolean validForUpdate() {
         return invoiceId != null && !invoiceId.isBlank();
+    }
+
+    public boolean validForDraft() {
+        return employeeId != null && !employeeId.isBlank() && branchId != null;
     }
 }

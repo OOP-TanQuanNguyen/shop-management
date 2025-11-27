@@ -19,6 +19,11 @@ public class RequestUtil {
         }
     }
 
+    public static int toInt(Object value, int defaultValue) {
+        Integer i = toInt(value);
+        return i != null ? i : defaultValue;
+    }
+
     public static String toStr(Object value) {
         return value != null ? value.toString() : null;
     }

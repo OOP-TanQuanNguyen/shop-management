@@ -61,10 +61,13 @@ public class InvoiceService {
 
     // ------------------ Tạo hóa đơn ------------------
     public ResponseDTO<InvoiceInfo> createInvoice(InvoiceRequestDTO req) throws RuntimeException {
+        if (req == null) {
+            return new InvalidResponse<>("Dữ liệu hóa đơn trống");
+        }
         if (!req.validForCreate()) {
             return new InvalidResponse<>("Dữ liệu hóa đơn không hợp lệ");
         }
-
+        
         EmployeeModel employee = employeeRepo.findById(req.getEmployeeId());
         if (employee == null) {
             return new NotFoundResponse<>("Nhân viên không tồn tại");
@@ -91,11 +94,9 @@ public class InvoiceService {
         BigDecimal total = BigDecimal.ZERO;
 
         for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
-
             if (d.getQuantity() <= 0) {
                 return new InvalidResponse<>("Số lượng sản phẩm phải > 0");
             }
-
             ProductModel product = productRepo.findById(d.getProductId());
             if (product == null) {
                 return new NotFoundResponse<>("Sản phẩm không tồn tại: " + d.getProductId());
@@ -149,8 +150,8 @@ public class InvoiceService {
     }
 
     // ------------------ Xác nhận thanh toán ------------------
-    public ResponseDTO<InvoiceInfo> confirmInvoice(String draftId) throws RuntimeException {
-        InvoiceModel draft = draftCache.confirmDraft(draftId);
+    public ResponseDTO<InvoiceInfo> confirmInvoice(String invoiceId) throws RuntimeException {
+        InvoiceModel draft = draftCache.confirmDraft(invoiceId);
         if (draft == null) {
             return new NotFoundResponse<>("Hóa đơn không tồn tại");
         }
@@ -192,11 +193,8 @@ public class InvoiceService {
 
     // ------------------ Hủy hóa đơn ------------------
     public ResponseDTO<InvoiceInfo> cancelInvoice(String invoiceId) throws RuntimeException {
-
-        // Kiểm tra trong draft cache trước
         InvoiceModel draft = draftCache.getDraft(invoiceId);
         if (draft != null) {
-            // rollback tồn kho
             if (draft.getDetails() != null) {
                 for (InvoiceDetailModel d : draft.getDetails()) {
                     InventoryModel inv = inventoryRepo.findByBranchAndProduct(draft.getBranch().getId(), d.getProduct().getId());

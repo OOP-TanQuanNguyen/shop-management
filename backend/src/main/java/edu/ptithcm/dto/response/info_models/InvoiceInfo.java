@@ -41,7 +41,7 @@ public class InvoiceInfo {
         map.put("total", total);
         map.put("discount", discount);
         map.put("note", note);
-        map.put("details", details);  // đã là List<Map> sẵn
+        map.put("details", details);  
         return map;
     }
 
