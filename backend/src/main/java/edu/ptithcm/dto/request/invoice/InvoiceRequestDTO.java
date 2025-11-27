@@ -138,8 +138,7 @@ public class InvoiceRequestDTO {
     // --- Validation ---
     public boolean validForCreate() {
         return employeeId != null && !employeeId.isBlank()
-                && branchId != null
-                && details != null && !details.isEmpty();
+                && branchId != null;
     }
 
     public boolean validForUpdate() {

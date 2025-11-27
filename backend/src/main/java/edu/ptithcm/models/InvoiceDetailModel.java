@@ -35,7 +35,7 @@ public class InvoiceDetailModel {
         this.invoice = invoice;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
-        recalculateTotal();  // ✅ FIX: Auto-calculate
+        recalculateTotal();  
     }
 
     // --- Getters & Setters ---
@@ -59,7 +59,6 @@ public class InvoiceDetailModel {
         return quantity;
     }
 
-    // ✅ FIX: Auto-recalculate total khi set quantity
     public void setQuantity(int quantity) {
         this.quantity = quantity;
         recalculateTotal();
@@ -69,7 +68,6 @@ public class InvoiceDetailModel {
         return unitPrice;
     }
 
-    // ✅ FIX: Auto-recalculate total khi set unitPrice
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
         recalculateTotal();
@@ -83,7 +81,6 @@ public class InvoiceDetailModel {
         this.total = total;
     }
 
-    // ✅ FIX: Helper method để tự động tính total
     private void recalculateTotal() {
         if (unitPrice != null && quantity > 0) {
             this.total = unitPrice.multiply(BigDecimal.valueOf(quantity));

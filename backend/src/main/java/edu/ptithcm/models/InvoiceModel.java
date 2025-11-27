@@ -39,7 +39,7 @@ public class InvoiceModel {
     private InvoiceStatus status = InvoiceStatus.PENDING;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InvoiceDetailModel> details = new ArrayList<>();   // ✔ FIX 1: ALWAYS INIT
+    private List<InvoiceDetailModel> details = new ArrayList<>();  
 
     // ===== Constructors =====
     public InvoiceModel() {
@@ -56,12 +56,11 @@ public class InvoiceModel {
         this.note = builder.note;
         this.status = builder.status;
 
-        setDetails(builder.details);   // safe setter
+        setDetails(builder.details);   
     }
 
     // ===== Builder Pattern =====
     public static class Builder {
-
         private String id;
         private EmployeeModel employee;
         private BranchModel branch;
@@ -203,23 +202,25 @@ public class InvoiceModel {
     }
 
     public List<InvoiceDetailModel> getDetails() {
-        if (details == null) {                // ✔ FIX 2: SAFE GETTER
+        if (details == null) {                
             details = new ArrayList<>();
         }
         return details;
     }
 
     public void addDetail(InvoiceDetailModel detail) {
-        getDetails().add(detail);             // SAFE
+        getDetails().add(detail);            
         detail.setInvoice(this);
     }
 
-    public void setDetails(List<InvoiceDetailModel> newDetails) {
-        // ✔ FIX 3: SAFE CLEAR + ADD
-        getDetails().clear();                 // now safe because details always initialized
-
-        if (newDetails != null) {
-            for (InvoiceDetailModel d : newDetails) {
+    public void setDetails(List<InvoiceDetailModel> details) {
+        if (this.details == null) {
+            this.details = new ArrayList<>();
+        } else {
+            this.details.clear();
+        }
+        if (details != null) {
+            for (InvoiceDetailModel d : details) {
                 addDetail(d);
             }
         }
