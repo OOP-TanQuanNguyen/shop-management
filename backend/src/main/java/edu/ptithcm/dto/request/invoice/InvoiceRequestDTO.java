@@ -18,27 +18,44 @@ public class InvoiceRequestDTO {
 
     // --- Inner class chi tiết ---
     public static class InvoiceDetailRequest {
+
         private String productId;
         private int quantity;
 
-        public InvoiceDetailRequest() {}
+        public InvoiceDetailRequest() {
+        }
+
         public InvoiceDetailRequest(String productId, int quantity) {
             this.productId = productId;
             this.quantity = quantity;
         }
 
-        public String getProductId() { return productId; }
-        public void setProductId(String productId) { this.productId = productId; }
-        public int getQuantity() { return quantity; }
-        public void setQuantity(int quantity) { this.quantity = quantity; }
+        public String getProductId() {
+            return productId;
+        }
+
+        public void setProductId(String productId) {
+            this.productId = productId;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
     }
 
     // --- Constructors ---
-    public InvoiceRequestDTO() {}
+    public InvoiceRequestDTO() {
+    }
 
     // Constructor Map -> DTO
     public InvoiceRequestDTO(Map<String, Object> data) {
-        if (data == null) return;
+        if (data == null) {
+            return;
+        }
         this.invoiceId = RequestUtil.toStr(data.get("invoiceId"));
         this.employeeId = RequestUtil.toStr(data.get("employeeId"));
         this.branchId = RequestUtil.toInt(data.get("branchId"));
@@ -58,29 +75,70 @@ public class InvoiceRequestDTO {
             }
         }
     }
-    
+
     // --- Getters & Setters ---
-    public String getInvoiceId() { return invoiceId; }
-    public void setInvoiceId(String invoiceId) { this.invoiceId = invoiceId; }
-    public String getEmployeeId() { return employeeId; }
-    public void setEmployeeId(String employeeId) { this.employeeId = employeeId; }
-    public Integer getBranchId() { return branchId; }
-    public void setBranchId(Integer branchId) { this.branchId = branchId; }
-    public String getCustomerId() { return customerId; }
-    public void setCustomerId(String customerId) { this.customerId = customerId; }
-    public BigDecimal getDiscount() { return discount; }
-    public void setDiscount(BigDecimal discount) { this.discount = discount; }
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
-    public List<InvoiceDetailRequest> getDetails() { return details; }
-    public void setDetails(List<InvoiceDetailRequest> details) { this.details = details; }
+    public String getInvoiceId() {
+        return invoiceId;
+    }
+
+    public void setInvoiceId(String invoiceId) {
+        this.invoiceId = invoiceId;
+    }
+
+    public String getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public Integer getBranchId() {
+        return branchId;
+    }
+
+    public void setBranchId(Integer branchId) {
+        this.branchId = branchId;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public List<InvoiceDetailRequest> getDetails() {
+        return details;
+    }
+
+    public void setDetails(List<InvoiceDetailRequest> details) {
+        this.details = details;
+    }
 
     // --- Validation ---
     public boolean validForCreate() {
         return employeeId != null && !employeeId.isBlank()
-            && branchId != null
-            && (customerId == null || !customerId.isBlank())
-            && details != null && !details.isEmpty();
+                && branchId != null
+                //&& (customerId == null || !customerId.isBlank())
+                && details != null && !details.isEmpty();
     }
 
     public boolean validForUpdate() {

@@ -10,6 +10,7 @@ import edu.ptithcm.app.reducers.CategoryReducer;
 import edu.ptithcm.app.reducers.CustomerReducer;
 import edu.ptithcm.app.reducers.EmployeeReducer;
 import edu.ptithcm.app.reducers.InventoryReducer;
+import edu.ptithcm.app.reducers.InvoiceReducer;
 import edu.ptithcm.app.reducers.ProductReducer;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.controllers.admin.AdminController;
@@ -47,6 +48,7 @@ public class App {
                 CustomerReducer.register(store);
                 CategoryReducer.register(store);
                 InventoryReducer.register(store);
+                InvoiceReducer.register(store);
                 // --- Kết nối socket ---
                 client = new DTTP("127.0.0.1", 2025);
                 client.listen();

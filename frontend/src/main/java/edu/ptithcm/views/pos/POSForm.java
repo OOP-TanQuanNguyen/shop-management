@@ -13,12 +13,13 @@ import edu.ptithcm.views.pos.panels.SalePanel;
 
 public class POSForm extends JFrame {
 
-    private JButton btnLogout = new JButton("Đăng xuất");
+    private final JButton btnLogout = new JButton("Đăng xuất");
 
-    // ⭐ Tạo instance panel để dùng trong tab
+    // Panels
     private final CustomerPanel customerPanel = new CustomerPanel();
     private final SalePanel salePanel = new SalePanel();
     private final MyInvoicePanel myInvoicePanel = new MyInvoicePanel();
+
     private final JTabbedPane tabs = new JTabbedPane();
 
     public POSForm(UserModel user) {
@@ -28,7 +29,12 @@ public class POSForm extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // ===== TOP BAR =====
+        initTopBar(user);
+        initTabs();
+    }
+
+    private void initTopBar(UserModel user) {
+
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(new Color(0, 102, 102));
 
@@ -54,17 +60,20 @@ public class POSForm extends JFrame {
         topBar.add(lblTitle, BorderLayout.CENTER);
         topBar.add(rightBar, BorderLayout.EAST);
 
-        // ===== TABS =====
+        add(topBar, BorderLayout.NORTH);
+    }
+
+    private void initTabs() {
         tabs.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         tabs.addTab("🛒 Bán hàng", salePanel);
         tabs.addTab("👥 Khách hàng", customerPanel);
         tabs.addTab("🧾 Hóa đơn của tôi", myInvoicePanel);
 
-        add(topBar, BorderLayout.NORTH);
         add(tabs, BorderLayout.CENTER);
     }
 
+    // getters for controller
     public JButton getLogoutButton() {
         return btnLogout;
     }
