@@ -77,9 +77,18 @@ public class SaleController {
     /* ======================================================================================= */
     private void loadInitialData() {
         try {
+            // 1. Load danh sách sản phẩm
             productService.getAllProducts();
-            inventoryService.getAllInventories();
+
+            // 2. Lấy user để biết chi nhánh
+            UserModel user = (UserModel) store.getAppState().get("user");
+            if (user != null) {
+                inventoryService.getInventoriesByBranch(user.getBranchId());  // === FIX CHUẨN ===
+            }
+
+            // 3. Load danh sách khách hàng
             customerService.getAllCustomers();
+
         } catch (IOException e) {
             JOptionPane.showMessageDialog(view,
                     "Không thể tải dữ liệu ban đầu:\n" + e.getMessage(),
@@ -173,7 +182,6 @@ public class SaleController {
         }
 
         String productId = (String) view.getProductTable().getValueAt(row, 0);
-
         ProductInfo prod = findProduct(productId);
         InventoryModel inv = inventoryMap.get(productId);
 
@@ -269,13 +277,12 @@ public class SaleController {
             return null;
         }
 
-        List<CustomerModel> all
-                = (List<CustomerModel>) store.getAppState().get("Customers");
+        List<CustomerModel> all = (List<CustomerModel>) store.getAppState().get("Customers");
 
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
-                    return c;
+                    return c; // load từ admin
                 }
             }
         }
@@ -308,7 +315,7 @@ public class SaleController {
         Map<String, Object> map = new HashMap<>();
         map.put("details", details);
         map.put("employeeId", user.getId());
-        map.put("branchId", user.getBranchId());
+        map.put("branchId", String.valueOf(user.getBranchId()));
 
         if (selectedCustomer != null) {
             map.put("customerId", selectedCustomer.getId());
@@ -366,9 +373,35 @@ public class SaleController {
             return;
         }
 
-        JOptionPane.showMessageDialog(view,
-                "Đã tạo hóa đơn draft!\nVui lòng sang tab 'Hóa đơn của tôi' để xác nhận.");
+        // Tải lại danh sách hóa đơn để MyInvoicePanel update
+        try {
+            invoiceService.getInvoicesForEmployee();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(view, "Không thể tải danh sách hóa đơn.");
+        }
 
+        // CHUYỂN TAB: MyInvoicePanel
+        Window w = SwingUtilities.getWindowAncestor(view);
+        if (w instanceof JFrame frame) {
+
+            JTabbedPane tabs = null;
+            for (java.awt.Component comp : frame.getContentPane().getComponents()) {
+                if (comp instanceof JTabbedPane) {
+                    tabs = (JTabbedPane) comp;
+                    break;
+                }
+            }
+
+            if (tabs != null) {
+                tabs.setSelectedIndex(2); // Tab "Hóa đơn của tôi"
+            }
+        }
+
+        JOptionPane.showMessageDialog(view,
+                "Hóa đơn đã được tạo ở trạng thái Draft.\n"
+                + "Vui lòng sang tab 'Hóa đơn của tôi' để xác nhận thanh toán.");
+
+        // Reset dữ liệu UI
         cart.clear();
         currentDraftId = null;
         selectedCustomer = null;

@@ -13,6 +13,7 @@ import edu.ptithcm.middleware.AuthenMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.utils.ReplyUtils;
+import edu.ptithcm.utils.RequestUtil;
 
 public class InventoryRoute {
 
@@ -27,87 +28,131 @@ public class InventoryRoute {
     }
 
     public void register() {
-        // ---------------- GET ALL ----------------
+
+        /* ============================================================
+           GET ALL
+        ============================================================ */
         server.on(TypeDTTP.INVENTORY_GET_ALL.getValue(), args -> {
             try {
                 ResponseDTO<List<InventoryInfo>> response = controller.getAllInventories();
-                List<Map<String, Object>> inventories = response.getData() != null
+                List<Map<String, Object>> inventories
+                        = response.getData() != null
                         ? response.getData().stream().map(InventoryInfo::toMap).toList()
                         : null;
 
-                args.reply(TypeDTTP.INVENTORY_GET_ALL.getValue(), Map.of("inventories", inventories), response.getStatus(), response.getMessage());
+                args.reply(
+                        TypeDTTP.INVENTORY_GET_ALL.getValue(),
+                        Map.of("inventories", inventories),
+                        response.getStatus(),
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_GET_ALL.getValue(), e);
             }
         });
 
-        // ---------------- CREATE ----------------
+        /* ============================================================
+           CREATE
+        ============================================================ */
         server.on(TypeDTTP.INVENTORY_CREATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_CREATE.getValue()))
+                if (!AuthenMiddleWare.hasPermission(
+                        manager, server, Role.ADMIN.getValue(),
+                        args, TypeDTTP.INVENTORY_CREATE.getValue())) {
                     return;
+                }
 
                 InventoryRequestDTO request = new InventoryRequestDTO(args.data);
                 ResponseDTO<InventoryInfo> response = controller.createInventory(request);
 
-                args.reply(TypeDTTP.INVENTORY_CREATE.getValue(),
+                args.reply(
+                        TypeDTTP.INVENTORY_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_CREATE.getValue(), e);
             }
         });
 
-        // ---------------- UPDATE ----------------
+        /* ============================================================
+           UPDATE
+        ============================================================ */
         server.on(TypeDTTP.INVENTORY_UPDATE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_UPDATE.getValue()))
+                if (!AuthenMiddleWare.hasPermission(
+                        manager, server, Role.ADMIN.getValue(),
+                        args, TypeDTTP.INVENTORY_UPDATE.getValue())) {
                     return;
+                }
 
                 InventoryRequestDTO request = new InventoryRequestDTO(args.data);
                 ResponseDTO<InventoryInfo> response = controller.updateInventory(request);
 
-                args.reply(TypeDTTP.INVENTORY_UPDATE.getValue(),
+                args.reply(
+                        TypeDTTP.INVENTORY_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_UPDATE.getValue(), e);
             }
         });
 
-        // ---------------- DELETE ----------------
+        /* ============================================================
+           DELETE
+        ============================================================ */
         server.on(TypeDTTP.INVENTORY_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_DELETE.getValue()))
+                if (!AuthenMiddleWare.hasPermission(
+                        manager, server, Role.ADMIN.getValue(),
+                        args, TypeDTTP.INVENTORY_DELETE.getValue())) {
                     return;
+                }
 
                 InventoryRequestDTO request = new InventoryRequestDTO(args.data);
                 ResponseDTO<InventoryInfo> response = controller.deleteInventory(request);
 
-                args.reply(TypeDTTP.INVENTORY_DELETE.getValue(),
+                args.reply(
+                        TypeDTTP.INVENTORY_DELETE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_DELETE.getValue(), e);
             }
         });
 
-        // ---------------- GET BY BRANCH ----------------
+        /* ============================================================
+           GET BY BRANCH (ĐÃ FIX HOÀN TOÀN)
+        ============================================================ */
         server.on(TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue())) return;
+                // Parse branchId  → xử lý được: 3, "3", "3.0", 3.0
+                Integer branchId = RequestUtil.toInt(args.data.get("branchId"));
 
-                Integer branchId = args.data.get("branchId") != null ? Integer.valueOf(args.data.get("branchId").toString()) : null;
-                ResponseDTO<List<InventoryInfo>> response = controller.getInventoriesByBranch(branchId);
+                ResponseDTO<List<InventoryInfo>> response
+                        = controller.getInventoriesByBranch(branchId);
 
-                List<Map<String, Object>> inventories = response.getData() != null
+                List<Map<String, Object>> inventories
+                        = response.getData() != null
                         ? response.getData().stream().map(InventoryInfo::toMap).toList()
                         : null;
 
-                args.reply(TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), Map.of("inventories", inventories), response.getStatus(), response.getMessage());
+                args.reply(
+                        TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(),
+                        Map.of("inventories", inventories),
+                        response.getStatus(),
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), e);
             }

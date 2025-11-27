@@ -137,7 +137,6 @@ public class InvoiceRequestDTO {
     public boolean validForCreate() {
         return employeeId != null && !employeeId.isBlank()
                 && branchId != null
-                //&& (customerId == null || !customerId.isBlank())
                 && details != null && !details.isEmpty();
     }
 
