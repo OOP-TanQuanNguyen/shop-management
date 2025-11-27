@@ -22,13 +22,16 @@ public class CategoryRequestDTO {
         return name;
     }
 
-    // Validate trước khi tạo
     public boolean validForCreate() {
         return name != null && !name.isEmpty();
     }
 
-    // Validate trước khi update
     public boolean validForUpdate() {
-        return categoryId != null && !categoryId.isEmpty() && validForCreate();
+        if (categoryId == null || categoryId.isBlank()) return false;
+        return name != null && !name.isBlank();
+    }
+
+    public boolean validForDelete() {
+        return categoryId != null && !categoryId.isBlank();
     }
 }

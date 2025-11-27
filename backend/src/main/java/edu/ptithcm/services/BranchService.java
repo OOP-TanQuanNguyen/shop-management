@@ -70,7 +70,7 @@ public class BranchService {
 
     // Xóa chi nhánh
     public ResponseDTO<BranchInfo> deleteBranch(BranchRequestDTO req) throws RuntimeException {
-        if (req.getBranchId() == null || req.getBranchId() <= 0) {
+        if (!req.validForDelete()) {
             return new InvalidResponse<>("Thiếu ID chi nhánh");
         }
 

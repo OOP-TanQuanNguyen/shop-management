@@ -46,6 +46,10 @@ public class BranchRequestDTO {
     }
 
     public boolean validForUpdate() {
-        return branchId != null && branchId > 0 && validForCreate();
+        return branchId != null && branchId > 0 && name != null && !name.isBlank();
+    }
+
+    public boolean validForDelete() {
+        return branchId != null && branchId > 0;
     }
 }

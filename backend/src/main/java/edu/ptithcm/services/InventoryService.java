@@ -62,7 +62,7 @@ public class InventoryService {
 
     // Cập nhật
     public ResponseDTO<InventoryInfo> updateInventory(InventoryRequestDTO req) throws RuntimeException {
-        if (!req.validForUpdate() || req.getId() == null || req.getId() <= 0)
+        if (!req.validForUpdate())
             return new InvalidResponse<>("Dữ liệu không hợp lệ");
 
         InventoryModel inventory = inventoryRepo.findById(req.getId());
@@ -107,7 +107,7 @@ public class InventoryService {
 
     // Xóa
     public ResponseDTO<InventoryInfo> deleteInventory(InventoryRequestDTO req) throws RuntimeException {
-        if (req.getId() == null || req.getId() <= 0) return new InvalidResponse<>("Thiếu ID kho");
+        if (!req.validForDelete()) return new InvalidResponse<>("Thiếu ID kho");
 
         InventoryModel deleted = inventoryRepo.delete(req.getId());
         if (deleted == null) return new NotFoundResponse<>("Kho không tồn tại");

@@ -25,6 +25,11 @@ public class CustomerRequestDTO {
     }
 
     public boolean validForUpdate() {
-        return customerId != null && !customerId.isBlank() && validForCreate();
+        return customerId != null && !customerId.isBlank() 
+            && name != null && !name.isBlank();
+    }
+
+    public boolean validForDelete() {
+        return customerId != null && !customerId.isBlank();
     }
 }

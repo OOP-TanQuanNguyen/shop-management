@@ -30,6 +30,13 @@ public class InventoryRequestDTO {
     }
 
     public boolean validForUpdate() {
-        return id != null && id > 0 && validForCreate();
+        if (id == null || id <= 0) return false;
+        return branchId != null
+                || productId != null
+                || quantity != null;
+    }
+
+    public boolean validForDelete() {
+        return id != null && id > 0;
     }
 }

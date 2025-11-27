@@ -60,7 +60,7 @@ public class ProductService {
     // ------------------ Cập nhật sản phẩm ------------------
     public ResponseDTO<ProductInfo> updateProduct(ProductRequestDTO req) throws RuntimeException {
 
-        if (!req.validForUpdate() || req.getProductId() == null || req.getProductId().isBlank())
+        if (!req.validForUpdate())
             return new InvalidResponse<>("Thiếu ID sản phẩm");
 
         ProductModel existing = productRepo.findById(req.getProductId()); 
@@ -85,7 +85,7 @@ public class ProductService {
     // ------------------ Xóa sản phẩm ------------------
     public ResponseDTO<ProductInfo> deleteProduct(ProductRequestDTO req) throws RuntimeException {
 
-        if (req.getProductId() == null || req.getProductId().isBlank())
+        if (!req.validForDelete())
             return new InvalidResponse<>("Thiếu ID sản phẩm");
 
         ProductModel deleted = productRepo.delete(req.getProductId());

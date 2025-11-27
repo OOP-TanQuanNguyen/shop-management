@@ -40,6 +40,12 @@ public class ProductRequestDTO {
     }
 
     public boolean validForUpdate() {
-        return productId != null && !productId.isEmpty() && validForCreate();
+        if (productId == null || productId.isBlank()) return false;
+        return name != null || categoryId != null || costPrice != null 
+            || sellPrice != null || expiryDate != null || isActive != null;
+    }
+
+    public boolean validForDelete() {
+        return productId != null && !productId.isBlank();
     }
 }

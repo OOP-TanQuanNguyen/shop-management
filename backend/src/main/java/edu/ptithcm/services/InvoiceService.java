@@ -265,10 +265,6 @@ public class InvoiceService {
                 if (inv == null || inv.getQuantity() < d.getQuantity())
                     return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + product.getName());
 
-                // Trừ tạm tồn kho mới
-                inv.setQuantity(inv.getQuantity() - d.getQuantity());
-                inventoryRepo.update(inv);
-
                 BigDecimal unitPrice = BigDecimalUtil.safe(product.getSellPrice());
                 InvoiceDetailModel detail = new InvoiceDetailModel(product, draft, d.getQuantity(), unitPrice);
                 newDetails.add(detail);

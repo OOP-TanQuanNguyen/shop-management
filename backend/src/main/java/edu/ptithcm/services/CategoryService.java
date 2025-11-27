@@ -49,7 +49,7 @@ public class CategoryService {
     // ------------------ Cập nhật category ------------------
     public ResponseDTO<CategoryInfo> updateCategory(CategoryRequestDTO req) throws RuntimeException {
 
-        if (!req.validForUpdate() || req.getCategoryId() == null || req.getCategoryId().isBlank()) 
+        if (!req.validForUpdate()) 
             return new InvalidResponse<>("Thiếu ID category");
 
         if (categoryRepo.existsByName(req.getName())) {
@@ -74,7 +74,7 @@ public class CategoryService {
     // ------------------ Xóa category ------------------
     public ResponseDTO<CategoryInfo> deleteCategory(CategoryRequestDTO req) throws RuntimeException {
 
-        if (req.getCategoryId() == null || req.getCategoryId().isBlank())
+        if (!req.validForDelete())
             return new InvalidResponse<>("Thiếu ID category");
 
         CategoryModel deleted = categoryRepo.delete(req.getCategoryId());

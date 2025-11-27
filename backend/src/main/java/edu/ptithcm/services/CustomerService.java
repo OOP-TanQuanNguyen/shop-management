@@ -71,7 +71,7 @@ public class CustomerService {
     // ------------------ Xóa khách hàng ------------------
     public ResponseDTO<CustomerInfo> deleteCustomer(CustomerRequestDTO req) throws RuntimeException {
 
-        if (req.getCustomerId() == null || req.getCustomerId().isBlank())
+        if (!req.validForDelete())
             return new InvalidResponse<>("Thiếu ID khách hàng");
 
         loyaltyService.deleteLoyalty(req.getCustomerId());
