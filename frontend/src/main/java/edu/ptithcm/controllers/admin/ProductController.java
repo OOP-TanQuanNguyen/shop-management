@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class ProductController {
 
@@ -26,7 +27,7 @@ public class ProductController {
     private final Store store = Store.getInstance();
 
     private List<ProductInfo> currentProducts;
-    private List<CategoryModel> currentCategories;   // DANH MỤC – QUAN TRỌNG
+    private List<CategoryModel> currentCategories;
 
     private boolean isShowingMessage = false;
 
@@ -36,7 +37,6 @@ public class ProductController {
 
         registerEvents();
         store.subcribe(this::onStateChanged);
-
         loadProducts();
     }
 
@@ -45,28 +45,65 @@ public class ProductController {
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
         view.getBtnReload().addActionListener(e -> loadProducts());
+
+        // -------------------------- NEW: FILTER --------------------------
+        view.getBtnFilter().addActionListener(e -> handleFilter());
     }
 
     private void loadProducts() {
         try {
             service.getAllProducts();
         } catch (IOException e) {
-            logger.severe("Failed to load products: " + e.getMessage());
-            SwingUtilities.invokeLater(()
-                    -> JOptionPane.showMessageDialog(view,
-                            "Không thể tải danh sách sản phẩm: " + e.getMessage(),
-                            "Lỗi",
-                            JOptionPane.ERROR_MESSAGE)
-            );
+            JOptionPane.showMessageDialog(view,
+                    "Không thể tải danh sách sản phẩm: " + e.getMessage(),
+                    "Lỗi",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
     // ====================================================================
-    // HANDLE ADD PRODUCT
+    // FILTER PRODUCT (FE)
+    // ====================================================================
+    private void handleFilter() {
+        if (currentProducts == null) {
+            return;
+        }
+
+        String keyword = view.getTxtSearch().getText().trim().toLowerCase();
+        String cateName = view.getCbCategory().getSelectedItem().toString();
+        String status = view.getCbStatus().getSelectedItem().toString();
+
+        List<ProductInfo> filtered = currentProducts;
+
+        // Lọc từ khóa
+        if (!keyword.isEmpty()) {
+            filtered = filtered.stream()
+                    .filter(p -> p.getName().toLowerCase().contains(keyword))
+                    .collect(Collectors.toList());
+        }
+
+        // Lọc theo danh mục
+        if (!cateName.equals("Tất cả")) {
+            filtered = filtered.stream()
+                    .filter(p -> cateName.equals(p.getCategoryName()))
+                    .collect(Collectors.toList());
+        }
+
+        // Lọc theo trạng thái
+        if (!status.equals("Tất cả")) {
+            boolean isActive = status.equals("Đang bán");
+            filtered = filtered.stream()
+                    .filter(p -> p.getIsActive() == isActive)
+                    .collect(Collectors.toList());
+        }
+
+        view.updateTable(filtered);
+    }
+
+    // ====================================================================
+    // ADD
     // ====================================================================
     private void handleAdd() {
-
-        // KIỂM TRA DANH MỤC
         if (currentCategories == null || currentCategories.isEmpty()) {
             JOptionPane.showMessageDialog(view,
                     "Không thể thêm sản phẩm! Hãy tạo danh mục trước.",
@@ -75,30 +112,23 @@ public class ProductController {
             return;
         }
 
-        SwingUtilities.invokeLater(() -> {
+        ProductAddDialog dialog = new ProductAddDialog(getParentFrame(), currentCategories);
+        dialog.setVisible(true);
 
-            ProductAddDialog dialog
-                    = new ProductAddDialog(getParentFrame(), currentCategories);
+        if (dialog.isConfirmed()) {
+            Map<String, Object> data = dialog.toMap();
+            createProduct(data);
+        }
 
-            dialog.setVisible(true);
-
-            if (dialog.isConfirmed()) {
-                Map<String, Object> data = dialog.toMap();
-                logger.info("Product data to create: " + data);
-                createProduct(data);
-            }
-
-            dialog.dispose();
-        });
+        dialog.dispose();
     }
 
     // ====================================================================
-    // HANDLE EDIT PRODUCT
+    // EDIT
     // ====================================================================
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
-
-        if (row == -1) {
+        if (row == -1 || currentProducts == null || row >= currentProducts.size()) {
             JOptionPane.showMessageDialog(view,
                     "Vui lòng chọn sản phẩm để sửa!",
                     "Cảnh báo",
@@ -106,68 +136,45 @@ public class ProductController {
             return;
         }
 
-        if (currentProducts == null || row >= currentProducts.size()) {
-            JOptionPane.showMessageDialog(view,
-                    "Không thể lấy thông tin sản phẩm!",
-                    "Lỗi",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         if (currentCategories == null || currentCategories.isEmpty()) {
             JOptionPane.showMessageDialog(view,
-                    "Không thể sửa sản phẩm vì chưa có danh mục!",
+                    "Không thể sửa vì chưa có danh mục!",
                     "Lỗi",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                ProductInfo product = currentProducts.get(row);
+        ProductInfo product = currentProducts.get(row);
 
-                logger.info("Editing product: " + product.getId());
+        ProductEditDialog dialog = new ProductEditDialog(
+                getParentFrame(),
+                currentCategories,
+                product.getId(),
+                product.getName(),
+                product.getCategoryId(),
+                product.getCostPrice(),
+                product.getSellPrice(),
+                product.getExpiryDate(),
+                product.getIsActive()
+        );
 
-                ProductEditDialog dialog = new ProductEditDialog(
-                        getParentFrame(),
-                        currentCategories, // TRUYỀN LIST CATEGORY
-                        product.getId(),
-                        product.getName(),
-                        product.getCategoryId(),
-                        product.getCostPrice(),
-                        product.getSellPrice(),
-                        product.getExpiryDate(),
-                        product.getIsActive()
-                );
+        dialog.setVisible(true);
 
-                dialog.setVisible(true);
+        if (dialog.isConfirmed()) {
+            Map<String, Object> data = dialog.toMap();
+            data.put("productId", product.getId());
+            updateProduct(data);
+        }
 
-                if (dialog.isConfirmed()) {
-                    Map<String, Object> data = dialog.toMap();
-                    data.put("productId", product.getId());
-                    logger.info("Product data to update: " + data);
-                    updateProduct(data);
-                }
-
-                dialog.dispose();
-
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(view,
-                        "Lỗi khi đọc thông tin sản phẩm: " + e.getMessage(),
-                        "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-                logger.severe("Edit error: " + e.getMessage());
-            }
-        });
+        dialog.dispose();
     }
 
     // ====================================================================
-    // HANDLE DELETE PRODUCT
+    // DELETE
     // ====================================================================
     private void handleDelete() {
         int row = view.getTable().getSelectedRow();
-
-        if (row == -1) {
+        if (row == -1 || currentProducts == null || row >= currentProducts.size()) {
             JOptionPane.showMessageDialog(view,
                     "Vui lòng chọn sản phẩm để xóa!",
                     "Cảnh báo",
@@ -175,37 +182,18 @@ public class ProductController {
             return;
         }
 
-        if (currentProducts == null || row >= currentProducts.size()) {
-            JOptionPane.showMessageDialog(view,
-                    "Không thể lấy thông tin sản phẩm!",
-                    "Lỗi",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
+        ProductInfo product = currentProducts.get(row);
+
+        ProductDeleteConfirmDialog dialog
+                = new ProductDeleteConfirmDialog(getParentFrame(), product.getName());
+
+        dialog.setVisible(true);
+
+        if (dialog.isConfirmed()) {
+            deleteProduct(product.getId());
         }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                ProductInfo product = currentProducts.get(row);
-                String id = product.getId();
-                String name = product.getName();
-
-                ProductDeleteConfirmDialog dialog
-                        = new ProductDeleteConfirmDialog(getParentFrame(), name);
-
-                dialog.setVisible(true);
-
-                if (dialog.isConfirmed()) {
-                    deleteProduct(id);
-                }
-
-                dialog.dispose();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(view,
-                        "Lỗi khi xóa sản phẩm: " + e.getMessage(),
-                        "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        dialog.dispose();
     }
 
     // ====================================================================
@@ -250,7 +238,7 @@ public class ProductController {
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateProductList(state);
-            updateCategoryList(state);        // CẬP NHẬT CATEGORY
+            updateCategoryList(state);
             showMessagesFromState(state);
         });
     }
@@ -268,12 +256,18 @@ public class ProductController {
         Object obj = state.get("Categories");
         if (obj instanceof List<?> list) {
             currentCategories = (List<CategoryModel>) list;
+
+            // ==== NEW: đẩy danh mục vào Combo Filter ====
+            List<String> names = currentCategories.stream()
+                    .map(CategoryModel::getName)
+                    .toList();
+            view.updateCategoryFilter(names);
+
             logger.info("Loaded categories: " + currentCategories.size());
         }
     }
 
     private void showMessagesFromState(AppState state) {
-
         if (isShowingMessage) {
             return;
         }

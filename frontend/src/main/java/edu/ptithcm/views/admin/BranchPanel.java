@@ -11,6 +11,9 @@ public class BranchPanel extends JPanel {
 
     private final JTable table;
     private final JButton btnAdd, btnEdit, btnDelete, btnReload;
+    private final JTextField txtSearch;
+    private final JButton btnFilter;
+
     private final DefaultTableModel model;
 
     public BranchPanel() {
@@ -18,10 +21,30 @@ public class BranchPanel extends JPanel {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
+        // ================== NORTH PANEL ==================
+        JPanel northPanel = new JPanel(new BorderLayout());
+
         JLabel title = new JLabel("🏬 Quản lý chi nhánh", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        add(title, BorderLayout.NORTH);
+        northPanel.add(title, BorderLayout.NORTH);
 
+        // ---------------- SEARCH BAR ----------------
+        JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+
+        txtSearch = new JTextField(20);
+        txtSearch.setToolTipText("Nhập tên chi nhánh...");
+
+        btnFilter = new JButton("🔍 Lọc");
+
+        searchBar.add(new JLabel("Tìm kiếm:"));
+        searchBar.add(txtSearch);
+        searchBar.add(btnFilter);
+
+        northPanel.add(searchBar, BorderLayout.SOUTH);
+
+        add(northPanel, BorderLayout.NORTH);
+
+        // ================== BUTTON BAR ==================
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         btnAdd = new JButton("➕ Thêm");
         btnEdit = new JButton("✏️ Sửa");
@@ -32,11 +55,12 @@ public class BranchPanel extends JPanel {
         topBar.add(btnEdit);
         topBar.add(btnDelete);
         topBar.add(btnReload);
+
         add(topBar, BorderLayout.SOUTH);
 
+        // ================== TABLE ==================
         model = new DefaultTableModel(
-                new String[]{"Tên", "SĐT", "Địa chỉ"}, 0
-        ) {
+                new String[]{"Tên", "SĐT", "Địa chỉ"}, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
                 return false;
@@ -69,13 +93,16 @@ public class BranchPanel extends JPanel {
         return btnReload;
     }
 
+    public JTextField getTxtSearch() {
+        return txtSearch;
+    }
+
+    public JButton getBtnFilter() {
+        return btnFilter;
+    }
+
     public void updateTable(List<BranchInfo> list) {
-
-        System.out.println("[DEBUG][Panel] updateTable size = "
-                + (list == null ? 0 : list.size()));
-
         model.setRowCount(0);
-
         if (list == null) {
             return;
         }

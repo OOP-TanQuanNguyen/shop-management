@@ -18,6 +18,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class InventoryController {
 
@@ -42,33 +43,75 @@ public class InventoryController {
     }
 
     // ---------------------------------------
-    //  INITIAL LOAD
+    // INITIAL LOAD
     // ---------------------------------------
     private void initialLoad() {
         try {
             service.getAllInventories();
         } catch (IOException e) {
-            view.showMessage("⚠️ Không tải được dữ liệu kho: " + e.getMessage());
+            view.showMessage("⚠ Không tải được dữ liệu kho: " + e.getMessage());
         }
     }
 
     // ---------------------------------------
-    //  REGISTER EVENTS
+    // REGISTER EVENTS
     // ---------------------------------------
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
-        view.getBtnReload().addActionListener(e -> initialLoad());
+        view.getBtnReload().addActionListener(e -> reloadFullData());
+
+        // Filter – LOCAL only
+        view.getBtnFilter().addActionListener(e -> applyFilter());
     }
 
     // ---------------------------------------
-    //  ADD
+    // RELOAD (RESET FILTER)
+    // ---------------------------------------
+    private void reloadFullData() {
+        // Reset filter UI về mặc định
+        view.getCbBranchFilter().setSelectedIndex(0);
+        view.getCbProductFilter().setSelectedIndex(0);
+
+        try {
+            service.getAllInventories();
+        } catch (IOException e) {
+            view.showMessage("⚠ Không thể tải lại: " + e.getMessage());
+        }
+    }
+
+    // ---------------------------------------
+    // FILTERING (LOCAL)
+    // ---------------------------------------
+    private void applyFilter() {
+
+        if (inventories == null) {
+            return;
+        }
+
+        String branchSel = (String) view.getCbBranchFilter().getSelectedItem();
+        String productSel = (String) view.getCbProductFilter().getSelectedItem();
+
+        List<InventoryModel> filtered = inventories.stream()
+                .filter(i
+                        -> (branchSel.equals("Tất cả chi nhánh")
+                || i.getBranchName().equalsIgnoreCase(branchSel))
+                && (productSel.equals("Tất cả sản phẩm")
+                || i.getProductName().equalsIgnoreCase(productSel))
+                )
+                .collect(Collectors.toList());
+
+        view.updateTable(filtered);
+    }
+
+    // ---------------------------------------
+    // ADD
     // ---------------------------------------
     private void handleAdd() {
 
         if (branches == null || products == null || branches.isEmpty() || products.isEmpty()) {
-            view.showMessage("⚠️ Danh sách chi nhánh hoặc sản phẩm chưa tải!");
+            view.showMessage("⚠ Danh sách chi nhánh hoặc sản phẩm chưa tải!");
             return;
         }
 
@@ -86,21 +129,25 @@ public class InventoryController {
                     dlg.getQuantity()
             );
         } catch (IOException ex) {
-            view.showMessage("⚠️ Lỗi tạo kho: " + ex.getMessage());
+            view.showMessage("⚠ Lỗi tạo kho: " + ex.getMessage());
         }
     }
 
     // ---------------------------------------
-    //  EDIT
+    // EDIT
     // ---------------------------------------
     private void handleEdit() {
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
-            view.showMessage("⚠️ Vui lòng chọn một dòng để sửa!");
+            view.showMessage("⚠ Vui lòng chọn dòng để sửa!");
             return;
         }
 
-        InventoryModel item = inventories.get(row);
+        InventoryModel item = getInventoryFromTable(row);
+        if (item == null) {
+            view.showMessage("⚠ Không tìm thấy dữ liệu dòng này!");
+            return;
+        }
 
         InventoryEditDialog dlg = new InventoryEditDialog(
                 getFrame(),
@@ -123,22 +170,36 @@ public class InventoryController {
                     dlg.getQuantity()
             );
         } catch (IOException ex) {
-            view.showMessage("⚠️ Lỗi cập nhật: " + ex.getMessage());
+            view.showMessage("⚠ Lỗi cập nhật: " + ex.getMessage());
         }
     }
 
+    private InventoryModel getInventoryFromTable(int row) {
+        String branchName = (String) view.getTable().getValueAt(row, 0);
+        String productName = (String) view.getTable().getValueAt(row, 1);
+
+        return inventories.stream()
+                .filter(i -> i.getBranchName().equals(branchName)
+                && i.getProductName().equals(productName))
+                .findFirst()
+                .orElse(null);
+    }
+
     // ---------------------------------------
-    //  DELETE
+    // DELETE
     // ---------------------------------------
     private void handleDelete() {
         int row = view.getTable().getSelectedRow();
-
         if (row == -1) {
-            view.showMessage("⚠️ Vui lòng chọn một dòng để xóa!");
+            view.showMessage("⚠ Vui lòng chọn dòng để xóa!");
             return;
         }
 
-        InventoryModel item = inventories.get(row);
+        InventoryModel item = getInventoryFromTable(row);
+        if (item == null) {
+            view.showMessage("⚠ Không tìm thấy dữ liệu để xóa!");
+            return;
+        }
 
         InventoryDeleteConfirmDialog dlg = new InventoryDeleteConfirmDialog(
                 getFrame(),
@@ -154,18 +215,19 @@ public class InventoryController {
         try {
             service.deleteInventory(item.getId());
         } catch (IOException ex) {
-            view.showMessage("⚠️ Lỗi xóa: " + ex.getMessage());
+            view.showMessage("⚠ Lỗi xóa: " + ex.getMessage());
         }
     }
 
     // ---------------------------------------
-    //  STATE CHANGE
+    // STATE (Redux-like)
     // ---------------------------------------
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateInventoryList(state);
             updateBranches(state);
             updateProducts(state);
+            updateFilterOptions();
             showMessages(state);
         });
     }
@@ -175,7 +237,7 @@ public class InventoryController {
         Object list = state.get("Inventories");
         if (list instanceof List<?> raw) {
             inventories = (List<InventoryModel>) raw;
-            view.updateTable(inventories);
+            applyFilter(); // tự động áp filter hiện tại
         }
     }
 
@@ -196,7 +258,24 @@ public class InventoryController {
     }
 
     // ---------------------------------------
-    //  MESSAGES - SHOW ON PANEL (NO POPUP)
+    // UPDATE FILTER COMBOBOXES
+    // ---------------------------------------
+    private void updateFilterOptions() {
+        if (branches != null) {
+            view.updateBranchFilter(
+                    branches.stream().map(BranchInfo::getName).collect(Collectors.toList())
+            );
+        }
+
+        if (products != null) {
+            view.updateProductFilter(
+                    products.stream().map(ProductInfo::getName).collect(Collectors.toList())
+            );
+        }
+    }
+
+    // ---------------------------------------
+    // MESSAGES
     // ---------------------------------------
     private void showMessages(AppState state) {
 
@@ -204,12 +283,10 @@ public class InventoryController {
             return;
         }
 
-        // Success message
         String msg = (String) state.get("InventoryMessage");
         if (msg != null && !msg.isEmpty()) {
             isShowingMessage = true;
             state.set("InventoryMessage", "");
-
             view.showMessage(msg);
 
             new java.util.Timer().schedule(new java.util.TimerTask() {
@@ -217,18 +294,16 @@ public class InventoryController {
                 public void run() {
                     SwingUtilities.invokeLater(() -> view.clearMessage());
                 }
-            }, 4000);
+            }, 3000);
 
             isShowingMessage = false;
         }
 
-        // Error message
         String err = (String) state.get("InventoryError");
         if (err != null && !err.isEmpty()) {
             isShowingMessage = true;
             state.set("InventoryError", "");
-
-            view.showMessage("⚠️ " + err);
+            view.showMessage("⚠ " + err);
 
             new java.util.Timer().schedule(new java.util.TimerTask() {
                 @Override

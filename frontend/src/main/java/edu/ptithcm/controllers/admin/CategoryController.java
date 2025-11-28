@@ -2,6 +2,7 @@ package edu.ptithcm.controllers.admin;
 
 import java.awt.Frame;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -31,14 +32,38 @@ public class CategoryController {
 
         registerEvents();
         store.subcribe(this::onStateChanged);
-        loadCategories();
+
+        reloadCategories();   // load initial + reset search
     }
 
+    // ================================================================
+    // RESET FILTER (chỉ reset khi bấm Tải lại)
+    // ================================================================
+    private void resetFilter() {
+        view.getTxtSearch().setText("");
+    }
+
+    // ================================================================
+    // REGISTER EVENTS
+    // ================================================================
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
-        view.getBtnReload().addActionListener(e -> loadCategories());
+
+        // Tải lại → reset filter + reload BE
+        view.getBtnReload().addActionListener(e -> reloadCategories());
+
+        // Lọc (local filter)
+        view.getBtnFilter().addActionListener(e -> handleFilter());
+    }
+
+    // ================================================================
+    // RELOAD CATEGORY
+    // ================================================================
+    private void reloadCategories() {
+        resetFilter();     // chỉ reset khi nhấn Tải lại
+        loadCategories();
     }
 
     private void loadCategories() {
@@ -49,9 +74,39 @@ public class CategoryController {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // CRUD OPERATIONS
-    // ─────────────────────────────────────────────
+    // ================================================================
+    // FILTER LOCAL
+    // ================================================================
+    private void handleFilter() {
+
+        if (currentCategories == null) {
+            return;
+        }
+
+        String keyword = view.getTxtSearch().getText().trim().toLowerCase();
+
+        if (keyword.isEmpty()) {
+            // Nếu rỗng → trả full list, không reset BE
+            view.updateTable(currentCategories);
+            return;
+        }
+
+        List<CategoryModel> filtered = new ArrayList<>();
+
+        for (CategoryModel c : currentCategories) {
+            if (c.getName() != null
+                    && c.getName().toLowerCase().contains(keyword)) {
+
+                filtered.add(c);
+            }
+        }
+
+        view.updateTable(filtered);
+    }
+
+    // ================================================================
+    // CRUD
+    // ================================================================
     private void handleAdd() {
         CategoryAddDialog dialog = new CategoryAddDialog(getParentFrame());
         dialog.showDialog();
@@ -88,10 +143,7 @@ public class CategoryController {
 
         if (dialog.isConfirmed()) {
             try {
-                service.updateCategory(
-                        dialog.getCategoryId(),
-                        dialog.getCategoryName()
-                );
+                service.updateCategory(dialog.getCategoryId(), dialog.getCategoryName());
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi cập nhật danh mục: " + e.getMessage());
             }
@@ -112,10 +164,8 @@ public class CategoryController {
 
         CategoryModel category = currentCategories.get(row);
 
-        CategoryDeleteConfirmDialog dialog = new CategoryDeleteConfirmDialog(
-                getParentFrame(),
-                category.getName()
-        );
+        CategoryDeleteConfirmDialog dialog
+                = new CategoryDeleteConfirmDialog(getParentFrame(), category.getName());
         dialog.showDialog();
 
         if (dialog.isConfirmed()) {
@@ -127,9 +177,9 @@ public class CategoryController {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // STATE MANAGEMENT
-    // ─────────────────────────────────────────────
+    // ================================================================
+    // STATE MANAGER
+    // ================================================================
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateCategoryList(state);
@@ -139,14 +189,20 @@ public class CategoryController {
 
     @SuppressWarnings("unchecked")
     private void updateCategoryList(AppState state) {
+
         Object listObj = state.get("Categories");
+
         if (listObj instanceof List<?> list) {
+
             currentCategories = (List<CategoryModel>) list;
+
+            // Không reset filter – chỉ update table
             view.updateTable(currentCategories);
         }
     }
 
     private void showMessages(AppState state) {
+
         if (isShowingMessage) {
             return;
         }

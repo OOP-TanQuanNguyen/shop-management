@@ -50,6 +50,7 @@ public class BranchService {
             List<Map<String, Object>> branches
                     = (List<Map<String, Object>>) args.data.get(BRANCHES_KEY);
 
+            // ---- FIX QUAN TRỌNG ---
             store.dispatch(BranchAction.BRANCH_UPDATE_LIST.toString(), branches);
         } else {
             setError(args.message);

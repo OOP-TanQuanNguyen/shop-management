@@ -14,6 +14,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BranchController {
 
@@ -37,7 +38,15 @@ public class BranchController {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
-        view.getBtnReload().addActionListener(e -> loadBranches());
+
+        // ====== FIX QUAN TRỌNG: RESET SEARCH KHI RELOAD ======
+        view.getBtnReload().addActionListener(e -> {
+            view.getTxtSearch().setText(""); // reset text search
+            loadBranches();
+        });
+
+        // ========= FILTER =========
+        view.getBtnFilter().addActionListener(e -> applyFilter());
     }
 
     private void loadBranches() {
@@ -48,6 +57,30 @@ public class BranchController {
                     "Không thể tải danh sách chi nhánh: " + e.getMessage(),
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // ============================================================
+    // FILTER (Local filtering)
+    // ============================================================
+    private void applyFilter() {
+
+        if (currentBranches == null) {
+            return;
+        }
+
+        String keyword = view.getTxtSearch().getText().trim().toLowerCase();
+
+        if (keyword.isEmpty()) {
+            view.updateTable(currentBranches);
+            return;
+        }
+
+        List<BranchInfo> filtered = currentBranches.stream()
+                .filter(b -> b.getName() != null
+                && b.getName().toLowerCase().contains(keyword))
+                .collect(Collectors.toList());
+
+        view.updateTable(filtered);
     }
 
     // ============================================================
@@ -102,10 +135,7 @@ public class BranchController {
 
         if (dialog.isConfirmed()) {
             Map<String, Object> data = dialog.toMap();
-
-            // FE giữ branchId là STRING → đúng chuẩn BE
             data.put("branchId", branch.getId());
-
             updateBranch(data);
         }
 
@@ -171,11 +201,18 @@ public class BranchController {
         Object obj = state.get("Branches");
 
         if (obj instanceof List<?> list) {
+
             @SuppressWarnings("unchecked")
             List<BranchInfo> branches = (List<BranchInfo>) list;
 
             this.currentBranches = branches;
-            view.updateTable(branches);
+
+            // Nếu đang search → giữ filter
+            if (view.getTxtSearch().getText().trim().isEmpty()) {
+                view.updateTable(branches);
+            } else {
+                applyFilter();
+            }
         }
     }
 
