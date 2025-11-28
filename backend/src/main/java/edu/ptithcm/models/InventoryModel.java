@@ -4,7 +4,12 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "inventory")
+@Table(
+    name = "inventory",
+    uniqueConstraints = @UniqueConstraint(
+        columnNames = { "product_id", "branch_id" }
+    )
+)
 public class InventoryModel {
 
     @Id
@@ -81,13 +86,21 @@ public class InventoryModel {
     // -------------------- toString (optional for logging) --------------------
     @Override
     public String toString() {
-        return "InventoryModel{" +
-                "id=" + id +
-                ", branch=" + (branch != null ? branch.getId() : null) +
-                ", product=" + (product != null ? product.getId() : null) +
-                ", quantity=" + quantity +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
+        return (
+            "InventoryModel{" +
+            "id=" +
+            id +
+            ", branch=" +
+            (branch != null ? branch.getId() : null) +
+            ", product=" +
+            (product != null ? product.getId() : null) +
+            ", quantity=" +
+            quantity +
+            ", createdAt=" +
+            createdAt +
+            ", updatedAt=" +
+            updatedAt +
+            '}'
+        );
     }
 }
