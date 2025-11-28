@@ -22,8 +22,7 @@ public class InvoiceRequestDTO {
         private String productId;
         private int quantity;
 
-        public InvoiceDetailRequest() {
-        }
+        public InvoiceDetailRequest() {}
 
         public InvoiceDetailRequest(String productId, int quantity) {
             this.productId = productId;
@@ -48,8 +47,7 @@ public class InvoiceRequestDTO {
     }
 
     // --- Constructors ---
-    public InvoiceRequestDTO() {
-    }
+    public InvoiceRequestDTO() {}
 
     // Constructor Map -> DTO
     public InvoiceRequestDTO(Map<String, Object> data) {
@@ -59,7 +57,9 @@ public class InvoiceRequestDTO {
         this.invoiceId = RequestUtil.toStr(data.get("invoiceId"));
         this.employeeId = RequestUtil.toStr(data.get("employeeId"));
         this.branchId = RequestUtil.toInt(data.get("branchId"));
-        this.customerId = data.get("customerId") != null ? RequestUtil.toStr(data.get("customerId")) : null;
+        this.customerId = data.get("customerId") != null
+            ? RequestUtil.toStr(data.get("customerId"))
+            : null;
         this.note = RequestUtil.toStr(data.get("note"));
         this.discount = RequestUtil.toBigDecimal(data.get("discount"));
 
@@ -68,10 +68,16 @@ public class InvoiceRequestDTO {
             this.details = new ArrayList<>();
             for (Object o : (List<?>) detailsObj) {
                 if (o instanceof Map<?, ?> m) {
-                    String productId = m.get("productId") != null ? RequestUtil.toStr(m.get("productId")) : null;
-                    int quantity = m.get("quantity") != null ? ((Number) m.get("quantity")).intValue() : 0;
+                    String productId = m.get("productId") != null
+                        ? RequestUtil.toStr(m.get("productId"))
+                        : null;
+                    int quantity = m.get("quantity") != null
+                        ? ((Number) m.get("quantity")).intValue()
+                        : 0;
                     if (productId != null && quantity > 0) {
-                        this.details.add(new InvoiceDetailRequest(productId, quantity));
+                        this.details.add(
+                            new InvoiceDetailRequest(productId, quantity)
+                        );
                     }
                 }
             }
@@ -137,8 +143,7 @@ public class InvoiceRequestDTO {
 
     // --- Validation ---
     public boolean validForCreate() {
-        return employeeId != null && !employeeId.isBlank()
-                && branchId != null;
+        return employeeId != null && !employeeId.isBlank() && branchId != null;
     }
 
     public boolean validForUpdate() {
