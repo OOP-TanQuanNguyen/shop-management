@@ -18,6 +18,7 @@ public class InvoiceInfo {
     private final BigDecimal discount;
     private final String note;
     private final List<Map<String, Object>> details;
+    private final String status;
 
     private InvoiceInfo(Builder builder) {
         this.invoiceId = builder.invoiceId;
@@ -30,6 +31,7 @@ public class InvoiceInfo {
         this.discount = builder.discount;
         this.note = builder.note;
         this.details = builder.details;
+        this.status = builder.status;
     }
 
     // --- Convert to Map ---
@@ -39,11 +41,13 @@ public class InvoiceInfo {
         map.put("employeeId", employeeId);
         map.put("branchId", branchId);
         map.put("customerId", customerId);
+        map.put("customerName", customerName);
         map.put("createdAt", createdAt != null ? createdAt.getTime() : null);
         map.put("total", total);
         map.put("discount", discount);
         map.put("note", note);
         map.put("details", details);
+        map.put("status", status);
         return map;
     }
 
@@ -88,6 +92,10 @@ public class InvoiceInfo {
         return details;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
     // --- Builder ---
     public static class Builder {
 
@@ -101,6 +109,7 @@ public class InvoiceInfo {
         private BigDecimal discount;
         private String note;
         private List<Map<String, Object>> details;
+        private String status;
 
         public Builder invoiceId(String invoiceId) {
             this.invoiceId = invoiceId;
@@ -149,6 +158,11 @@ public class InvoiceInfo {
 
         public Builder details(List<Map<String, Object>> details) {
             this.details = details;
+            return this;
+        }
+
+        public Builder status(String status) {
+            this.status = status;
             return this;
         }
 

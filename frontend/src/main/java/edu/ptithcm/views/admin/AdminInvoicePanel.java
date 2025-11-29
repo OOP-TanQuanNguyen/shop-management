@@ -1,12 +1,11 @@
 package edu.ptithcm.views.admin;
 
+import edu.ptithcm.models.InvoiceInfo;
+import java.awt.*;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import java.util.List;
-
-import edu.ptithcm.models.InvoiceInfo;
 
 public class AdminInvoicePanel extends JPanel {
 
@@ -17,7 +16,6 @@ public class AdminInvoicePanel extends JPanel {
     private JButton btnDelete;
 
     public AdminInvoicePanel() {
-
         setLayout(new BorderLayout(12, 12));
         setBorder(new EmptyBorder(10, 12, 10, 12));
 
@@ -27,16 +25,26 @@ public class AdminInvoicePanel extends JPanel {
     }
 
     private void initTitle() {
-        JLabel lbl = new JLabel("📄 Quản lý hóa đơn (tất cả chi nhánh)", SwingConstants.CENTER);
+        JLabel lbl = new JLabel(
+            "📄 Quản lý hóa đơn (tất cả chi nhánh)",
+            SwingConstants.CENTER
+        );
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 22));
         add(lbl, BorderLayout.NORTH);
     }
 
     private void initTable() {
-
         model = new DefaultTableModel(
-                new Object[]{"Mã HĐ", "Chi nhánh", "Nhân viên", "Khách hàng", "Tổng tiền", "Trạng thái"}, 0) {
-
+            new Object[] {
+                "Mã HĐ",
+                "Chi nhánh",
+                "Nhân viên",
+                "Khách hàng",
+                "Tổng tiền",
+                "Trạng thái",
+            },
+            0
+        ) {
             @Override
             public boolean isCellEditable(int r, int c) {
                 return false;
@@ -51,7 +59,6 @@ public class AdminInvoicePanel extends JPanel {
     }
 
     private void initBottomBar() {
-
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         btnReload = new JButton("🔄 Tải lại");
@@ -81,7 +88,6 @@ public class AdminInvoicePanel extends JPanel {
     }
 
     public void updateTable(List<InvoiceInfo> list) {
-
         model.setRowCount(0);
 
         if (list == null) {
@@ -89,15 +95,18 @@ public class AdminInvoicePanel extends JPanel {
         }
 
         for (InvoiceInfo inv : list) {
-
-            model.addRow(new Object[]{
-                inv.getInvoiceId(),
-                inv.getBranchId(),
-                inv.getEmployeeId(),
-                inv.getCustomerId() != null ? inv.getCustomerId() : "Khách lẻ",
-                inv.getTotal(),
-                inv.getStatus()
-            });
+            model.addRow(
+                new Object[] {
+                    inv.getInvoiceId(),
+                    inv.getBranchId(),
+                    inv.getEmployeeId(),
+                    inv.getcustomerName() != null
+                        ? inv.getcustomerName()
+                        : "Khách lẻ",
+                    inv.getTotal(),
+                    inv.getStatus(),
+                }
+            );
         }
     }
 }

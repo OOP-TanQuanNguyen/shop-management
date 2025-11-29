@@ -1,18 +1,16 @@
 package edu.ptithcm.controllers.admin;
 
-import java.awt.Frame;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.SwingUtilities;
-
 import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.InvoiceInfo;
 import edu.ptithcm.services.pos.InvoiceService;
 import edu.ptithcm.views.admin.AdminInvoicePanel;
 import edu.ptithcm.views.components.AppMessageBox;
+import java.awt.Frame;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.SwingUtilities;
 
 public class AdminInvoiceController {
 
@@ -23,7 +21,10 @@ public class AdminInvoiceController {
     private boolean isShowingMessage = false;
     private List<InvoiceInfo> currentInvoices = new ArrayList<>();
 
-    public AdminInvoiceController(AdminInvoicePanel view, InvoiceService service) {
+    public AdminInvoiceController(
+        AdminInvoicePanel view,
+        InvoiceService service
+    ) {
         this.view = view;
         this.service = service;
 
@@ -48,7 +49,9 @@ public class AdminInvoiceController {
         try {
             service.getAllInvoices(); // gửi request
         } catch (IOException e) {
-            AppMessageBox.showError("Không thể tải danh sách hóa đơn: " + e.getMessage());
+            AppMessageBox.showError(
+                "Không thể tải danh sách hóa đơn: " + e.getMessage()
+            );
         }
     }
 
@@ -56,7 +59,6 @@ public class AdminInvoiceController {
        DELETE
     ============================================================ */
     private void handleDelete() {
-
         String id = view.getSelectedInvoiceId();
 
         if (id == null) {
@@ -65,7 +67,7 @@ public class AdminInvoiceController {
         }
 
         int confirm = AppMessageBox.showConfirm(
-                "Bạn có chắc chắn muốn xóa hóa đơn " + id + " ?"
+            "Bạn có chắc chắn muốn xóa hóa đơn " + id + " ?"
         );
 
         if (confirm != AppMessageBox.YES) {
@@ -91,30 +93,15 @@ public class AdminInvoiceController {
 
     @SuppressWarnings("unchecked")
     private void updateInvoiceList(AppState state) {
+        Object listObj = state.get("Invoices");
 
-        Object listObj = state.get("Invoices");   // FIXED: đúng reducer key
-
-        if (listObj instanceof List<?> rawList) {
-
-            List<InvoiceInfo> list = new ArrayList<>();
-
-            for (Object o : rawList) {
-                if (o instanceof java.util.Map<?, ?> m) {
-                    list.add(InvoiceInfo.fromMap((java.util.Map<String, Object>) m));
-                }
-            }
-
-            currentInvoices = list;
-
-            view.updateTable(currentInvoices);
-        }
+        view.updateTable((List<InvoiceInfo>) listObj);
     }
 
     /* ============================================================
        SHOW MESSAGE
     ============================================================ */
     private void showMessages(AppState state) {
-
         if (isShowingMessage) {
             return;
         }

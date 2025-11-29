@@ -83,21 +83,22 @@ public class InvoiceRepositoryImpl
         return execute(session -> session.get(InvoiceModel.class, id));
     }
 
-    // -------------------- FIND ALL --------------------
     @Override
     public List<InvoiceModel> findAll() {
-        return execute(session ->
-            session
-                .createQuery(
-                    "SELECT i FROM InvoiceModel i " +
-                        "LEFT JOIN FETCH i.customer c " +
-                        "LEFT JOIN FETCH i.employee e " +
-                        "LEFT JOIN FETCH i.branch b " +
-                        "ORDER BY i.createdAt DESC",
-                    InvoiceModel.class
-                )
-                .list()
-        );
+        return execute(session -> {
+            Query<InvoiceModel> query = session.createQuery(
+                "SELECT DISTINCT i FROM InvoiceModel i " +
+                    "LEFT JOIN FETCH i.employee e " +
+                    "LEFT JOIN FETCH i.branch b " +
+                    "LEFT JOIN FETCH i.customer c " +
+                    "LEFT JOIN FETCH i.details d " +
+                    "LEFT JOIN FETCH d.product p " +
+                    "ORDER BY i.createdAt DESC",
+                InvoiceModel.class
+            );
+
+            return query.list();
+        });
     }
 
     // -------------------- FIND BY CUSTOMER --------------------
