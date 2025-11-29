@@ -64,10 +64,10 @@ public class ProductPanel extends JPanel {
         // BUTTON BAR
         // =====================================================================
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑️ Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
 
         topBar.add(btnAdd);
         topBar.add(btnEdit);

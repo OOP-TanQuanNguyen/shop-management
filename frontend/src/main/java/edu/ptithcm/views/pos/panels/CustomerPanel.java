@@ -27,16 +27,16 @@ public class CustomerPanel extends JPanel {
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // ======= TITLE =======
-        JLabel title = new JLabel("🧾 Quản lý khách hàng", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Quản lý khách hàng", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         add(title, BorderLayout.NORTH);
 
         // ======= BUTTON BAR =======
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑️ Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
         topBar.add(btnAdd);
         topBar.add(btnEdit);
         topBar.add(btnDelete);

@@ -13,7 +13,7 @@ public class InventoryAddDialog extends InventoryFormDialog {
     private final List<ProductInfo> products;
 
     public InventoryAddDialog(Frame owner, List<BranchInfo> branches, List<ProductInfo> products) {
-        super(owner, "➕ Thêm kho mới");
+        super(owner, " Thêm kho mới");
         this.branches = branches;
         this.products = products;
 

@@ -34,7 +34,7 @@ public class CustomerPanel extends JPanel {
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // ===== TITLE =====
-        JLabel title = new JLabel("🧾 Quản lý khách hàng", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Quản lý khách hàng", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         add(title, BorderLayout.NORTH);
 
@@ -44,7 +44,7 @@ public class CustomerPanel extends JPanel {
         txtSearch = new JTextField(20);
         txtSearch.setToolTipText("Nhập tên hoặc số điện thoại...");
 
-        btnFilter = new JButton("🔍 Lọc");
+        btnFilter = new JButton(" Lọc");
 
         searchBar.add(new JLabel("Tìm kiếm:"));
         searchBar.add(txtSearch);
@@ -54,10 +54,10 @@ public class CustomerPanel extends JPanel {
 
         // ===== BUTTON BAR =====
         JPanel btnBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑️ Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
 
         btnBar.add(btnAdd);
         btnBar.add(btnEdit);

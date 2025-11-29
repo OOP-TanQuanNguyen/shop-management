@@ -8,7 +8,7 @@ public class ProductDeleteConfirmDialog extends JDialog {
     private boolean confirmed = false;
 
     public ProductDeleteConfirmDialog(Frame owner, String productName) {
-        super(owner, "🗑️ Xác nhận xóa", true);
+        super(owner, " Xác nhận xóa", true);
         initComponents(productName);
     }
 

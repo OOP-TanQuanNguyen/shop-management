@@ -11,7 +11,7 @@ public class CustomerEditDialog extends CustomerFormDialog {
     private final String customerId;
 
     public CustomerEditDialog(Frame owner, String id, String name, String phone, int point) {
-        super(owner, "✏️ Cập nhật khách hàng");
+        super(owner, " Cập nhật khách hàng");
         this.customerId = id;
         initComponents(name, phone);
     }

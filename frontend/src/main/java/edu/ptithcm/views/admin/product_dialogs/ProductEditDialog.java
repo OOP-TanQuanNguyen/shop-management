@@ -27,7 +27,7 @@ public class ProductEditDialog extends ProductFormDialog {
             String expiry,
             boolean isActive
     ) {
-        super(owner, "✏️ Cập nhật sản phẩm");
+        super(owner, " Cập nhật sản phẩm");
         this.productId = id;
         this.categories = categories;
 

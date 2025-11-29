@@ -10,7 +10,7 @@ public class InventoryDeleteConfirmDialog extends JDialog {
     public InventoryDeleteConfirmDialog(Frame owner,
             String branchName,
             String productName) {
-        super(owner, "🗑️ Xóa kho", true);
+        super(owner, " Xóa kho", true);
 
         initComponents(branchName, productName);
 

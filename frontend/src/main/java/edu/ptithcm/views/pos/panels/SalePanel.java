@@ -78,7 +78,7 @@ public class SalePanel extends JPanel {
         rightPanel.setBorder(BorderFactory.createTitledBorder("💳 Thanh toán"));
 
         // Only Button and label here
-        btnSelectCustomer = new JButton("➕ Thêm / Chọn khách hàng");
+        btnSelectCustomer = new JButton(" Thêm / Chọn khách hàng");
         btnSelectCustomer.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         btnSelectCustomer.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -87,7 +87,7 @@ public class SalePanel extends JPanel {
         lblCustomerName.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblCustomerName.setBorder(new EmptyBorder(10, 0, 10, 0));
 
-        btnPay = new JButton("💵 Xác nhận thanh toán");
+        btnPay = new JButton(" Xác nhận thanh toán");
         btnPay.setBackground(new Color(0, 123, 255));
         btnPay.setForeground(Color.WHITE);
         btnPay.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -108,8 +108,8 @@ public class SalePanel extends JPanel {
         JPanel actionPanel = new JPanel(new GridLayout(2, 1, 0, 8));
         actionPanel.setBorder(new EmptyBorder(120, 5, 120, 5));
 
-        btnAdd = new JButton("➕ Thêm vào giỏ");
-        btnRemove = new JButton("➖ Xóa khỏi giỏ");
+        btnAdd = new JButton(" Thêm vào giỏ");
+        btnRemove = new JButton(" Xóa khỏi giỏ");
 
         btnAdd.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         btnRemove.setFont(new Font("Segoe UI", Font.PLAIN, 13));

@@ -22,7 +22,7 @@ public class CategoryPanel extends JPanel {
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // ===== TITLE =====
-        JLabel title = new JLabel("📂 Quản lý danh mục", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Quản lý danh mục", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         add(title, BorderLayout.NORTH);
 
@@ -32,7 +32,7 @@ public class CategoryPanel extends JPanel {
         txtSearch = new JTextField(20);
         txtSearch.setToolTipText("Nhập tên danh mục...");
 
-        btnFilter = new JButton("🔍 Lọc");
+        btnFilter = new JButton(" Lọc");
 
         searchBar.add(new JLabel("Tìm kiếm:"));
         searchBar.add(txtSearch);
@@ -42,10 +42,10 @@ public class CategoryPanel extends JPanel {
 
         // ===== BUTTON BAR =====
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑 Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton("Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
 
         topBar.add(btnAdd);
         topBar.add(btnEdit);

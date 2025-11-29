@@ -37,7 +37,7 @@ public class EmployeePanel extends JPanel {
         cbBranch = new JComboBox<>();
         cbBranch.addItem("Tất cả");
 
-        btnFilter = new JButton("🔍 Lọc");
+        btnFilter = new JButton(" Lọc");
 
         filterBar.add(new JLabel("Vai trò:"));
         filterBar.add(cbRole);
@@ -54,10 +54,10 @@ public class EmployeePanel extends JPanel {
 
         // ===== BUTTON BAR =====
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑️ Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
 
         topBar.add(btnAdd);
         topBar.add(btnEdit);
@@ -69,7 +69,7 @@ public class EmployeePanel extends JPanel {
         // ===== TABLE =====
         String[] columns = {
             "Tên nhân viên", "Tên đăng nhập", "Vai trò", "Chi nhánh",
-            "Số điện thoại", "Ngày vào làm", "Ngày nghỉ việc", "Trạng thái"
+            "Số điện thoại", "Ngày vào làm", "Trạng thái"
         };
 
         model = new DefaultTableModel(columns, 0) {
@@ -150,7 +150,7 @@ public class EmployeePanel extends JPanel {
                 emp.getBranch() != null ? emp.getBranch() : "N/A",
                 emp.getPhone(),
                 emp.getHireDate() != null ? emp.getHireDate() : "N/A",
-                emp.getEndDate() != null ? emp.getEndDate() : "N/A",
+                //emp.getEndDate() != null ? emp.getEndDate() : "N/A",
                 Boolean.TRUE.equals(emp.getStatus()) ? "Đang làm việc" : "Đã nghỉ"
             });
         }

@@ -24,7 +24,7 @@ public class BranchPanel extends JPanel {
         // ================== NORTH PANEL ==================
         JPanel northPanel = new JPanel(new BorderLayout());
 
-        JLabel title = new JLabel("🏬 Quản lý chi nhánh", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Quản lý chi nhánh", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         northPanel.add(title, BorderLayout.NORTH);
 
@@ -34,7 +34,7 @@ public class BranchPanel extends JPanel {
         txtSearch = new JTextField(20);
         txtSearch.setToolTipText("Nhập tên chi nhánh...");
 
-        btnFilter = new JButton("🔍 Lọc");
+        btnFilter = new JButton(" Lọc");
 
         searchBar.add(new JLabel("Tìm kiếm:"));
         searchBar.add(txtSearch);
@@ -46,10 +46,10 @@ public class BranchPanel extends JPanel {
 
         // ================== BUTTON BAR ==================
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑️ Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton("Xóa");
+        btnReload = new JButton(" Tải lại");
 
         topBar.add(btnAdd);
         topBar.add(btnEdit);

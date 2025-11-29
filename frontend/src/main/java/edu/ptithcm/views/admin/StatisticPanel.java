@@ -12,18 +12,19 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 public class StatisticPanel extends JPanel {
+
     public StatisticPanel() {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        JLabel title = new JLabel("📈 Thống kê doanh thu & hoạt động", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Thống kê doanh thu & hoạt động", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         JPanel stats = new JPanel(new GridLayout(2, 2, 15, 15));
-        stats.add(createCard("💰 Doanh thu hôm nay", "12.530.000₫"));
-        stats.add(createCard("🧾 Hóa đơn trong ngày", "89"));
-        stats.add(createCard("👥 Khách hàng mới", "12"));
-        stats.add(createCard("📦 Sản phẩm sắp hết hạn", "6"));
+        stats.add(createCard(" Doanh thu hôm nay", "12.530.000₫"));
+        stats.add(createCard(" Hóa đơn trong ngày", "89"));
+        stats.add(createCard(" Khách hàng mới", "12"));
+        stats.add(createCard(" Sản phẩm sắp hết hạn", "6"));
 
         add(title, BorderLayout.NORTH);
         add(stats, BorderLayout.CENTER);

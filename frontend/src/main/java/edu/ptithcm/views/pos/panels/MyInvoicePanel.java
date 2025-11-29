@@ -32,8 +32,8 @@ public class MyInvoicePanel extends JPanel {
     ============================================================ */
     private void initTitle() {
         JLabel lblTitle = new JLabel(
-            "🧾 Hóa đơn của tôi",
-            SwingConstants.CENTER
+                "🧾 Hóa đơn của tôi",
+                SwingConstants.CENTER
         );
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
         add(lblTitle, BorderLayout.NORTH);
@@ -45,8 +45,8 @@ public class MyInvoicePanel extends JPanel {
     private void initTable() {
         // ❌ Bỏ Thời gian & Trạng thái — chỉ còn 3 cột
         model = new DefaultTableModel(
-            new Object[] { "Mã HĐ", "Khách hàng", "Tổng tiền" },
-            0
+                new Object[]{"Mã HĐ", "Khách hàng", "Tổng tiền"},
+                0
         ) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -75,7 +75,7 @@ public class MyInvoicePanel extends JPanel {
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        btnReload = new JButton("🔄 Tải lại");
+        btnReload = new JButton(" Tải lại");
         btnConfirm = new JButton("✔ Xác nhận");
         btnCancel = new JButton("✖ Hủy hóa đơn");
 
@@ -131,8 +131,8 @@ public class MyInvoicePanel extends JPanel {
     ============================================================ */
     private String formatCustomer(String customerName) {
         return (customerName == null || customerName.isBlank())
-            ? "Khách lẻ"
-            : customerName;
+                ? "Khách lẻ"
+                : customerName;
     }
 
     /* ============================================================
@@ -146,11 +146,10 @@ public class MyInvoicePanel extends JPanel {
 
         for (InvoiceInfo inv : list) {
             model.addRow(
-                new Object[] {
-                    inv.getInvoiceId(),
-                    formatCustomer(inv.getcustomerName()),
-                    inv.getTotal() != null ? inv.getTotal().toString() : "0",
-                }
+                    new Object[]{
+                        inv.getInvoiceId(),
+                        formatCustomer(inv.getcustomerName()),
+                        inv.getTotal() != null ? inv.getTotal().toString() : "0",}
             );
         }
     }

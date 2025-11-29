@@ -11,7 +11,7 @@ public class CustomerDeleteConfirmDialog extends JDialog {
     private boolean confirmed = false;
 
     public CustomerDeleteConfirmDialog(Frame owner, String customerName) {
-        super(owner, "🗑️ Xác nhận xóa khách hàng", true);
+        super(owner, " Xác nhận xóa khách hàng", true);
         initComponents(customerName);
     }
 

@@ -15,7 +15,7 @@ public class ProductAddDialog extends ProductFormDialog {
     private List<CategoryModel> categories;
 
     public ProductAddDialog(Frame owner, List<CategoryModel> categories) {
-        super(owner, "➕ Thêm sản phẩm mới");
+        super(owner, "Thêm sản phẩm mới");
 
         this.categories = categories;
 

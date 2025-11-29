@@ -52,16 +52,16 @@ public class AdminForm extends JFrame {
         // Tabs - DÙNG BIẾN INSTANCE, KHÔNG TẠO MỚI
         tabPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        tabPane.addTab("👤 Nhân viên", employeePanel);
-        tabPane.addTab("📦 Sản phẩm", productPanel);
-        tabPane.addTab("📚 Danh mục", categoryPanel);
-        tabPane.addTab("🏬 Chi nhánh", branchPanel); // ✅ DÙNG BIẾN, KHÔNG new BranchPanel()
-        tabPane.addTab("👥 Khách hàng", customerPanel);
-        tabPane.addTab("📋 Quản lý kho", inventoryPanel);
-        tabPane.addTab("🧾 Hóa đơn", adminInvoicePanel);
+        tabPane.addTab(" Nhân viên", employeePanel);
+        tabPane.addTab(" Sản phẩm", productPanel);
+        tabPane.addTab(" Danh mục", categoryPanel);
+        tabPane.addTab(" Chi nhánh", branchPanel); // ✅ DÙNG BIẾN, KHÔNG new BranchPanel()
+        tabPane.addTab(" Khách hàng", customerPanel);
+        tabPane.addTab(" Quản lý kho", inventoryPanel);
+        tabPane.addTab(" Hóa đơn", adminInvoicePanel);
 
-        tabPane.addTab("📈 Thống kê", new StatisticPanel());
-        tabPane.addTab("⚙️ Cài đặt", new SettingPanel());
+        tabPane.addTab(" Thống kê", new StatisticPanel());
+        tabPane.addTab(" Cài đặt", new SettingPanel());
 
         add(tabPane, BorderLayout.CENTER);
     }

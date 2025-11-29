@@ -29,7 +29,7 @@ public class InventoryPanel extends JPanel {
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // ===== TITLE =====
-        JLabel title = new JLabel("📦 Quản lý kho hàng", SwingConstants.CENTER);
+        JLabel title = new JLabel(" Quản lý kho hàng", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
 
         // ===== MESSAGE LABEL =====
@@ -55,7 +55,7 @@ public class InventoryPanel extends JPanel {
         cbProductFilter = new JComboBox<>();
         cbProductFilter.addItem("Tất cả sản phẩm");
 
-        btnFilter = new JButton("🔍 Lọc");
+        btnFilter = new JButton(" Lọc");
 
         filterPanel.add(new JLabel("Chi nhánh:"));
         filterPanel.add(cbBranchFilter);
@@ -71,10 +71,10 @@ public class InventoryPanel extends JPanel {
         // BUTTON BAR
         // =======================================================
         JPanel bottomBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        btnAdd = new JButton("➕ Thêm");
-        btnEdit = new JButton("✏️ Sửa");
-        btnDelete = new JButton("🗑 Xóa");
-        btnReload = new JButton("🔄 Tải lại");
+        btnAdd = new JButton(" Thêm");
+        btnEdit = new JButton(" Sửa");
+        btnDelete = new JButton(" Xóa");
+        btnReload = new JButton(" Tải lại");
 
         bottomBar.add(btnAdd);
         bottomBar.add(btnEdit);

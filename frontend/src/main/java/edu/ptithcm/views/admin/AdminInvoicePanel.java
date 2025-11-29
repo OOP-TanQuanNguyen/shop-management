@@ -26,8 +26,8 @@ public class AdminInvoicePanel extends JPanel {
 
     private void initTitle() {
         JLabel lbl = new JLabel(
-            "📄 Quản lý hóa đơn (tất cả chi nhánh)",
-            SwingConstants.CENTER
+                " Quản lý hóa đơn (tất cả chi nhánh)",
+                SwingConstants.CENTER
         );
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 22));
         add(lbl, BorderLayout.NORTH);
@@ -35,15 +35,14 @@ public class AdminInvoicePanel extends JPanel {
 
     private void initTable() {
         model = new DefaultTableModel(
-            new Object[] {
-                "Mã HĐ",
-                "Chi nhánh",
-                "Nhân viên",
-                "Khách hàng",
-                "Tổng tiền",
-                "Trạng thái",
-            },
-            0
+                new Object[]{
+                    "Mã HĐ",
+                    "Chi nhánh",
+                    "Nhân viên",
+                    "Khách hàng",
+                    "Tổng tiền",
+                    "Trạng thái",},
+                0
         ) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -61,8 +60,8 @@ public class AdminInvoicePanel extends JPanel {
     private void initBottomBar() {
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        btnReload = new JButton("🔄 Tải lại");
-        btnDelete = new JButton("🗑 Xóa hóa đơn");
+        btnReload = new JButton(" Tải lại");
+        btnDelete = new JButton(" Xóa hóa đơn");
 
         bottom.add(btnReload);
         bottom.add(btnDelete);
@@ -96,16 +95,15 @@ public class AdminInvoicePanel extends JPanel {
 
         for (InvoiceInfo inv : list) {
             model.addRow(
-                new Object[] {
-                    inv.getInvoiceId(),
-                    inv.getBranchId(),
-                    inv.getEmployeeId(),
-                    inv.getcustomerName() != null
+                    new Object[]{
+                        inv.getInvoiceId(),
+                        inv.getBranchId(),
+                        inv.getEmployeeId(),
+                        inv.getcustomerName() != null
                         ? inv.getcustomerName()
                         : "Khách lẻ",
-                    inv.getTotal(),
-                    inv.getStatus(),
-                }
+                        inv.getTotal(),
+                        inv.getStatus(),}
             );
         }
     }

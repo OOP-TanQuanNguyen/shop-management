@@ -9,7 +9,7 @@ import java.awt.*;
 public class CustomerAddDialog extends CustomerFormDialog {
 
     public CustomerAddDialog(Frame owner) {
-        super(owner, "➕ Thêm khách hàng mới");
+        super(owner, " Thêm khách hàng mới");
         initComponents();
     }
 
