@@ -32,7 +32,7 @@ public class MyInvoicePanel extends JPanel {
     ============================================================ */
     private void initTitle() {
         JLabel lblTitle = new JLabel(
-                "🧾 Hóa đơn của tôi",
+                " Hóa đơn của tôi",
                 SwingConstants.CENTER
         );
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));

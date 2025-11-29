@@ -36,7 +36,7 @@ public class POSForm extends JFrame {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(new Color(0, 102, 102));
 
-        JLabel lblTitle = new JLabel("💰 HỆ THỐNG BÁN HÀNG", SwingConstants.CENTER);
+        JLabel lblTitle = new JLabel(" HỆ THỐNG BÁN HÀNG", SwingConstants.CENTER);
         lblTitle.setForeground(Color.WHITE);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
 
@@ -64,8 +64,8 @@ public class POSForm extends JFrame {
     private void initTabs() {
         tabs.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        tabs.addTab("🛒 Bán hàng", salePanel);
-        tabs.addTab("🧾 Hóa đơn của tôi", myInvoicePanel);   // Chỉ còn 2 tab
+        tabs.addTab(" Bán hàng", salePanel);
+        tabs.addTab(" Hóa đơn của tôi", myInvoicePanel);   // Chỉ còn 2 tab
 
         add(tabs, BorderLayout.CENTER);
     }
