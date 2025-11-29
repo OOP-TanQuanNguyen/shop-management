@@ -4,10 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import edu.ptithcm.models.InvoiceInfo;
@@ -22,9 +18,6 @@ public class MyInvoicePanel extends JPanel {
     private JButton btnCancel;
 
     private JLabel lblMessage;
-
-    private static final DateTimeFormatter TIME_FORMAT
-            = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public MyInvoicePanel() {
         setLayout(new BorderLayout(12, 12));
@@ -49,9 +42,9 @@ public class MyInvoicePanel extends JPanel {
     ============================================================ */
     private void initTable() {
 
-        // ✅ FIX: THÊM cột "Trạng thái"
+        // ❌ Bỏ Thời gian & Trạng thái — chỉ còn 3 cột
         model = new DefaultTableModel(
-                new Object[]{"Mã HĐ", "Thời gian", "Khách hàng", "Tổng tiền", "Trạng thái"}, 0) {
+                new Object[]{"Mã HĐ", "Khách hàng", "Tổng tiền"}, 0) {
 
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -132,52 +125,12 @@ public class MyInvoicePanel extends JPanel {
     }
 
     /* ============================================================
-       FORMAT METHODS
+       FORMAT CUSTOMER NAME
     ============================================================ */
-    private String formatTime(Long ts) {
-        if (ts == null) {
-            return "";
-        }
-        LocalDateTime dt
-                = LocalDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneId.systemDefault());
-        return TIME_FORMAT.format(dt);
-    }
-
-    private String formatMoney(Object value) {
-        if (value == null) {
-            return "0 ₫";
-        }
-
-        try {
-            double v = Double.parseDouble(value.toString());
-            return String.format("%,.0f ₫", v);
-        } catch (Exception e) {
-            return value.toString();
-        }
-    }
-
     private String formatCustomer(String customerId) {
         return (customerId == null || customerId.isBlank())
                 ? "Khách lẻ"
                 : customerId;
-    }
-
-    // ✅ FIX: THÊM formatStatus()
-    private String formatStatus(String status) {
-        if (status == null || status.isEmpty()) {
-            return "";
-        }
-
-        return switch (status) {
-            case "PENDING" ->
-                "⏳ Chờ xử lý";
-            case "COMPLETED" ->
-                "✅ Hoàn thành";
-            case "CANCELLED" ->
-                "❌ Đã hủy";
-            default ->
-                status;
-        };
     }
 
     /* ============================================================
@@ -189,14 +142,11 @@ public class MyInvoicePanel extends JPanel {
             return;
         }
 
-        // ✅ FIX: THÊM cột Status
         for (InvoiceInfo inv : list) {
             model.addRow(new Object[]{
                 inv.getInvoiceId(),
-                formatTime(inv.getCreatedAt()),
                 formatCustomer(inv.getCustomerId()),
-                formatMoney(inv.getTotal()),
-                formatStatus(inv.getStatus()) // ← THÊM cột này
+                inv.getTotal() != null ? inv.getTotal().toString() : "0"
             });
         }
     }

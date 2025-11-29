@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.FlowLayout;
 
 import edu.ptithcm.models.UserModel;
-import edu.ptithcm.views.pos.panels.CustomerPanel;
 import edu.ptithcm.views.pos.panels.MyInvoicePanel;
 import edu.ptithcm.views.pos.panels.SalePanel;
 
@@ -16,7 +15,6 @@ public class POSForm extends JFrame {
     private final JButton btnLogout = new JButton("Đăng xuất");
 
     // Panels
-    private final CustomerPanel customerPanel = new CustomerPanel();
     private final SalePanel salePanel = new SalePanel();
     private final MyInvoicePanel myInvoicePanel = new MyInvoicePanel();
 
@@ -67,8 +65,7 @@ public class POSForm extends JFrame {
         tabs.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
         tabs.addTab("🛒 Bán hàng", salePanel);
-        tabs.addTab("👥 Khách hàng", customerPanel);
-        tabs.addTab("🧾 Hóa đơn của tôi", myInvoicePanel);
+        tabs.addTab("🧾 Hóa đơn của tôi", myInvoicePanel);   // Chỉ còn 2 tab
 
         add(tabs, BorderLayout.CENTER);
     }
@@ -76,10 +73,6 @@ public class POSForm extends JFrame {
     // getters for controller
     public JButton getLogoutButton() {
         return btnLogout;
-    }
-
-    public CustomerPanel getCustomerPanel() {
-        return customerPanel;
     }
 
     public SalePanel getSalePanel() {

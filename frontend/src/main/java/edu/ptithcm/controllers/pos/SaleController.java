@@ -3,11 +3,11 @@ package edu.ptithcm.controllers.pos;
 import java.io.IOException;
 import java.util.*;
 import java.awt.Window;
+import java.util.concurrent.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.util.Timer;
 import java.math.BigDecimal;
 
 import edu.ptithcm.app.AppState;
@@ -40,9 +40,12 @@ public class SaleController {
     private String currentDraftId = null;
     private CustomerModel selectedCustomer = null;
 
-    // ✅ FIX: Dùng Timer để debounce draft updates
-    private Timer draftUpdateTimer = null;
-    private static final long DRAFT_UPDATE_DELAY = 300;
+    // NEW — ExecutorScheduler thay cho Timer
+    private final ScheduledExecutorService scheduler
+            = Executors.newSingleThreadScheduledExecutor();
+
+    private ScheduledFuture<?> draftFuture;
+    private static final long DRAFT_UPDATE_DELAY = 250;
 
     /* ------------------------ Cart Item ------------------------ */
     private static class CartItem {
@@ -56,7 +59,6 @@ public class SaleController {
         }
     }
 
-    /* ======================================================================================= */
     public SaleController(
             SalePanel view,
             ProductService productService,
@@ -75,19 +77,15 @@ public class SaleController {
         loadInitialData();
     }
 
-    /* ======================================================================================= */
     private void loadInitialData() {
         try {
-            // 1. Load danh sách sản phẩm
             productService.getAllProducts();
 
-            // 2. Lấy user để biết chi nhánh
             UserModel user = (UserModel) store.getAppState().get("user");
             if (user != null) {
                 inventoryService.getInventoriesByBranch(user.getBranchId());
             }
 
-            // 3. Load danh sách khách hàng
             customerService.getAllCustomers();
 
         } catch (IOException e) {
@@ -97,7 +95,6 @@ public class SaleController {
         }
     }
 
-    /* ======================================================================================= */
     private void registerEvents() {
 
         view.setSearchListener(new DocumentListener() {
@@ -123,7 +120,6 @@ public class SaleController {
         view.getBtnSelectCustomer().addActionListener(e -> selectCustomer());
     }
 
-    /* ======================================================================================= */
     @SuppressWarnings("unchecked")
     private void onStateChanged(AppState state) {
 
@@ -149,23 +145,31 @@ public class SaleController {
             if (invoice instanceof InvoiceInfo info) {
                 currentDraftId = info.getInvoiceId();
             }
+
+            // CHẶN message update draft từ reducer (không ảnh hưởng thanh toán)
+            state.set("InvoiceMessage", "");
+            state.set("InvoiceError", "");
         });
     }
 
-    /* ======================================================================================= */
     private void filterProducts() {
 
         String keyword = view.getTxtSearch().getText().trim().toLowerCase();
         List<Object[]> rows = new ArrayList<>();
 
         for (ProductInfo p : products) {
-            int qty = inventoryMap.containsKey(p.getId())
-                    ? inventoryMap.get(p.getId()).getQuantity()
+
+            InventoryModel inv = inventoryMap.get(p.getId());
+            int qty = (inv != null && inv.getQuantity() != null)
+                    ? inv.getQuantity()
                     : 0;
 
             if (keyword.isEmpty() || p.getName().toLowerCase().contains(keyword)) {
                 rows.add(new Object[]{
-                    p.getId(), p.getName(), p.getSellPrice(), qty
+                    p.getId(),
+                    p.getName(),
+                    p.getSellPrice(),
+                    qty
                 });
             }
         }
@@ -173,7 +177,6 @@ public class SaleController {
         view.updateProductTable(rows);
     }
 
-    /* ======================================================================================= */
     private void handleAdd() {
 
         int row = view.getProductTable().getSelectedRow();
@@ -187,7 +190,6 @@ public class SaleController {
         InventoryModel inv = inventoryMap.get(productId);
 
         if (prod == null || inv == null) {
-            JOptionPane.showMessageDialog(view, "Không thể lấy thông tin sản phẩm");
             return;
         }
 
@@ -209,7 +211,6 @@ public class SaleController {
         scheduleDraftUpdate();
     }
 
-    /* ======================================================================================= */
     private void handleRemove() {
 
         int row = view.getCartTable().getSelectedRow();
@@ -224,7 +225,6 @@ public class SaleController {
         scheduleDraftUpdate();
     }
 
-    /* ======================================================================================= */
     private void refreshCart() {
 
         List<Object[]> rows = new ArrayList<>();
@@ -250,7 +250,6 @@ public class SaleController {
         view.updateTotal("Tổng: " + total + " ₫");
     }
 
-    /* ======================================================================================= */
     private void selectCustomer() {
 
         CustomerModel chosen = showDialogSelectCustomer();
@@ -259,6 +258,7 @@ public class SaleController {
         }
 
         selectedCustomer = chosen;
+
         view.getLblCustomerName().setText(
                 "Khách hàng: " + chosen.getName() + " (" + chosen.getPhone() + ")"
         );
@@ -266,7 +266,6 @@ public class SaleController {
         scheduleDraftUpdate();
     }
 
-    /* ======================================================================================= */
     @SuppressWarnings("unchecked")
     private CustomerModel showDialogSelectCustomer() {
 
@@ -284,24 +283,37 @@ public class SaleController {
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
-                    return c;
+                    return c;  // KHÁCH ĐÃ CÓ TRONG DANH SÁCH, CÓ ID
                 }
             }
         }
 
         try {
+            // Tạo khách mới
             customerService.createCustomer(input.getName(), input.getPhone(), 0);
+
+            // Reload danh sách để lấy ID thật
             customerService.getAllCustomers();
+
+            // Lấy lại danh sách có ID
+            List<CustomerModel> reloaded
+                    = (List<CustomerModel>) store.getAppState().get("Customers");
+
+            for (CustomerModel c : reloaded) {
+                if (c.getPhone().equals(input.getPhone())) {
+                    return c;  // RETURN customer có ID thật từ DB
+                }
+            }
+
         } catch (IOException e) {
             JOptionPane.showMessageDialog(view,
                     "Không thể tạo khách hàng:\n" + e.getMessage(),
                     "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
         }
 
-        return input;
+        return null;
     }
 
-    /* ======================================================================================= */
     private Map<String, Object> buildPayload() {
 
         UserModel user = (UserModel) store.getAppState().get("user");
@@ -317,64 +329,55 @@ public class SaleController {
         Map<String, Object> map = new HashMap<>();
         map.put("details", details);
         map.put("employeeId", user.getId());
-        map.put("branchId", String.valueOf(user.getBranchId()));
+        map.put("branchId", user.getBranchId());
+        map.put("discount", BigDecimal.ZERO);
+        map.put("note", "");
 
         if (selectedCustomer != null) {
             map.put("customerId", selectedCustomer.getId());
         }
 
+        if (currentDraftId != null) {
+            map.put("invoiceId", currentDraftId);
+        }
+
         return map;
     }
 
-    /* ======================================================================================= */
-    // ✅ FIX: Dùng Timer để debounce thay vì throttle thủ công
+    // NEW — Stable debounce
     private void scheduleDraftUpdate() {
 
-        if (draftUpdateTimer != null) {
-            draftUpdateTimer.cancel();
+        if (draftFuture != null && !draftFuture.isDone()) {
+            draftFuture.cancel(false);
         }
 
-        draftUpdateTimer = new Timer();
-        draftUpdateTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(() -> updateDraft());
-            }
-        }, DRAFT_UPDATE_DELAY);
+        draftFuture = scheduler.schedule(() -> {
+            SwingUtilities.invokeLater(this::updateDraft);
+        }, DRAFT_UPDATE_DELAY, TimeUnit.MILLISECONDS);
     }
 
-    /* ======================================================================================= */
+    private Map<String, Object> lastPayload = null;
+
     private void updateDraft() {
 
-        if (cart.isEmpty()) {
-            currentDraftId = null;
+        Map<String, Object> payload = buildPayload();
+
+        if (payload.equals(lastPayload)) {
             return;
         }
-
-        Map<String, Object> payload = buildPayload();
+        lastPayload = new HashMap<>(payload);
 
         try {
             if (currentDraftId == null) {
                 invoiceService.createInvoice(payload);
             } else {
-                payload.put("invoiceId", currentDraftId);
                 invoiceService.updateInvoice(payload);
             }
-
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(view,
-                    "Không thể gửi yêu cầu lên server:\n" + ex.getMessage(),
-                    "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(view,
-                    "Lỗi cập nhật hóa đơn:\n" + ex.getMessage());
+        } catch (Exception ignore) {
+            // Không show popup khi update draft
         }
     }
 
-    /* ======================================================================================= */
-    // ✅ FIX: Gọi confirmInvoice() thay vì chỉ chuyển tab
-    // ====================== HANDLE PAY ===========================
     private void handlePay() {
 
         if (currentDraftId == null) {
@@ -382,13 +385,10 @@ public class SaleController {
             return;
         }
 
-        // Xác nhận trước khi thanh toán
         int confirm = JOptionPane.showConfirmDialog(
                 view,
-                "Xác nhận thanh toán hóa đơn?\n"
-                + "Mã HĐ: " + currentDraftId + "\n"
-                + "Tổng tiền: " + view.getLblTotal().getText(),
-                "Xác nhận thanh toán",
+                "Xác nhận thanh toán hóa đơn?",
+                "Thanh toán",
                 JOptionPane.YES_NO_OPTION
         );
 
@@ -397,57 +397,34 @@ public class SaleController {
         }
 
         try {
-            // === Gửi yêu cầu xác nhận hóa đơn ===
             invoiceService.confirmInvoice(currentDraftId);
 
-            JOptionPane.showMessageDialog(
-                    view,
-                    "Thanh toán thành công!\n"
-                    + "Mã hóa đơn: " + currentDraftId,
-                    "Thành công",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            // Chỉ show 1 popup duy nhất
+            JOptionPane.showMessageDialog(view, "Thanh toán thành công!");
 
-            // ==== Reset sale panel ====
             cart.clear();
             currentDraftId = null;
             selectedCustomer = null;
-
             view.getLblCustomerName().setText("Khách hàng: Chưa chọn");
             refreshCart();
 
-            // ==== Load lại danh sách hóa đơn của nhân viên ====
             invoiceService.getInvoicesForEmployee();
 
-            // ==== CHUYỂN SANG TAB "Hóa đơn của tôi" ====
             SwingUtilities.invokeLater(() -> {
-                // Lấy POSForm cha
                 Window win = SwingUtilities.getWindowAncestor(view);
                 if (win instanceof edu.ptithcm.views.pos.POSForm posForm) {
                     posForm.switchToMyInvoiceTab();
                 }
             });
 
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(
-                    view,
-                    "Không thể xác nhận thanh toán:\n" + ex.getMessage(),
-                    "Lỗi kết nối",
-                    JOptionPane.ERROR_MESSAGE
-            );
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    view,
-                    "Lỗi xác nhận thanh toán:\n" + ex.getMessage(),
-                    "Lỗi",
-                    JOptionPane.ERROR_MESSAGE
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view,
+                    "Lỗi thanh toán:\n" + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-
-    /* ======================================================================================= */
     private ProductInfo findProduct(String id) {
         return products.stream()
                 .filter(p -> p.getId().equals(id))

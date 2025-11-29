@@ -7,6 +7,8 @@ import edu.ptithcm.services.pos.InvoiceService;
 import edu.ptithcm.views.pos.panels.MyInvoicePanel;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -50,6 +52,47 @@ public class InvoiceController {
 
         view.getBtnConfirm().addActionListener(e -> handleConfirm());
         view.getBtnCancel().addActionListener(e -> handleCancel());
+
+        // ==== FIX QUAN TRỌNG: Kiểm tra trạng thái khi chọn hàng ====
+        view.getTable().getSelectionModel().addListSelectionListener(e -> updateButtons());
+    }
+
+    /* ==========================================================
+       UPDATE BUTTON STATUS
+    ========================================================== */
+    private void updateButtons() {
+        int row = view.getTable().getSelectedRow();
+        if (row == -1 || invoiceList == null) {
+            view.getBtnConfirm().setEnabled(false);
+            view.getBtnCancel().setEnabled(false);
+            return;
+        }
+
+        String id = (String) view.getTable().getValueAt(row, 0);
+        InvoiceInfo inv = findInvoiceById(id);
+
+        if (inv == null) {
+            view.getBtnConfirm().setEnabled(false);
+            view.getBtnCancel().setEnabled(false);
+            return;
+        }
+
+        boolean pending = "PENDING".equals(inv.getStatus());
+
+        view.getBtnConfirm().setEnabled(pending);
+        view.getBtnCancel().setEnabled(pending);
+    }
+
+    private InvoiceInfo findInvoiceById(String id) {
+        if (invoiceList == null) {
+            return null;
+        }
+        for (InvoiceInfo i : invoiceList) {
+            if (i.getInvoiceId().equals(id)) {
+                return i;
+            }
+        }
+        return null;
     }
 
     /* ==========================================================
@@ -60,6 +103,19 @@ public class InvoiceController {
         String id = view.getSelectedInvoiceId();
         if (id == null) {
             view.showMessage("Hãy chọn hóa đơn cần xác nhận");
+            return;
+        }
+
+        InvoiceInfo inv = findInvoiceById(id);
+        if (inv == null) {
+            return;
+        }
+
+        if (!"PENDING".equals(inv.getStatus())) {
+            JOptionPane.showMessageDialog(view,
+                    "Hóa đơn đã hoàn thành hoặc đã hủy.\nKhông thể xác nhận thêm.",
+                    "Không thể xác nhận",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -78,6 +134,19 @@ public class InvoiceController {
         String id = view.getSelectedInvoiceId();
         if (id == null) {
             view.showMessage("Hãy chọn hóa đơn để hủy");
+            return;
+        }
+
+        InvoiceInfo inv = findInvoiceById(id);
+        if (inv == null) {
+            return;
+        }
+
+        if (!"PENDING".equals(inv.getStatus())) {
+            JOptionPane.showMessageDialog(view,
+                    "Hóa đơn đã hoàn thành hoặc đã hủy.\nKhông thể hủy.",
+                    "Không thể hủy",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -107,6 +176,7 @@ public class InvoiceController {
 
         SwingUtilities.invokeLater(() -> {
             updateInvoiceList(state);
+            updateButtons();   // FIX: Sau khi reload, cần cập nhật nút
             showMessagesFromState(state);
         });
     }
@@ -116,7 +186,7 @@ public class InvoiceController {
     ========================================================== */
     private void updateInvoiceList(AppState state) {
 
-        Object obj = state.get("Invoices");  // KEY CHUẨN từ InvoiceReducer
+        Object obj = state.get("Invoices");
 
         if (obj instanceof List<?> list) {
             invoiceList = (List<InvoiceInfo>) list;

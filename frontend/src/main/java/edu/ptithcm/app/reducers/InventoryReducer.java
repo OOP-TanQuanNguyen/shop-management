@@ -18,7 +18,15 @@ public class InventoryReducer {
 
         // Cập nhật danh sách
         store.registerReducer(InventoryAction.INVENTORY_UPDATE_LIST.toString(), payload -> {
-            if (payload instanceof List<?> raw) {
+
+            Object data = payload;
+
+            // FIX DUY NHẤT: nếu payload = Map { inventories: [...] }
+            if (payload instanceof Map<?, ?> m && m.get("inventories") instanceof List<?>) {
+                data = m.get("inventories");
+            }
+
+            if (data instanceof List<?> raw) {
 
                 List<InventoryModel> list = raw.stream()
                         .map(item -> InventoryModel.fromMap((Map<String, Object>) item))

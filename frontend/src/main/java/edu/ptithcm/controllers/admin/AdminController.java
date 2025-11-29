@@ -12,6 +12,8 @@ import edu.ptithcm.services.admin.CustomerService;
 import edu.ptithcm.services.admin.CategoryService;
 import edu.ptithcm.services.admin.InventoryService;
 
+import edu.ptithcm.services.pos.InvoiceService;
+
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.admin.EmployeePanel;
 import edu.ptithcm.views.admin.ProductPanel;
@@ -19,6 +21,7 @@ import edu.ptithcm.views.admin.BranchPanel;
 import edu.ptithcm.views.admin.CustomerPanel;
 import edu.ptithcm.views.admin.CategoryPanel;
 import edu.ptithcm.views.admin.InventoryPanel;
+import edu.ptithcm.views.admin.AdminInvoicePanel;
 
 public class AdminController {
 
@@ -43,6 +46,7 @@ public class AdminController {
         initProductModule();      // needs Category
         initInventoryModule();    // needs Product & Category
         initCustomerModule();
+        initInvoiceModule();      // <-- NEW MODULE, NO STRUCTURE CHANGE
 
         store.subcribe(this::handleState);
     }
@@ -52,90 +56,83 @@ public class AdminController {
     }
 
     // ==============================
-    // MODULE BRANCH
-    // ==============================
     private void initBranchModule() {
         try {
-            BranchPanel branchPanel = view.getBranchPanel();
+            BranchPanel panel = view.getBranchPanel();
             branchService = new BranchService(client);
-            new BranchController(branchPanel, branchService);
+            new BranchController(panel, branchService);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init BranchController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // ==============================
-    // MODULE CATEGORY
-    // ==============================
     private void initCategoryModule() {
         try {
-            CategoryPanel categoryPanel = view.getCategoryPanel();
+            CategoryPanel panel = view.getCategoryPanel();
             categoryService = new CategoryService(client);
-            new CategoryController(categoryPanel, categoryService);
+            new CategoryController(panel, categoryService);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init CategoryController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // ==============================
-    // MODULE EMPLOYEE (NEEDS BRANCH)
-    // ==============================
     private void initEmployeeModule() {
         try {
-            EmployeePanel employeePanel = view.getEmployeePanel();
-            EmployeeService employeeService = new EmployeeService(client);
-            new EmployeeController(employeePanel, employeeService, branchService);
+            EmployeePanel panel = view.getEmployeePanel();
+            EmployeeService service = new EmployeeService(client);
+            new EmployeeController(panel, service, branchService);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init EmployeeController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // ==============================
-    // MODULE PRODUCT (NEEDS CATEGORY)
-    // ==============================
     private void initProductModule() {
         try {
-            ProductPanel productPanel = view.getProductPanel();
-            ProductService productService = new ProductService(client);
-            new ProductController(productPanel, productService);
+            ProductPanel panel = view.getProductPanel();
+            ProductService service = new ProductService(client);
+            new ProductController(panel, service);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init ProductController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // ==============================
-    // MODULE INVENTORY (NEEDS PRODUCT + CATEGORY)
-    // ==============================
     private void initInventoryModule() {
         try {
-            InventoryPanel inventoryPanel = view.getInventoryPanel();
-            InventoryService inventoryService = new InventoryService(client);
-            new InventoryController(inventoryPanel, inventoryService);
+            InventoryPanel panel = view.getInventoryPanel();
+            InventoryService service = new InventoryService(client);
+            new InventoryController(panel, service);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init InventoryController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // ==============================
-    // MODULE CUSTOMER
-    // ==============================
     private void initCustomerModule() {
         try {
-            CustomerPanel customerPanel = view.getCustomerPanel();
-            CustomerService customerService = new CustomerService(client);
-            new CustomerController(customerPanel, customerService);
+            CustomerPanel panel = view.getCustomerPanel();
+            CustomerService service = new CustomerService(client);
+            new CustomerController(panel, service);
         } catch (Exception e) {
-            System.err.println("[ERROR] Failed to init CustomerController: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // ======================================================
+    // NEW MODULE — INVOICE
+    // ======================================================
+    private void initInvoiceModule() {
+        try {
+            AdminInvoicePanel panel = view.getAdminInvoicePanel();
+            InvoiceService service = new InvoiceService(client);
+
+            new AdminInvoiceController(panel, service);  // <-- controller mới
+
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to init InvoiceController: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void handleState(AppState state) {
-        // Global state handling
+        // nothing here yet
     }
 }

@@ -40,6 +40,7 @@ public class InvoiceService {
     private static final DraftCacheUtil<InvoiceModel> draftCache = new DraftCacheUtil<>(
             5 * 60 * 1000,
             draft -> {
+                // rollback stock khi draft hết hạn
                 if (draft.getDetails() != null) {
                     for (InvoiceDetailModel d : draft.getDetails()) {
                         InventoryModel inv = inventoryRepo.findByBranchAndProduct(
@@ -55,14 +56,18 @@ public class InvoiceService {
             }
     );
 
-    // ------------------ Lấy tất cả hóa đơn ------------------
-    public ResponseDTO<List<InvoiceInfo>> getAllInvoices() throws RuntimeException {
+    // =====================================================================
+    // LẤY TẤT CẢ HÓA ĐƠN
+    // =====================================================================
+    public ResponseDTO<List<InvoiceInfo>> getAllInvoices() {
         List<InvoiceModel> list = invoiceRepo.findAll();
         return new SuccessResponse<>("Lấy tất cả hóa đơn thành công", mapper.toDTOList(list));
     }
 
-    // ------------------ Tạo hóa đơn ------------------
-    public ResponseDTO<InvoiceInfo> createInvoice(InvoiceRequestDTO req) throws RuntimeException {
+    // =====================================================================
+    // TẠO HÓA ĐƠN (DRAFT) — KHÔNG trừ tồn kho
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> createInvoice(InvoiceRequestDTO req) {
         if (req == null) {
             return new InvalidResponse<>("Dữ liệu hóa đơn trống");
         }
@@ -107,7 +112,9 @@ public class InvoiceService {
         List<InvoiceDetailModel> details = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
 
+        // Chỉ check tồn kho — KHÔNG TRỪ KHO
         for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
+
             if (d.getQuantity() <= 0) {
                 return new InvalidResponse<>("Số lượng sản phẩm phải > 0");
             }
@@ -140,14 +147,20 @@ public class InvoiceService {
         if (discount.compareTo(total) > 0) {
             return new InvalidResponse<>("Giảm giá không thể lớn hơn tổng tiền");
         }
+
         draft.setDetails(details);
         draft.setTotal(total.subtract(discount));
+
         draftCache.addDraft(draft.getId(), draft);
+
         return new SuccessResponse<>("Tạo hóa đơn thành công", mapper.toDTO(draft));
     }
 
-    // ------------------ Xác nhận thanh toán ------------------
-    public ResponseDTO<InvoiceInfo> confirmInvoice(String invoiceId) throws RuntimeException {
+    // =====================================================================
+    // XÁC NHẬN THANH TOÁN — CHỈ ở đây mới TRỪ TỒN KHO
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> confirmInvoice(String invoiceId) {
+
         InvoiceModel draft = draftCache.confirmDraft(invoiceId);
         if (draft == null) {
             return new NotFoundResponse<>("Hóa đơn không tồn tại");
@@ -156,34 +169,45 @@ public class InvoiceService {
         if (draft.getStatus() != InvoiceStatus.PENDING) {
             return new InvalidResponse<>("Hóa đơn không ở trạng thái chờ xử lý");
         }
-        if (draft.getStatus() == InvoiceStatus.COMPLETED) {
-            return new InvalidResponse<>("Hóa đơn đã được xác nhận");
-        }
-        if (draft.getStatus() == InvoiceStatus.CANCELLED) {
-            return new InvalidResponse<>("Hóa đơn đã bị hủy");
-        }
 
+        // ---- CHECK & TRỪ TỒN KHO ----
         for (InvoiceDetailModel d : draft.getDetails()) {
+
             InventoryModel inv = inventoryRepo.findByBranchAndProduct(
                     draft.getBranch().getId(),
                     d.getProduct().getId()
             );
-            if (inv == null || inv.getQuantity() < 0) {
+
+            if (inv == null) {
                 draftCache.addDraft(draft.getId(), draft);
-                return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + d.getProduct().getName());
+                return new InvalidResponse<>("Kho không tồn tại cho sản phẩm: " + d.getProduct().getName());
             }
+
+            if (inv.getQuantity() < d.getQuantity()) {
+                draftCache.addDraft(draft.getId(), draft);
+                return new InvalidResponse<>("Không đủ tồn kho: " + d.getProduct().getName());
+            }
+
+            // ===== TRỪ TỒN KHO CHÍNH XÁC =====
+            inv.setQuantity(inv.getQuantity() - d.getQuantity());
+            inventoryRepo.update(inv);
         }
 
+        // ---- LƯU HÓA ĐƠN HOÀN TẤT ----
         draft.setStatus(InvoiceStatus.COMPLETED);
         invoiceRepo.save(draft);
 
         return new SuccessResponse<>("Xác nhận thanh toán thành công", mapper.toDTO(draft));
     }
 
-    // ------------------ Hủy hóa đơn ------------------
-    public ResponseDTO<InvoiceInfo> cancelInvoice(String invoiceId) throws RuntimeException {
+    // =====================================================================
+    // HỦY HÓA ĐƠN — HOÀN TỒN KHO
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> cancelInvoice(String invoiceId) {
+
         InvoiceModel draft = draftCache.getDraft(invoiceId);
         if (draft != null) {
+            // hoàn kho draft
             for (InvoiceDetailModel d : draft.getDetails()) {
                 InventoryModel inv = inventoryRepo.findByBranchAndProduct(
                         draft.getBranch().getId(),
@@ -206,10 +230,12 @@ public class InvoiceService {
         if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
             return new InvalidResponse<>("Hóa đơn đã bị hủy");
         }
+
         if (invoice.getStatus() == InvoiceStatus.COMPLETED) {
             return new InvalidResponse<>("Không thể hủy hóa đơn đã xác nhận");
         }
 
+        // hoàn kho hóa đơn DB
         for (InvoiceDetailModel d : invoice.getDetails()) {
             InventoryModel inv = inventoryRepo.findByBranchAndProduct(
                     invoice.getBranch().getId(),
@@ -227,57 +253,65 @@ public class InvoiceService {
         return new SuccessResponse<>("Hủy hóa đơn thành công", mapper.toDTO(updated));
     }
 
-    // ------------------ Cập nhật hóa đơn ------------------
-    public ResponseDTO<InvoiceInfo> updateInvoice(InvoiceRequestDTO req) throws RuntimeException {
+    // =====================================================================
+    // UPDATE DRAFT — KHÔNG trừ kho
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> updateInvoice(InvoiceRequestDTO req) {
+
         if (!req.validForUpdate()) {
             return new InvalidResponse<>("Thiếu ID hóa đơn");
         }
 
         InvoiceModel draft = draftCache.getDraft(req.getInvoiceId());
         if (draft == null) {
-            System.out.println("[ERROR] draft null in cache");
             return new NotFoundResponse<>("Hóa đơn draft không tồn tại");
         }
-        if (req.getEmployeeId() != null) {
-            draft.setEmployee(employeeRepo.findById(req.getEmployeeId()));
-        }
+
+        // Không trừ kho ở update draft !!!
+        // Chỉ check thôi.
         if (req.getBranchId() != null) {
             draft.setBranch(branchRepo.findById(req.getBranchId()));
         }
         if (req.getCustomerId() != null) {
             draft.setCustomer(customerRepo.findById(req.getCustomerId()));
         }
+        if (req.getEmployeeId() != null) {
+            draft.setEmployee(employeeRepo.findById(req.getEmployeeId()));
+        }
         if (req.getNote() != null) {
             draft.setNote(req.getNote());
         }
+
         if (req.getDiscount() != null) {
-            BigDecimal discount = BigDecimalUtil.safe(req.getDiscount());
-            if (discount.compareTo(BigDecimal.ZERO) < 0) {
+            BigDecimal d = BigDecimalUtil.safe(req.getDiscount());
+            if (d.compareTo(BigDecimal.ZERO) < 0) {
                 return new InvalidResponse<>("Giảm giá không thể âm");
             }
-            draft.setDiscount(discount);
+            draft.setDiscount(d);
         }
 
         if (req.getDetails() != null && !req.getDetails().isEmpty()) {
+
             List<InvoiceDetailModel> newDetails = new ArrayList<>();
             BigDecimal total = BigDecimal.ZERO;
 
             for (InvoiceRequestDTO.InvoiceDetailRequest d : req.getDetails()) {
+
                 ProductModel product = productRepo.findById(d.getProductId());
                 if (product == null) {
                     return new NotFoundResponse<>("Sản phẩm không tồn tại");
                 }
 
                 InventoryModel inv = inventoryRepo.findByBranchAndProduct(
-                        draft.getBranch().getId(), product.getId());
+                        draft.getBranch().getId(),
+                        product.getId()
+                );
 
                 if (inv == null || inv.getQuantity() < d.getQuantity()) {
-                    return new InvalidResponse<>("Sản phẩm không đủ tồn kho: " + product.getName());
+                    return new InvalidResponse<>("Không đủ tồn kho: " + product.getName());
                 }
 
-                inv.setQuantity(inv.getQuantity() - d.getQuantity());
-                inventoryRepo.update(inv);
-
+                // KHÔNG TRỪ KHO — draft không bao giờ trừ kho
                 BigDecimal unitPrice = BigDecimal.valueOf(product.getSellPrice());
                 InvoiceDetailModel detail = new InvoiceDetailModel(product, draft, d.getQuantity(), unitPrice);
 
@@ -294,20 +328,27 @@ public class InvoiceService {
         return new SuccessResponse<>("Cập nhật hóa đơn draft thành công", mapper.toDTO(draft));
     }
 
-    // ------------------ Xóa hóa đơn ------------------
-    public ResponseDTO<InvoiceInfo> deleteInvoice(String invoiceId) throws RuntimeException {
+    // =====================================================================
+    // DELETE
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> deleteInvoice(String invoiceId) {
+
         if (invoiceId == null || invoiceId.isBlank()) {
             return new InvalidResponse<>("Thiếu ID hóa đơn");
         }
+
         InvoiceModel deleted = invoiceRepo.delete(invoiceId);
         if (deleted == null) {
             return new NotFoundResponse<>("Hóa đơn không tồn tại");
         }
+
         return new SuccessResponse<>("OK", mapper.toDTO(deleted));
     }
 
-    // ------------------ Lấy hóa đơn theo ID ------------------
-    public ResponseDTO<InvoiceInfo> getInvoiceById(String invoiceId) throws RuntimeException {
+    // =====================================================================
+    // GET BY ID / CUSTOMER / BRANCH / EMPLOYEE
+    // =====================================================================
+    public ResponseDTO<InvoiceInfo> getInvoiceById(String invoiceId) {
         InvoiceModel invoice = invoiceRepo.findById(invoiceId);
         if (invoice == null) {
             return new NotFoundResponse<>("Hóa đơn không tồn tại");
@@ -315,20 +356,17 @@ public class InvoiceService {
         return new SuccessResponse<>("Lấy hóa đơn thành công", mapper.toDTO(invoice));
     }
 
-    // ------------------ Lấy hóa đơn theo khách hàng ------------------
-    public ResponseDTO<List<InvoiceInfo>> getInvoiceByCustomer(String customerId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByCustomer(String customerId) {
         List<InvoiceModel> list = invoiceRepo.findByCustomer(customerId);
         return new SuccessResponse<>("Lấy hóa đơn theo khách hàng thành công", mapper.toDTOList(list));
     }
 
-    // ------------------ Lấy hóa đơn theo chi nhánh ------------------
-    public ResponseDTO<List<InvoiceInfo>> getInvoiceByBranch(Integer branchId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByBranch(Integer branchId) {
         List<InvoiceModel> list = invoiceRepo.findByBranch(branchId);
         return new SuccessResponse<>("Lấy hóa đơn theo chi nhánh thành công", mapper.toDTOList(list));
     }
 
-    // ------------------ Lấy hóa đơn theo nhân viên ------------------
-    public ResponseDTO<List<InvoiceInfo>> getInvoiceByEmployee(String employeeId) throws RuntimeException {
+    public ResponseDTO<List<InvoiceInfo>> getInvoiceByEmployee(String employeeId) {
         List<InvoiceModel> list = invoiceRepo.findByEmployee(employeeId);
         return new SuccessResponse<>("Lấy hóa đơn theo nhân viên thành công", mapper.toDTOList(list));
     }
