@@ -1,6 +1,7 @@
 /target/
 */target/
 
+docker/
 .mvn/
 mvnw
 mvnw.cmd

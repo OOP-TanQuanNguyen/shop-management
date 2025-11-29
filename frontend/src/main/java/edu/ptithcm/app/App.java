@@ -1,9 +1,5 @@
 package edu.ptithcm.app;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import edu.ptithcm.app.reducers.AuthReducer;
 import edu.ptithcm.app.reducers.BranchReducer;
 import edu.ptithcm.app.reducers.CategoryReducer;
@@ -23,6 +19,9 @@ import edu.ptithcm.services.authentication.AuthService;
 import edu.ptithcm.views.admin.AdminForm;
 import edu.ptithcm.views.login.LoginForm;
 import edu.ptithcm.views.pos.POSForm;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * App: Điểm khởi động toàn bộ chương trình - Đăng ký reducer vào Store - Theo
@@ -32,7 +31,7 @@ import edu.ptithcm.views.pos.POSForm;
 public class App {
 
     private static JFrame currentView; // form hiện tại
-    private static DTTP client;        // kết nối socket
+    private static DTTP client; // kết nối socket
     private static AuthService authService; // service dùng chung
 
     public static void main(String[] args) {
@@ -65,11 +64,12 @@ public class App {
 
                 // --- Theo dõi thay đổi state ---
                 store.subcribe(App::handleStateChange);
-
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(null,
-                        "Không thể kết nối server: " + e.getMessage());
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Không thể kết nối server: " + e.getMessage()
+                );
             }
         });
     }
@@ -122,18 +122,22 @@ public class App {
     private static void handleStateChange(AppState state) {
         Boolean isAuth = (Boolean) state.get("isAuthenticated");
         Boolean isLogout = (Boolean) state.get("isLogout");
-        Boolean isLossConnectionServer = (Boolean) state.get("isLossConnectionServer");
+        Boolean isLossConnectionServer = (Boolean) state.get(
+            "isLossConnectionServer"
+        );
         Boolean isDoubleConnection = (Boolean) state.get("isDoubleConnection");
         Object userObj = state.get("user");
 
         SwingUtilities.invokeLater(() -> {
-            // ✅ Chỉ mở form admin/POS khi đăng nhập lần đầu
-            if (Boolean.TRUE.equals(isAuth)
-                    && userObj instanceof UserModel user
-                    && !(currentView instanceof AdminForm)
-                    && !(currentView instanceof POSForm)) {
-
-                System.out.println("[DEBUG] Opening AdminForm controller initialized");
+            if (
+                Boolean.TRUE.equals(isAuth) &&
+                userObj instanceof UserModel user &&
+                !(currentView instanceof AdminForm) &&
+                !(currentView instanceof POSForm)
+            ) {
+                System.out.println(
+                    "[DEBUG] Opening AdminForm controller initialized"
+                );
 
                 if ("ADMIN".equals(user.getRole())) {
                     openAdminForm(user);
@@ -153,10 +157,10 @@ public class App {
                 store.getAppState().set("isLogout", false);
             }
 
-            // ✅ Xử lý mất kết nối hoặc đăng nhập trùng
-            if (Boolean.TRUE.equals(isLossConnectionServer)
-                    || Boolean.TRUE.equals(isDoubleConnection)) {
-
+            if (
+                Boolean.TRUE.equals(isLossConnectionServer) ||
+                Boolean.TRUE.equals(isDoubleConnection)
+            ) {
                 if (!(currentView instanceof LoginForm)) {
                     currentView.dispose();
                     openLoginForm();
