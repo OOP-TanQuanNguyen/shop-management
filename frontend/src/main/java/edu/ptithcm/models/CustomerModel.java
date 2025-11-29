@@ -7,37 +7,37 @@ public class CustomerModel {
     private String id;
     private String name;
     private String phone;
-    private Integer point; // ✅ Phải là Integer (nullable) hoặc int với giá trị mặc định
+    private Integer point;
 
-    private CustomerModel(Builder builder) {
-        this.id = builder.id;
-        this.name = builder.name;
-        this.phone = builder.phone;
-        this.point = builder.point;
+    private CustomerModel(Builder b) {
+        this.id = b.id;
+        this.name = b.name;
+        this.phone = b.phone;
+        this.point = b.point;
     }
 
-    // ========================
-    //        GETTERS
-    // ========================
+    // ==========================
+    // GETTERS
+    // ==========================
     public String getId() {
-        return this.id;
+        return id;
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public String getPhone() {
-        return this.phone;
+        return phone;
     }
 
     public Integer getPoint() {
-        return this.point != null ? this.point : 0; // ✅ Trả về 0 nếu null
+        return point != null ? point : 0;
     }
 
-    // ========================
-    //        SETTERS (cho Hibernate)
-    // ========================
+    // ==========================
+    // SETTERS (Hibernate)
+    // ==========================
     public void setId(String id) {
         this.id = id;
     }
@@ -54,34 +54,34 @@ public class CustomerModel {
         this.point = point;
     }
 
-    // ========================
-    //      fromMap()
-    // ========================
+    // ==========================
+    // fromMap → Nhận từ CustomerInfo.toMap()
+    // ==========================
     public static CustomerModel fromMap(Map<String, Object> data) {
-        Object pointObj = data.get("point");
-        Integer pointValue = 0; // ✅ Mặc định = 0
 
-        if (pointObj instanceof Number) {
-            pointValue = ((Number) pointObj).intValue();
+        Integer point = 0;
+        Object p = data.get("point");
+        if (p instanceof Number n) {
+            point = n.intValue();
         }
 
         return new Builder()
                 .id((String) data.get("customerId"))
                 .name((String) data.get("name"))
                 .phone((String) data.get("phone"))
-                .point(pointValue)
+                .point(point)
                 .build();
     }
 
-    // ========================
-    //        BUILDER
-    // ========================
+    // ==========================
+    // BUILDER
+    // ==========================
     public static class Builder {
 
         private String id;
         private String name;
         private String phone;
-        private Integer point = 0; // ✅ Mặc định = 0
+        private Integer point = 0;
 
         public Builder id(String id) {
             this.id = id;
@@ -99,7 +99,7 @@ public class CustomerModel {
         }
 
         public Builder point(Integer point) {
-            this.point = point != null ? point : 0; // ✅ Đảm bảo không null
+            this.point = point != null ? point : 0;
             return this;
         }
 

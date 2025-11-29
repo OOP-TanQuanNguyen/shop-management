@@ -12,10 +12,7 @@ public class MyInvoicePanel extends JPanel {
     private JTable table;
     private DefaultTableModel model;
 
-    private JButton btnReload;
-    private JButton btnConfirm;
-    private JButton btnCancel;
-
+    private JButton btnReload; // chỉ còn nút Reload
     private JLabel lblMessage;
 
     public MyInvoicePanel() {
@@ -27,9 +24,6 @@ public class MyInvoicePanel extends JPanel {
         initBottomBar();
     }
 
-    /* ============================================================
-       TITLE
-    ============================================================ */
     private void initTitle() {
         JLabel lblTitle = new JLabel(
                 " Hóa đơn của tôi",
@@ -39,11 +33,8 @@ public class MyInvoicePanel extends JPanel {
         add(lblTitle, BorderLayout.NORTH);
     }
 
-    /* ============================================================
-       TABLE
-    ============================================================ */
     private void initTable() {
-        // ❌ Bỏ Thời gian & Trạng thái — chỉ còn 3 cột
+
         model = new DefaultTableModel(
                 new Object[]{"Mã HĐ", "Khách hàng", "Tổng tiền"},
                 0
@@ -61,36 +52,31 @@ public class MyInvoicePanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    /* ============================================================
-       BOTTOM BAR
-    ============================================================ */
     private void initBottomBar() {
         JPanel bottom = new JPanel(new BorderLayout());
+
+        // -------- LEFT: only message --------
+        JPanel left = new JPanel(new GridLayout(1, 1));
+        left.setOpaque(false);
 
         lblMessage = new JLabel("");
         lblMessage.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblMessage.setForeground(new Color(180, 32, 42));
 
-        bottom.add(lblMessage, BorderLayout.WEST);
+        left.add(lblMessage);
+        bottom.add(left, BorderLayout.WEST);
 
+        // -------- RIGHT: only button --------
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         btnReload = new JButton(" Tải lại");
-        btnConfirm = new JButton("✔ Xác nhận");
-        btnCancel = new JButton("✖ Hủy hóa đơn");
-
         btnPanel.add(btnReload);
-        btnPanel.add(btnConfirm);
-        btnPanel.add(btnCancel);
 
         bottom.add(btnPanel, BorderLayout.EAST);
 
         add(bottom, BorderLayout.SOUTH);
     }
 
-    /* ============================================================
-       PUBLIC UI METHODS
-    ============================================================ */
     public void showMessage(String msg) {
         lblMessage.setText(msg != null ? msg : "");
     }
@@ -107,17 +93,9 @@ public class MyInvoicePanel extends JPanel {
         return btnReload;
     }
 
-    public JButton getBtnConfirm() {
-        return btnConfirm;
-    }
-
-    public JButton getBtnCancel() {
-        return btnCancel;
-    }
-
-    /* ============================================================
-       GET SELECTED INVOICE
-    ============================================================ */
+    // ============================================================
+    // LẤY ID HÓA ĐƠN ĐANG CHỌN
+    // ============================================================
     public String getSelectedInvoiceId() {
         int row = table.getSelectedRow();
         if (row == -1) {
@@ -126,18 +104,12 @@ public class MyInvoicePanel extends JPanel {
         return (String) table.getValueAt(row, 0);
     }
 
-    /* ============================================================
-       FORMAT CUSTOMER NAME
-    ============================================================ */
     private String formatCustomer(String customerName) {
         return (customerName == null || customerName.isBlank())
                 ? "Khách lẻ"
                 : customerName;
     }
 
-    /* ============================================================
-       UPDATE TABLE
-    ============================================================ */
     public void updateTable(List<InvoiceInfo> list) {
         model.setRowCount(0);
         if (list == null) {
@@ -149,7 +121,8 @@ public class MyInvoicePanel extends JPanel {
                     new Object[]{
                         inv.getInvoiceId(),
                         formatCustomer(inv.getcustomerName()),
-                        inv.getTotal() != null ? inv.getTotal().toString() : "0",}
+                        inv.getTotal() != null ? inv.getTotal().toString() : "0"
+                    }
             );
         }
     }

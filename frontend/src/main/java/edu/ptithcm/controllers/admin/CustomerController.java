@@ -11,6 +11,7 @@ import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.models.CustomerModel;
 import edu.ptithcm.services.admin.CustomerService;
+import edu.ptithcm.services.admin.LoyaltyService;
 import edu.ptithcm.views.admin.CustomerPanel;
 import edu.ptithcm.views.admin.customer_dialogs.CustomerAddDialog;
 import edu.ptithcm.views.admin.customer_dialogs.CustomerEditDialog;
@@ -21,17 +22,28 @@ public class CustomerController {
 
     private final CustomerPanel view;
     private final CustomerService service;
+    private final LoyaltyService loyaltyService;   // ★ thêm vào đây
+
     private final Store store = Store.getInstance();
 
     private boolean isShowingMessage = false;
     private List<CustomerModel> currentCustomers;
 
-    public CustomerController(CustomerPanel view, CustomerService service) {
+    // ============================================================
+    // ★★★ CONSTRUCTOR ĐÃ SỬA – NHẬN LoyaltyService TỪ NGOÀI ★★★
+    // ============================================================
+    public CustomerController(
+            CustomerPanel view,
+            CustomerService service,
+            LoyaltyService loyaltyService
+    ) {
         this.view = view;
         this.service = service;
+        this.loyaltyService = loyaltyService; // ★ gán vào
 
         registerEvents();
         store.subcribe(this::onStateChanged);
+
         loadCustomers();
     }
 
@@ -49,7 +61,6 @@ public class CustomerController {
     }
 
     private void loadCustomers() {
-        // Khi nhấn Reload → reset search
         view.getTxtSearch().setText("");
 
         try {
@@ -69,7 +80,6 @@ public class CustomerController {
         }
 
         String keyword = view.getTxtSearch().getText().trim().toLowerCase();
-
         if (keyword.isEmpty()) {
             view.updateTable(currentCustomers);
             return;
@@ -80,10 +90,7 @@ public class CustomerController {
                     String name = c.getName() != null ? c.getName().toLowerCase() : "";
                     String phone = c.getPhone() != null ? c.getPhone() : "";
 
-                    // 1. Tên chứa (contains)
                     boolean matchName = name.contains(keyword);
-
-                    // 2. SĐT phải khớp từ đầu (startsWith)
                     boolean matchPhone = phone.startsWith(keyword);
 
                     return matchName || matchPhone;
@@ -97,12 +104,17 @@ public class CustomerController {
     // CRUD
     // ============================================================
     private void handleAdd() {
+
         CustomerAddDialog dl = new CustomerAddDialog(getParentFrame());
         dl.showDialog();
 
         if (dl.isConfirmed()) {
             try {
                 service.createCustomer(dl.getCustomerName(), dl.getPhone(), dl.getPoint());
+
+                // ★ tạo loyalty ngay sau khi tạo customer
+                loyaltyService.createLoyalty(dl.getPhone());
+
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi: " + e.getMessage());
             }
@@ -110,6 +122,7 @@ public class CustomerController {
     }
 
     private void handleEdit() {
+
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
             AppMessageBox.showWarning("Vui lòng chọn khách hàng!");
@@ -133,7 +146,7 @@ public class CustomerController {
                         c.getId(),
                         dl.getCustomerName(),
                         dl.getPhone(),
-                        null // KHÔNG update điểm tại đây
+                        null
                 );
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi cập nhật: " + e.getMessage());
@@ -142,6 +155,7 @@ public class CustomerController {
     }
 
     private void handleDelete() {
+
         int row = view.getTable().getSelectedRow();
         if (row == -1) {
             AppMessageBox.showWarning("Vui lòng chọn khách hàng!");
@@ -153,12 +167,17 @@ public class CustomerController {
             return;
         }
 
-        CustomerDeleteConfirmDialog dl = new CustomerDeleteConfirmDialog(getParentFrame(), c.getName());
+        CustomerDeleteConfirmDialog dl = new CustomerDeleteConfirmDialog(
+                getParentFrame(), c.getName()
+        );
+
         dl.showDialog();
 
         if (dl.isConfirmed()) {
             try {
                 service.deleteCustomer(c.getId());
+                loyaltyService.deleteLoyalty(c.getId());  // ★ xóa luôn loyalty
+
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi xóa: " + e.getMessage());
             }
@@ -177,6 +196,7 @@ public class CustomerController {
     // STATE MANAGEMENT
     // ============================================================
     private void onStateChanged(AppState state) {
+
         SwingUtilities.invokeLater(() -> {
             updateCustomerList(state);
             showMessages(state);
@@ -185,6 +205,7 @@ public class CustomerController {
 
     @SuppressWarnings("unchecked")
     private void updateCustomerList(AppState state) {
+
         Object listObj = state.get("Customers");
 
         if (listObj instanceof List<?> list) {
@@ -199,6 +220,7 @@ public class CustomerController {
     }
 
     private void showMessages(AppState state) {
+
         if (isShowingMessage) {
             return;
         }

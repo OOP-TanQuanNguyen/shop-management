@@ -18,6 +18,7 @@ import edu.ptithcm.services.admin.InventoryService;
 import edu.ptithcm.services.admin.ProductService;
 import edu.ptithcm.services.pos.InvoiceService;
 import edu.ptithcm.services.admin.CustomerService;
+import edu.ptithcm.services.admin.LoyaltyService;
 
 import edu.ptithcm.views.pos.panels.SalePanel;
 import edu.ptithcm.views.pos.panels.customer_dialogs.CustomerSelectDialog;
@@ -32,9 +33,10 @@ public class SaleController {
     private final InvoiceService invoiceService;
     private final CustomerService customerService;
 
+    private final LoyaltyService loyaltyService;        // Loyalty
+
     private List<ProductInfo> products = new ArrayList<>();
     private final Map<String, InventoryModel> inventoryMap = new HashMap<>();
-
     private final Map<String, CartItem> cart = new LinkedHashMap<>();
 
     private String currentDraftId = null;
@@ -46,7 +48,6 @@ public class SaleController {
     private ScheduledFuture<?> draftFuture;
     private static final long DRAFT_UPDATE_DELAY = 250;
 
-    /* ------------------------ Cart Item ------------------------ */
     private static class CartItem {
 
         ProductInfo product;
@@ -63,13 +64,15 @@ public class SaleController {
             ProductService productService,
             InventoryService inventoryService,
             InvoiceService invoiceService,
-            CustomerService customerService
+            CustomerService customerService,
+            LoyaltyService loyaltyService
     ) {
         this.view = view;
         this.productService = productService;
         this.inventoryService = inventoryService;
         this.invoiceService = invoiceService;
         this.customerService = customerService;
+        this.loyaltyService = loyaltyService;
 
         registerEvents();
         store.subcribe(this::onStateChanged);
@@ -79,18 +82,17 @@ public class SaleController {
     private void loadInitialData() {
         try {
             productService.getAllProducts();
+            customerService.getAllCustomers();
 
             UserModel user = (UserModel) store.getAppState().get("user");
             if (user != null) {
                 inventoryService.getInventoriesByBranch(user.getBranchId());
             }
 
-            customerService.getAllCustomers();
-
         } catch (IOException e) {
             JOptionPane.showMessageDialog(view,
-                    "Không thể tải dữ liệu ban đầu:\n" + e.getMessage(),
-                    "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+                    "Không thể tải dữ liệu:\n" + e.getMessage(),
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -121,7 +123,6 @@ public class SaleController {
 
     @SuppressWarnings("unchecked")
     private void onStateChanged(AppState state) {
-
         SwingUtilities.invokeLater(() -> {
 
             Object p = state.get("Products");
@@ -145,14 +146,13 @@ public class SaleController {
                 currentDraftId = info.getInvoiceId();
             }
 
-            // CHẶN message update draft từ reducer
+            // clear auto messages
             state.set("InvoiceMessage", "");
             state.set("InvoiceError", "");
         });
     }
 
     private void filterProducts() {
-
         String keyword = view.getTxtSearch().getText().trim().toLowerCase();
         List<Object[]> rows = new ArrayList<>();
 
@@ -160,8 +160,7 @@ public class SaleController {
 
             InventoryModel inv = inventoryMap.get(p.getId());
             int qty = (inv != null && inv.getQuantity() != null)
-                    ? inv.getQuantity()
-                    : 0;
+                    ? inv.getQuantity() : 0;
 
             if (keyword.isEmpty() || p.getName().toLowerCase().contains(keyword)) {
                 rows.add(new Object[]{
@@ -184,15 +183,15 @@ public class SaleController {
             return;
         }
 
-        String productId = (String) view.getProductTable().getValueAt(row, 0);
-        ProductInfo prod = findProduct(productId);
-        InventoryModel inv = inventoryMap.get(productId);
+        String id = (String) view.getProductTable().getValueAt(row, 0);
+        ProductInfo prod = findProduct(id);
+        InventoryModel inv = inventoryMap.get(id);
 
         if (prod == null || inv == null) {
             return;
         }
 
-        cart.compute(productId, (id, item) -> {
+        cart.compute(id, (key, item) -> {
             if (item == null) {
                 return new CartItem(prod, 1);
             }
@@ -217,8 +216,8 @@ public class SaleController {
             return;
         }
 
-        String productId = (String) view.getCartTable().getValueAt(row, 0);
-        cart.remove(productId);
+        String id = (String) view.getCartTable().getValueAt(row, 0);
+        cart.remove(id);
 
         refreshCart();
         scheduleDraftUpdate();
@@ -262,12 +261,14 @@ public class SaleController {
                 "Khách hàng: " + chosen.getName() + " (" + chosen.getPhone() + ")"
         );
 
+        try {
+            loyaltyService.getLoyaltyByCustomer(selectedCustomer.getId());
+        } catch (Exception ignored) {
+        }
+
         scheduleDraftUpdate();
     }
 
-    /* ============================================================
-       ✅ FIX: ĐỢI STORE CẬP NHẬT SAU KHI TẠO KHÁCH HÀNG MỚI
-    ============================================================ */
     @SuppressWarnings("unchecked")
     private CustomerModel showDialogSelectCustomer() {
 
@@ -280,29 +281,31 @@ public class SaleController {
             return null;
         }
 
-        List<CustomerModel> all = (List<CustomerModel>) store.getAppState().get("Customers");
+        List<CustomerModel> all
+                = (List<CustomerModel>) store.getAppState().get("Customers");
 
-        // Kiểm tra khách đã tồn tại
+        // khách đã có
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
-                    return c;  // ✅ Khách đã có trong danh sách
+                    return c;
                 }
             }
         }
 
-        // ===== TẠO KHÁCH HÀNG MỚI =====
+        // tạo khách hàng mới
         try {
             customerService.createCustomer(input.getName(), input.getPhone(), 0);
 
-            // ✅ ĐỢI STORE CẬP NHẬT (polling 5 giây)
             CustomerModel newCustomer = waitForCustomerInStore(input.getPhone(), 5000);
-
             if (newCustomer != null) {
-                return newCustomer;  // ✅ Trả về customer có ID từ DB
+
+                loyaltyService.createLoyalty(newCustomer.getId());
+                return newCustomer;
+
             } else {
                 JOptionPane.showMessageDialog(view,
-                        "Không thể tải thông tin khách hàng mới.\nVui lòng chọn lại từ danh sách.",
+                        "Không thể tải khách hàng mới.",
                         "Timeout", JOptionPane.WARNING_MESSAGE);
                 return null;
             }
@@ -310,14 +313,11 @@ public class SaleController {
         } catch (IOException e) {
             JOptionPane.showMessageDialog(view,
                     "Không thể tạo khách hàng:\n" + e.getMessage(),
-                    "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
             return null;
         }
     }
 
-    /* ============================================================
-       ✅ THÊM METHOD ĐỢI STORE CẬP NHẬT
-    ============================================================ */
     @SuppressWarnings("unchecked")
     private CustomerModel waitForCustomerInStore(String phone, long timeoutMs) {
 
@@ -325,18 +325,17 @@ public class SaleController {
 
         while (System.currentTimeMillis() - start < timeoutMs) {
 
-            List<CustomerModel> customers
+            List<CustomerModel> list
                     = (List<CustomerModel>) store.getAppState().get("Customers");
 
-            if (customers != null) {
-                for (CustomerModel c : customers) {
+            if (list != null) {
+                for (CustomerModel c : list) {
                     if (c.getPhone().equals(phone) && c.getId() != null) {
-                        return c;  // ✅ Tìm thấy khách hàng có ID
+                        return c;
                     }
                 }
             }
 
-            // Chờ 100ms rồi thử lại
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -345,7 +344,7 @@ public class SaleController {
             }
         }
 
-        return null;  // Timeout
+        return null;
     }
 
     private Map<String, Object> buildPayload() {
@@ -384,9 +383,10 @@ public class SaleController {
             draftFuture.cancel(false);
         }
 
-        draftFuture = scheduler.schedule(() -> {
-            SwingUtilities.invokeLater(this::updateDraft);
-        }, DRAFT_UPDATE_DELAY, TimeUnit.MILLISECONDS);
+        draftFuture = scheduler.schedule(()
+                -> SwingUtilities.invokeLater(this::updateDraft),
+                DRAFT_UPDATE_DELAY, TimeUnit.MILLISECONDS
+        );
     }
 
     private Map<String, Object> lastPayload = null;
@@ -394,10 +394,10 @@ public class SaleController {
     private void updateDraft() {
 
         Map<String, Object> payload = buildPayload();
-
         if (payload.equals(lastPayload)) {
             return;
         }
+
         lastPayload = new HashMap<>(payload);
 
         try {
@@ -406,8 +406,7 @@ public class SaleController {
             } else {
                 invoiceService.updateInvoice(payload);
             }
-        } catch (Exception ignore) {
-            // Không show popup khi update draft
+        } catch (Exception ignored) {
         }
     }
 
@@ -431,6 +430,8 @@ public class SaleController {
 
         try {
             invoiceService.confirmInvoice(currentDraftId);
+
+            applyLoyaltyPointAfterPayment();
 
             JOptionPane.showMessageDialog(view, "Thanh toán thành công!");
 
@@ -461,5 +462,35 @@ public class SaleController {
                 .filter(p -> p.getId().equals(id))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private void applyLoyaltyPointAfterPayment() {
+        if (selectedCustomer == null) {
+            return;
+        }
+
+        BigDecimal total = calculateInvoiceTotal();
+        int points = total.divide(BigDecimal.valueOf(10000)).intValue();
+
+        if (points <= 0) {
+            return;
+        }
+
+        try {
+            loyaltyService.updateLoyalty(selectedCustomer.getId(), points);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private BigDecimal calculateInvoiceTotal() {
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (CartItem item : cart.values()) {
+            BigDecimal unit = BigDecimal.valueOf(item.product.getSellPrice());
+            total = total.add(unit.multiply(BigDecimal.valueOf(item.quantity)));
+        }
+
+        return total;
     }
 }

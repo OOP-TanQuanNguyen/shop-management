@@ -6,6 +6,7 @@ import edu.ptithcm.models.InvoiceInfo;
 import edu.ptithcm.services.pos.InvoiceService;
 import edu.ptithcm.views.admin.AdminInvoicePanel;
 import edu.ptithcm.views.components.AppMessageBox;
+
 import java.awt.Frame;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class AdminInvoiceController {
     }
 
     /* ============================================================
-       ✅ FIX: DELETE + AUTO RELOAD
+       DELETE + AUTO RELOAD
     ============================================================ */
     private void handleDelete() {
         String id = view.getSelectedInvoiceId();
@@ -77,10 +78,10 @@ public class AdminInvoiceController {
         try {
             service.deleteInvoice(id);
 
-            // ✅ TỰ ĐỘNG RELOAD SAU KHI XÓA THÀNH CÔNG
+            // Tự động reload
             SwingUtilities.invokeLater(() -> {
                 try {
-                    Thread.sleep(200); // Đợi server xử lý xong
+                    Thread.sleep(200);
                     service.getAllInvoices();
                     AppMessageBox.showSuccess("Xóa hóa đơn thành công!");
                 } catch (Exception ex) {
@@ -94,28 +95,31 @@ public class AdminInvoiceController {
     }
 
     /* ============================================================
-       ✅ FIX: STATE MANAGER - CHẶN MESSAGE TỪ POS
+       STATE LISTENER
     ============================================================ */
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
+
             updateInvoiceList(state);
 
-            // ✅ CHẶN MESSAGE TỪ POS - KHÔNG HIỂN THỊ
+            // Không hiển thị bất cứ message nào từ POS
             clearMessages(state);
         });
     }
 
     @SuppressWarnings("unchecked")
     private void updateInvoiceList(AppState state) {
+
         Object listObj = state.get("Invoices");
-        view.updateTable((List<InvoiceInfo>) listObj);
+        if (listObj instanceof List<?> list) {
+            view.updateTable((List<InvoiceInfo>) list);
+        }
     }
 
     /* ============================================================
-       ✅ FIX: XÓA MESSAGE THAY VÌ HIỂN THỊ (CHẶN MESSAGE TỪ POS)
+       CLEAR POS MESSAGES
     ============================================================ */
     private void clearMessages(AppState state) {
-        // Xóa message mà không hiển thị (bao gồm message từ POS)
         state.set("InvoiceMessage", "");
         state.set("InvoiceError", "");
     }

@@ -11,6 +11,7 @@ import edu.ptithcm.services.admin.BranchService;
 import edu.ptithcm.services.admin.CustomerService;
 import edu.ptithcm.services.admin.CategoryService;
 import edu.ptithcm.services.admin.InventoryService;
+import edu.ptithcm.services.admin.LoyaltyService;   // ★ thêm
 
 import edu.ptithcm.services.pos.InvoiceService;
 
@@ -33,6 +34,9 @@ public class AdminController {
     private BranchService branchService;
     private CategoryService categoryService;
 
+    // ★ LoyaltyService dùng chung
+    private LoyaltyService loyaltyService;
+
     public AdminController(AdminForm view, DTTP client) {
         this.view = view;
         this.client = client;
@@ -45,8 +49,9 @@ public class AdminController {
         initEmployeeModule();     // needs Branch
         initProductModule();      // needs Category
         initInventoryModule();    // needs Product & Category
-        initCustomerModule();
-        initInvoiceModule();      // <-- NEW MODULE, NO STRUCTURE CHANGE
+        initLoyaltyModule();      // ★ thêm module Loyalty
+        initCustomerModule();     // Customer dùng LoyaltyService
+        initInvoiceModule();
 
         store.subcribe(this::handleState);
     }
@@ -106,25 +111,40 @@ public class AdminController {
         }
     }
 
+    // ======================================================
+    // ★ NEW MODULE — LOYALTY SERVICE
+    // ======================================================
+    private void initLoyaltyModule() {
+        try {
+            loyaltyService = new LoyaltyService(client);
+        } catch (Exception e) {
+            System.err.println("[ERROR] Failed to init LoyaltyService: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void initCustomerModule() {
         try {
             CustomerPanel panel = view.getCustomerPanel();
             CustomerService service = new CustomerService(client);
-            new CustomerController(panel, service);
+
+            // ★ CustomerController giờ nhận LoyaltyService
+            new CustomerController(panel, service, loyaltyService);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     // ======================================================
-    // NEW MODULE — INVOICE
+    // INVOICE (không đổi cấu trúc)
     // ======================================================
     private void initInvoiceModule() {
         try {
             AdminInvoicePanel panel = view.getAdminInvoicePanel();
             InvoiceService service = new InvoiceService(client);
 
-            new AdminInvoiceController(panel, service);  // <-- controller mới
+            new AdminInvoiceController(panel, service);
 
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to init InvoiceController: " + e.getMessage());

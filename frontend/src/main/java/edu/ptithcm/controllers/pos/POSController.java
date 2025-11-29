@@ -11,6 +11,7 @@ import edu.ptithcm.services.pos.InvoiceService;
 import edu.ptithcm.services.admin.ProductService;
 import edu.ptithcm.services.admin.CustomerService;
 import edu.ptithcm.services.admin.InventoryService;
+import edu.ptithcm.services.admin.LoyaltyService;   // ← THÊM
 
 import edu.ptithcm.views.pos.POSForm;
 import edu.ptithcm.views.pos.panels.SalePanel;
@@ -26,6 +27,7 @@ public class POSController {
     private InventoryService inventoryService;
     private InvoiceService invoiceService;
     private CustomerService customerService;
+    private LoyaltyService loyaltyService;   // ← THÊM
 
     public POSController(POSForm view, DTTP client) {
         this.view = view;
@@ -33,7 +35,7 @@ public class POSController {
 
         registerEvent();
 
-        // Tạo service 1 lần duy nhất – tránh lỗi state / event handler
+        // Tạo service 1 lần – tránh lỗi state/event
         initServices();
 
         // Module POS
@@ -44,7 +46,9 @@ public class POSController {
     }
 
     private void registerEvent() {
-        view.getLogoutButton().addActionListener(e -> POSServices.handleLogout(this.view));
+        view.getLogoutButton().addActionListener(e
+                -> POSServices.handleLogout(this.view)
+        );
     }
 
     /* =================================================================
@@ -55,6 +59,7 @@ public class POSController {
         inventoryService = new InventoryService(client);
         invoiceService = new InvoiceService(client);
         customerService = new CustomerService(client);
+        loyaltyService = new LoyaltyService(client);   // ← THÊM
     }
 
     /* =================================================================
@@ -64,12 +69,14 @@ public class POSController {
         try {
             SalePanel salePanel = view.getSalePanel();
 
+            // Gọi bản SaleController 6 parameters — KHÔNG ĐỔI CẤU TRÚC
             new SaleController(
                     salePanel,
                     productService,
                     inventoryService,
                     invoiceService,
-                    customerService
+                    customerService,
+                    loyaltyService // ← THÊM
             );
 
         } catch (Exception e) {
@@ -85,7 +92,6 @@ public class POSController {
         try {
             MyInvoicePanel invoicePanel = view.getMyInvoicePanel();
 
-            // InvoiceService đã khởi tạo 1 lần bên trên → reuse
             new InvoiceController(invoicePanel, invoiceService);
 
         } catch (Exception e) {
