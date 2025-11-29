@@ -22,8 +22,8 @@ public class AdminInvoiceController {
     private List<InvoiceInfo> currentInvoices = new ArrayList<>();
 
     public AdminInvoiceController(
-        AdminInvoicePanel view,
-        InvoiceService service
+            AdminInvoicePanel view,
+            InvoiceService service
     ) {
         this.view = view;
         this.service = service;
@@ -47,16 +47,16 @@ public class AdminInvoiceController {
     ============================================================ */
     private void reloadInvoices() {
         try {
-            service.getAllInvoices(); // gửi request
+            service.getAllInvoices();
         } catch (IOException e) {
             AppMessageBox.showError(
-                "Không thể tải danh sách hóa đơn: " + e.getMessage()
+                    "Không thể tải danh sách hóa đơn: " + e.getMessage()
             );
         }
     }
 
     /* ============================================================
-       DELETE
+       ✅ FIX: DELETE + AUTO RELOAD
     ============================================================ */
     private void handleDelete() {
         String id = view.getSelectedInvoiceId();
@@ -67,7 +67,7 @@ public class AdminInvoiceController {
         }
 
         int confirm = AppMessageBox.showConfirm(
-            "Bạn có chắc chắn muốn xóa hóa đơn " + id + " ?"
+                "Bạn có chắc chắn muốn xóa hóa đơn " + id + " ?"
         );
 
         if (confirm != AppMessageBox.YES) {
@@ -76,52 +76,48 @@ public class AdminInvoiceController {
 
         try {
             service.deleteInvoice(id);
+
+            // ✅ TỰ ĐỘNG RELOAD SAU KHI XÓA THÀNH CÔNG
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    Thread.sleep(200); // Đợi server xử lý xong
+                    service.getAllInvoices();
+                    AppMessageBox.showSuccess("Xóa hóa đơn thành công!");
+                } catch (Exception ex) {
+                    AppMessageBox.showError("Không thể tải lại danh sách: " + ex.getMessage());
+                }
+            });
+
         } catch (Exception e) {
             AppMessageBox.showError("Không thể xóa hóa đơn: " + e.getMessage());
         }
     }
 
     /* ============================================================
-       STATE MANAGER
+       ✅ FIX: STATE MANAGER - CHẶN MESSAGE TỪ POS
     ============================================================ */
     private void onStateChanged(AppState state) {
         SwingUtilities.invokeLater(() -> {
             updateInvoiceList(state);
-            showMessages(state);
+
+            // ✅ CHẶN MESSAGE TỪ POS - KHÔNG HIỂN THỊ
+            clearMessages(state);
         });
     }
 
     @SuppressWarnings("unchecked")
     private void updateInvoiceList(AppState state) {
         Object listObj = state.get("Invoices");
-
         view.updateTable((List<InvoiceInfo>) listObj);
     }
 
     /* ============================================================
-       SHOW MESSAGE
+       ✅ FIX: XÓA MESSAGE THAY VÌ HIỂN THỊ (CHẶN MESSAGE TỪ POS)
     ============================================================ */
-    private void showMessages(AppState state) {
-        if (isShowingMessage) {
-            return;
-        }
-
-        String successMsg = (String) state.get("InvoiceMessage");
-        if (successMsg != null && !successMsg.isEmpty()) {
-            isShowingMessage = true;
-            state.set("InvoiceMessage", "");
-            AppMessageBox.showSuccess(successMsg);
-            isShowingMessage = false;
-            return;
-        }
-
-        String errorMsg = (String) state.get("InvoiceError");
-        if (errorMsg != null && !errorMsg.isEmpty()) {
-            isShowingMessage = true;
-            state.set("InvoiceError", "");
-            AppMessageBox.showError(errorMsg);
-            isShowingMessage = false;
-        }
+    private void clearMessages(AppState state) {
+        // Xóa message mà không hiển thị (bao gồm message từ POS)
+        state.set("InvoiceMessage", "");
+        state.set("InvoiceError", "");
     }
 
     private Frame getParentFrame() {

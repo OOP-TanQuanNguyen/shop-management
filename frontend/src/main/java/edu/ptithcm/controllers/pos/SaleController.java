@@ -40,7 +40,6 @@ public class SaleController {
     private String currentDraftId = null;
     private CustomerModel selectedCustomer = null;
 
-    // NEW — ExecutorScheduler thay cho Timer
     private final ScheduledExecutorService scheduler
             = Executors.newSingleThreadScheduledExecutor();
 
@@ -146,7 +145,7 @@ public class SaleController {
                 currentDraftId = info.getInvoiceId();
             }
 
-            // CHẶN message update draft từ reducer (không ảnh hưởng thanh toán)
+            // CHẶN message update draft từ reducer
             state.set("InvoiceMessage", "");
             state.set("InvoiceError", "");
         });
@@ -266,6 +265,9 @@ public class SaleController {
         scheduleDraftUpdate();
     }
 
+    /* ============================================================
+       ✅ FIX: ĐỢI STORE CẬP NHẬT SAU KHI TẠO KHÁCH HÀNG MỚI
+    ============================================================ */
     @SuppressWarnings("unchecked")
     private CustomerModel showDialogSelectCustomer() {
 
@@ -280,38 +282,70 @@ public class SaleController {
 
         List<CustomerModel> all = (List<CustomerModel>) store.getAppState().get("Customers");
 
+        // Kiểm tra khách đã tồn tại
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
-                    return c;  // KHÁCH ĐÃ CÓ TRONG DANH SÁCH, CÓ ID
+                    return c;  // ✅ Khách đã có trong danh sách
                 }
             }
         }
 
+        // ===== TẠO KHÁCH HÀNG MỚI =====
         try {
-            // Tạo khách mới
             customerService.createCustomer(input.getName(), input.getPhone(), 0);
 
-            // Reload danh sách để lấy ID thật
-            customerService.getAllCustomers();
+            // ✅ ĐỢI STORE CẬP NHẬT (polling 5 giây)
+            CustomerModel newCustomer = waitForCustomerInStore(input.getPhone(), 5000);
 
-            // Lấy lại danh sách có ID
-            List<CustomerModel> reloaded
-                    = (List<CustomerModel>) store.getAppState().get("Customers");
-
-            for (CustomerModel c : reloaded) {
-                if (c.getPhone().equals(input.getPhone())) {
-                    return c;  // RETURN customer có ID thật từ DB
-                }
+            if (newCustomer != null) {
+                return newCustomer;  // ✅ Trả về customer có ID từ DB
+            } else {
+                JOptionPane.showMessageDialog(view,
+                        "Không thể tải thông tin khách hàng mới.\nVui lòng chọn lại từ danh sách.",
+                        "Timeout", JOptionPane.WARNING_MESSAGE);
+                return null;
             }
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(view,
                     "Không thể tạo khách hàng:\n" + e.getMessage(),
                     "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+    }
+
+    /* ============================================================
+       ✅ THÊM METHOD ĐỢI STORE CẬP NHẬT
+    ============================================================ */
+    @SuppressWarnings("unchecked")
+    private CustomerModel waitForCustomerInStore(String phone, long timeoutMs) {
+
+        long start = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - start < timeoutMs) {
+
+            List<CustomerModel> customers
+                    = (List<CustomerModel>) store.getAppState().get("Customers");
+
+            if (customers != null) {
+                for (CustomerModel c : customers) {
+                    if (c.getPhone().equals(phone) && c.getId() != null) {
+                        return c;  // ✅ Tìm thấy khách hàng có ID
+                    }
+                }
+            }
+
+            // Chờ 100ms rồi thử lại
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
         }
 
-        return null;
+        return null;  // Timeout
     }
 
     private Map<String, Object> buildPayload() {
@@ -344,7 +378,6 @@ public class SaleController {
         return map;
     }
 
-    // NEW — Stable debounce
     private void scheduleDraftUpdate() {
 
         if (draftFuture != null && !draftFuture.isDone()) {
@@ -399,7 +432,6 @@ public class SaleController {
         try {
             invoiceService.confirmInvoice(currentDraftId);
 
-            // Chỉ show 1 popup duy nhất
             JOptionPane.showMessageDialog(view, "Thanh toán thành công!");
 
             cart.clear();
@@ -420,8 +452,7 @@ public class SaleController {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(view,
                     "Lỗi thanh toán:\n" + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE
-            );
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 

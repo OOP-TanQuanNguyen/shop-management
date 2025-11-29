@@ -18,20 +18,21 @@ public class InvoiceInfo {
     private String status; // ✅ FIX: THÊM field status
     private List<Map<String, Object>> details;
 
-    public InvoiceInfo() {}
+    public InvoiceInfo() {
+    }
 
     public InvoiceInfo(
-        String invoiceId,
-        String employeeId,
-        String branchId,
-        String customerId,
-        String customerName,
-        Long createdAt,
-        BigDecimal total,
-        BigDecimal discount,
-        String note,
-        String status,
-        List<Map<String, Object>> details
+            String invoiceId,
+            String employeeId,
+            String branchId,
+            String customerId,
+            String customerName,
+            Long createdAt,
+            BigDecimal total,
+            BigDecimal discount,
+            String note,
+            String status,
+            List<Map<String, Object>> details
     ) {
         this.invoiceId = invoiceId;
         this.employeeId = employeeId;
@@ -53,42 +54,42 @@ public class InvoiceInfo {
         }
 
         return new InvoiceInfo(
-            s(map.get("invoiceId")),
-            s(map.get("employeeId")),
-            s(map.get("branchId")),
-            s(map.get("customerId")),
-            s(map.get("customerName")),
-            l(map.get("createdAt")),
-            bd(map.get("total")),
-            bd(map.get("discount")),
-            s(map.get("note")),
-            s(map.get("status")), // ✅ FIX: Parse status
-            (List<Map<String, Object>>) map.get("details")
+                s(map.get("invoiceId")),
+                s(map.get("employeeId")),
+                s(map.get("branchId")),
+                s(map.get("customerId")),
+                s(map.get("customerName")),
+                l(map.get("createdAt")),
+                bd(map.get("total")),
+                bd(map.get("discount")),
+                s(map.get("note")),
+                s(map.get("status")), // ✅ FIX: Parse status
+                (List<Map<String, Object>>) map.get("details")
         );
     }
 
     public Map<String, Object> toMap() {
         return Map.of(
-            "invoiceId",
-            invoiceId != null ? invoiceId : "",
-            "employeeId",
-            employeeId != null ? employeeId : "",
-            "branchId",
-            branchId != null ? branchId : "",
-            "customerId",
-            customerId != null ? customerId : "",
-            "createdAt",
-            createdAt != null ? createdAt : 0L,
-            "total",
-            total != null ? total : BigDecimal.ZERO,
-            "discount",
-            discount != null ? discount : BigDecimal.ZERO,
-            "note",
-            note != null ? note : "",
-            "status",
-            status != null ? status : "PENDING", // ✅ FIX
-            "details",
-            details != null ? details : List.of()
+                "invoiceId",
+                invoiceId != null ? invoiceId : "",
+                "employeeId",
+                employeeId != null ? employeeId : "",
+                "branchId",
+                branchId != null ? branchId : "",
+                "customerId",
+                customerId != null ? customerId : "",
+                "createdAt",
+                createdAt != null ? createdAt : 0L,
+                "total",
+                total != null ? total : BigDecimal.ZERO,
+                "discount",
+                discount != null ? discount : BigDecimal.ZERO,
+                "note",
+                note != null ? note : "",
+                "status",
+                status != null ? status : "PENDING", // ✅ FIX
+                "details",
+                details != null ? details : List.of()
         );
     }
 
@@ -204,28 +205,26 @@ public class InvoiceInfo {
 
     @Override
     public String toString() {
-        return (
-            "InvoiceInfo{" +
-            "invoiceId='" +
-            invoiceId +
-            '\'' +
-            ", employeeId='" +
-            employeeId +
-            '\'' +
-            ", customerId='" +
-            customerId +
-            '\'' +
-            ", branchId=" +
-            branchId +
-            ", total=" +
-            total +
-            ", discount=" +
-            discount +
-            ", createdAt=" +
-            createdAt +
-            ", details=" +
-            details +
-            '}'
-        );
+        return ("InvoiceInfo{"
+                + "invoiceId='"
+                + invoiceId
+                + '\''
+                + ", employeeId='"
+                + employeeId
+                + '\''
+                + ", customerId='"
+                + customerId
+                + '\''
+                + ", branchId="
+                + branchId
+                + ", total="
+                + total
+                + ", discount="
+                + discount
+                + ", createdAt="
+                + createdAt
+                + ", details="
+                + details
+                + '}');
     }
 }
