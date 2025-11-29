@@ -1,67 +1,218 @@
 # Shop Management System
-Java Desktop (Swing) + Backend Server + MySQL + Custom DTTP Protocol
 
-This repository contains a full multi-module Shop Management / POS System designed with enterprise-style architecture. It includes:
+A complete mini-market / POS management platform built with **Java (Swing + DTTP protocol)**, **MySQL**, and **Docker Compose**.  
+The system supports full POS operations, inventory control, employee/customer management, and secure communication.
 
-- Java backend server (Hibernate + HikariCP + MySQL)
-- Java Swing desktop client
-- MySQL database schema
-- Custom encrypted socket protocol (DTTP)
-- Optional Docker deployment
+---
 
-# 1. System Overview
-The system manages:
-- Products & Categories
-- Branch & Inventory
-- Employees, Customers, Loyalty
-- Invoice creation, confirmation, cancellation
-- Secure encrypted communication
+## 1. Overview
 
-# 2. Architecture
-## 2.1 High-Level Architecture
-Frontend Swing → DTTP (AES-GCM) → Backend Server → MySQL
+This system provides:
 
-## 2.2 Backend Layers
-Controller, Service, Repository, Entity Models, DTO/Mapper, Utility.
+- **Backend Server**: Java 21, Maven, Hibernate, DTTP encrypted protocol  
+- **Frontend (POS Client)**: Java Swing using MVC + Store/Reducer (Redux-like)  
+- **MySQL Database** for persistent storage  
+- **Docker Compose** for containerized deployment  
+- **High-performance invoice workflow with multi thread**
 
-## 2.3 Frontend Architecture
-MVC + Store pattern, modular Swing UI, DTTP client.
+---
 
-# 3. Folder Structure
-backend/, frontend/, database/, docker-compose.yml
+## 2. Features
 
-# 4. Database Schema
-Normalized 3NF tables for POS operations.
+### POS / Invoice Features 
+- Add/update/remove items  
+- Automatic total/discount computation    
+- Standard POS real-time behavior
 
-# 5. DTTP Protocol
-Custom low-latency encrypted protocol using:
-- AES-GCM
-- Optional GZIP
-- Message types: REQUEST, SUCCESS, INVALID, ERROR
+### Management Modules
+- Product / Category / Branch  
+- Customer / Loyalty  
+- Employee / Role  
+- Inventory  
 
-# 6. Running the Project
-Backend:
-    docker-compose up
-Frontend:
-    mvn clean package ; java -jar target/frontend.jar
+### Technical Features
+- AES-256 encrypted DTTP protocol  
+- Optional GZIP compression  
+- Multi-module Maven  
+- Hibernate ORM + HikariCP  
+- Service–Repository–DTO architecture  
+- Event-driven Swing Store (Redux-like)
 
-# 7. Deployment
-Supports Docker, Podman, future Kubernetes.
+---
 
-# 8. Authentication & Security
-SHA-256 executable integrity verification (future upgrade).
-AES encrypted communication.
+## 3. Project Structure
 
-# 9. Future Improvements
-- Distributed caching
-- REST/gRPC API
-- WebSocket updates
-- Microservices redesign
-- JWT + RBAC
-- Web + Mobile clients
-- Kubernetes + autoscaling
-- CI/CD pipelines
-- Centralized logging & monitoring
+```
+shop-management/
+│
+├── backend/                   # Java backend server
+│   ├── src/main/java/edu/ptithcm/
+│   ├── pom.xml
+│   ├── Dockerfile
+│   └── resources
+│
+├── frontend/                  # Java Swing POS client
+│   ├── src/main/java/edu/ptithcm/
+│   ├── pom.xml
+│   └── resources
+│
+├── database/                  # SQL schema & seed data
+│   ├── schema.sql
+│   ├── data.sql
+│   └── ShopManagementERD.svg
+│
+├── docker-compose.yml
+└── README.md
+```
 
-# 10. Author
-Tan Quan Nguyen
+---
+
+## 4. Requirements
+
+| Component      | Version                     |
+|----------------|-----------------------------|
+| **JDK**        | 21+                         |
+| **Maven**      | 3.9+                        |
+| **Docker**     | 24+                         |
+| **Compose**    | v2                          |
+| **OS**         | Win / Linux / WSL2 / macOS  |
+
+---
+
+## 5. Installation
+
+### Clone:
+
+```
+git clone https://github.com/OOP-TanQuanNguyen/shop-management.git
+cd shop-management
+```
+
+---
+
+## 6. Backend & Database Setup
+
+### Configuration files:
+
+**Backend App Config:**
+
+```
+backend/src/main/java/edu/ptithcm/configs/Config.java
+```
+
+**Database connection config (Hibernate Persistence):**
+
+```
+backend/src/main/resources/META-INF/persistence.xml
+```
+
+**Docker database config:**
+
+```
+docker-compose.yml
+```
+
+### Build & Start backend + database using Docker:
+
+```
+docker compose up --build
+```
+
+### Check logs:
+
+```
+docker logs mini_market_db
+docker logs mini_market_backend
+```
+
+---
+
+## 7. Frontend (Java Swing)
+
+### Build:
+
+```
+cd frontend
+mvn clean compile
+```
+
+### Run:
+
+```
+mvn exec:java
+```
+
+The POS client automatically connects to backend using DTTP.
+
+---
+
+## 8. DTTP Protocol Architecture
+
+### Features:
+- AES-256 encryption  
+- GZIP compression  
+- Non-blocking async request/response  
+- Command-based routing  
+- Minimal binary packet overhead  
+
+### Packet Structure:
+
+```
+{
+    "type": "DTTPType",
+    "payload": { ... },
+    "status": ["SUCCESS", "REQUEST", "ERROR", ...],
+    "message": "message"
+}
+```
+
+### DTTP Command Type Configuration:
+
+```
+backend/src/main/java/edu/ptithcm/configs/TypeDTTP.java
+```
+
+---
+
+
+## 9. Developer Guidelines
+
+### Code Architecture Conventions
+- DTO → Mapper → Repository → Service  
+- No business logic inside controllers  
+- Clear separation between Model, DTO, Logic  
+- Consistent Hibernate Mapping  
+- Strongly typed models
+
+### Git Workflow
+- `main` → stable  
+- `develop` → active development  
+
+---
+
+## 10. ERD Schema
+
+ERD File:
+
+```
+database/ShopManagementERD.svg
+```
+
+---
+
+## 11. Troubleshooting
+
+### Contact Support  
+(Click to open links)
+
+- **Nguyễn Khánh Nguyên** — [Facebook](https://www.facebook.com/khanhnguyen2709)  
+- **Đinh Việt Quân** — [Facebook](https://www.facebook.com/dinhvietquan)  
+- **Đỗ Thanh Tân** — [Facebook](https://www.facebook.com/thanh.tan.552873)  
+
+---
+
+## 12. License
+
+This project is for **educational and research purposes**.
+
+---
