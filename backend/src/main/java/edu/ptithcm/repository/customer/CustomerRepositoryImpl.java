@@ -21,11 +21,17 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
     public CustomerModel update(CustomerModel newData) {
         return execute(session -> {
             CustomerModel managed = session.get(CustomerModel.class, newData.getId());
-            if (managed == null) return null;
+            if (managed == null) {
+                return null;
+            }
 
             // dirty checking update — chỉ set field thay đổi
-            if (newData.getName() != null) managed.setName(newData.getName());
-            if (newData.getPhone() != null) managed.setPhone(newData.getPhone());
+            if (newData.getName() != null) {
+                managed.setName(newData.getName());
+            }
+            if (newData.getPhone() != null) {
+                managed.setPhone(newData.getPhone());
+            }
 
             return managed; // Hibernate tự flush khi commit
         });
@@ -35,7 +41,9 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
     public CustomerModel delete(String id) {
         return execute(session -> {
             CustomerModel managed = session.get(CustomerModel.class, id);
-            if (managed == null) return null;
+            if (managed == null) {
+                return null;
+            }
             session.remove(managed);
             return managed;
         });
@@ -48,10 +56,10 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
 
     @Override
     public List<CustomerModel> findAll() {
-        return execute(session ->
-            session.createQuery(
-                "FROM CustomerModel c ORDER BY c.createdAt DESC", CustomerModel.class
-            ).list()
+        return execute(session
+                -> session.createQuery(
+                        "FROM CustomerModel c ORDER BY c.createdAt DESC", CustomerModel.class
+                ).list()
         );
     }
 
@@ -59,7 +67,7 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
     public CustomerModel findByPhone(String phone) {
         return execute(session -> {
             Query<CustomerModel> q = session.createQuery(
-                "FROM CustomerModel c WHERE c.phone = :phone", CustomerModel.class);
+                    "FROM CustomerModel c WHERE c.phone = :phone", CustomerModel.class);
             q.setParameter("phone", phone);
             q.setMaxResults(1);
             return q.uniqueResult();
@@ -67,11 +75,11 @@ public class CustomerRepositoryImpl extends BaseRepository<CustomerModel> implem
     }
 
     public List<CustomerModel> findActive() {
-        return execute(session ->
-            session.createQuery(
-                "FROM CustomerModel c WHERE c.active = true ORDER BY c.name ASC",
-                CustomerModel.class
-            ).list()
+        return execute(session
+                -> session.createQuery(
+                        "FROM CustomerModel c WHERE c.active = true ORDER BY c.name ASC",
+                        CustomerModel.class
+                ).list()
         );
     }
 }

@@ -7,7 +7,9 @@ public class CustomerMapper implements BaseMapper<CustomerModel, CustomerInfo> {
 
     @Override
     public CustomerInfo toDTO(CustomerModel entity) {
-        if (entity == null) return null;
+        if (entity == null) {
+            return null;
+        }
 
         return new CustomerInfo.Builder()
                 .customerId(entity.getId())
