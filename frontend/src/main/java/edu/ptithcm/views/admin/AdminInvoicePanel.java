@@ -94,17 +94,21 @@ public class AdminInvoicePanel extends JPanel {
         }
 
         for (InvoiceInfo inv : list) {
-            model.addRow(
-                    new Object[]{
-                        inv.getInvoiceId(),
-                        inv.getBranchId(),
-                        inv.getEmployeeId(),
-                        inv.getcustomerName() != null
-                        ? inv.getcustomerName()
-                        : "Khách lẻ",
-                        inv.getTotal(),
-                        inv.getStatus(),}
-            );
+
+            String customer = (inv.getCustomerName() != null
+                    && !inv.getCustomerName().isBlank())
+                    ? inv.getCustomerName()
+                    : "Khách lẻ";
+
+            model.addRow(new Object[]{
+                inv.getInvoiceId(),
+                inv.getBranchName(),
+                inv.getEmployeeName(),
+                inv.getCustomerName() != null ? inv.getCustomerName() : "Khách lẻ",
+                inv.getTotal(),
+                inv.getStatus()
+            });
+
         }
     }
 }

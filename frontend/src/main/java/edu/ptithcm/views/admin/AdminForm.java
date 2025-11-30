@@ -12,7 +12,7 @@ import edu.ptithcm.models.UserModel;
 public class AdminForm extends JFrame {
 
     private final JTabbedPane tabPane = new JTabbedPane();
-    private final JButton btnLogout = new JButton(" 🚪 Đăng xuất");
+    private final JButton btnLogout = new JButton("  Đăng xuất");
 
     // Panels - Tạo instance một lần duy nhất
     private final EmployeePanel employeePanel = new EmployeePanel();
@@ -49,19 +49,16 @@ public class AdminForm extends JFrame {
         header.add(btnLogout, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
 
-        // Tabs - DÙNG BIẾN INSTANCE, KHÔNG TẠO MỚI
+        // Tabs - DÙNG BIẾN INSTANCE
         tabPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         tabPane.addTab(" Nhân viên", employeePanel);
         tabPane.addTab(" Sản phẩm", productPanel);
         tabPane.addTab(" Danh mục", categoryPanel);
-        tabPane.addTab(" Chi nhánh", branchPanel); // ✅ DÙNG BIẾN, KHÔNG new BranchPanel()
+        tabPane.addTab(" Chi nhánh", branchPanel);
         tabPane.addTab(" Khách hàng", customerPanel);
         tabPane.addTab(" Quản lý kho", inventoryPanel);
         tabPane.addTab(" Hóa đơn", adminInvoicePanel);
-
-        tabPane.addTab(" Thống kê", new StatisticPanel());
-        tabPane.addTab(" Cài đặt", new SettingPanel());
 
         add(tabPane, BorderLayout.CENTER);
     }
@@ -80,7 +77,7 @@ public class AdminForm extends JFrame {
     }
 
     public BranchPanel getBranchPanel() {
-        return branchPanel; // ✅ Return đúng instance
+        return branchPanel;
     }
 
     public CustomerPanel getCustomerPanel() {

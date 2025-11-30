@@ -120,7 +120,7 @@ public class MyInvoicePanel extends JPanel {
             model.addRow(
                     new Object[]{
                         inv.getInvoiceId(),
-                        formatCustomer(inv.getcustomerName()),
+                        formatCustomer(inv.getCustomerName()),
                         inv.getTotal() != null ? inv.getTotal().toString() : "0"
                     }
             );
