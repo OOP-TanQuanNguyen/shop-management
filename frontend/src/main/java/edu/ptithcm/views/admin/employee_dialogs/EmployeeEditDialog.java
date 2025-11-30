@@ -32,14 +32,15 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
         cmbRole.setSelectedItem(role);
 
         initBranchComboBox(branches);
-
-        // FIX LỖI: chọn đúng BranchItem theo Integer ID
         selectBranch(branchId);
+
+        // Lắng nghe sự kiện đổi ROLE để disable/enable chi nhánh
+        cmbRole.addActionListener(e -> handleRoleChanged());
 
         chkStatus = new JCheckBox("Đang hoạt động");
         chkStatus.setSelected(status);
 
-        txtUsername = new JTextField(employeeId); // read-only UI nếu muốn
+        txtUsername = new JTextField(employeeId);
         txtUsername.setEnabled(false);
         txtPassword = new JPasswordField();
         txtPassword.setEnabled(false);
@@ -49,6 +50,9 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
         addField(panel, "Chức vụ:", cmbRole, 2);
         addField(panel, "Chi nhánh:", cmbBranch, 3);
         addField(panel, "Trạng thái:", chkStatus, 4);
+
+        // Áp dụng logic ngay khi form mở ra
+        handleRoleChanged();
 
         add(panel, BorderLayout.CENTER);
         add(createButtonPanel(), BorderLayout.SOUTH);
@@ -68,6 +72,21 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
         }
     }
 
+    /* ============================================================
+       ADMIN → KHÔNG cần chi nhánh (disable)
+       STAFF → bắt buộc phải chọn chi nhánh
+    ============================================================ */
+    private void handleRoleChanged() {
+        String role = (String) cmbRole.getSelectedItem();
+
+        if ("ADMIN".equalsIgnoreCase(role)) {
+            cmbBranch.setEnabled(false);
+            cmbBranch.setSelectedIndex(0); // ADMIN không thuộc chi nhánh
+        } else {
+            cmbBranch.setEnabled(true); // STAFF phải chọn
+        }
+    }
+
     @Override
     protected void onOkClicked() {
 
@@ -76,16 +95,38 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
             return;
         }
 
-        if (cmbBranch.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn chi nhánh!");
+        // ============================
+        // VALIDATE SỐ ĐIỆN THOẠI
+        // ============================
+        String phone = txtPhone.getText().trim().replaceAll("[^0-9]", "");
+
+        if (phone.length() < 9 || phone.length() > 11) {
+            JOptionPane.showMessageDialog(this,
+                    "Số điện thoại phải từ 9 đến 11 số!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
+        }
+
+        // ============================
+        // STAFF BẮT BUỘC CÓ CHI NHÁNH
+        // ============================
+        String role = (String) cmbRole.getSelectedItem();
+        if ("STAFF".equalsIgnoreCase(role)) {
+            if (cmbBranch.getSelectedIndex() == 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Nhân viên STAFF phải thuộc một chi nhánh!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }
 
         confirmed = true;
         dispose();
     }
 
-    // GETTERS DÙNG CHO CONTROLLER
+    // ============================================================
+    // GETTERS
+    // ============================================================
     public String getEmployeeId() {
         return employeeId;
     }
@@ -104,7 +145,7 @@ public class EmployeeEditDialog extends EmployeeFormDialog {
 
     public Integer getBranchId() {
         BranchItem item = (BranchItem) cmbBranch.getSelectedItem();
-        return item.getId();   // Luôn Integer => KHÔNG BAO GIỜ LỖI NỮA
+        return item.getId();
     }
 
     public Boolean getStatus() {

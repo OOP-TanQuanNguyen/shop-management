@@ -67,7 +67,6 @@ public class CustomerService {
 
         switch (args.status) {
             case SUCCESS -> {
-                setMessage("Thêm khách hàng thành công!");
                 reloadCustomerList();
             }
             case INVALID ->

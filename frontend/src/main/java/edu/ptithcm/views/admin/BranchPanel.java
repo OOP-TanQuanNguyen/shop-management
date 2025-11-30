@@ -73,6 +73,26 @@ public class BranchPanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
+    // =====================================================================
+    // VALIDATE SĐT (giống Employee) → chỉ hiển thị "SĐT không hợp lệ"
+    // =====================================================================
+    private String normalizePhone(String phone) {
+        if (phone == null) {
+            return "SĐT không hợp lệ";
+        }
+
+        phone = phone.replaceAll("[^0-9]", "");
+
+        if (phone.length() < 9 || phone.length() > 11) {
+            return "SĐT không hợp lệ";
+        }
+
+        return phone;
+    }
+
+    // =====================================================================
+    // GETTERS
+    // =====================================================================
     public JTable getTable() {
         return table;
     }
@@ -101,6 +121,9 @@ public class BranchPanel extends JPanel {
         return btnFilter;
     }
 
+    // =====================================================================
+    // UPDATE TABLE (có validate SĐT)
+    // =====================================================================
     public void updateTable(List<BranchInfo> list) {
         model.setRowCount(0);
         if (list == null) {
@@ -108,9 +131,14 @@ public class BranchPanel extends JPanel {
         }
 
         for (BranchInfo b : list) {
+
+            String phone = b.getPhone() != null
+                    ? normalizePhone(b.getPhone())
+                    : "SĐT không hợp lệ";
+
             model.addRow(new Object[]{
                 b.getName(),
-                b.getPhone() != null ? b.getPhone() : "N/A",
+                phone,
                 b.getAddress() != null ? b.getAddress() : "N/A"
             });
         }

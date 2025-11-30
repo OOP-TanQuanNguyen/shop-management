@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Dialog sửa thông tin khách hàng ✅ KHÔNG cho phép sửa điểm tích lũy
+ * Dialog sửa thông tin khách hàng — KHÔNG cho phép sửa điểm tích lũy
  */
 public class CustomerEditDialog extends CustomerFormDialog {
 
@@ -21,11 +21,9 @@ public class CustomerEditDialog extends CustomerFormDialog {
 
         txtName = new JTextField(name, 20);
         txtPhone = new JTextField(phone, 20);
-        // ✅ BỎ txtPoint - không cho sửa điểm tích lũy
 
         addField(formPanel, "Tên khách hàng:", txtName, 0);
         addField(formPanel, "Số điện thoại:", txtPhone, 1);
-        // ✅ BỎ dòng điểm tích lũy
 
         setLayout(new BorderLayout());
         add(formPanel, BorderLayout.CENTER);
@@ -34,6 +32,29 @@ public class CustomerEditDialog extends CustomerFormDialog {
 
     @Override
     protected void onOkClicked() {
+
+        // ================================
+        // VALIDATE TÊN
+        // ================================
+        if (txtName.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Tên khách hàng không được để trống!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // ================================
+        // VALIDATE SỐ ĐIỆN THOẠI (9–11 số)
+        // ================================
+        String phone = txtPhone.getText().trim().replaceAll("[^0-9]", "");
+
+        if (phone.length() < 9 || phone.length() > 11) {
+            JOptionPane.showMessageDialog(this,
+                    "Số điện thoại phải từ 9 đến 11 số!",
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         confirmed = true;
         dispose();
     }
@@ -49,5 +70,4 @@ public class CustomerEditDialog extends CustomerFormDialog {
     public String getPhone() {
         return txtPhone.getText().trim();
     }
-
 }

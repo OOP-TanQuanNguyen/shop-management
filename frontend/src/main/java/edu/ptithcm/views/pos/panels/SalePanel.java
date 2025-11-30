@@ -17,9 +17,9 @@ public class SalePanel extends JPanel {
     private JButton btnRemove;
     private JButton btnPay;
 
-    // ONLY BUTTON & LABEL (no input fields here)
     private JButton btnSelectCustomer;
     private JLabel lblCustomerName;
+    private JLabel lblCustomerPoints;  // ✅ THÊM
 
     private JLabel lblTotal;
 
@@ -31,11 +31,9 @@ public class SalePanel extends JPanel {
 
     private void initUI() {
 
-        // ======================================================
         // LEFT: PRODUCT LIST
-        // ======================================================
         JPanel leftPanel = new JPanel(new BorderLayout(8, 8));
-        leftPanel.setBorder(BorderFactory.createTitledBorder("🔍 Tìm sản phẩm"));
+        leftPanel.setBorder(BorderFactory.createTitledBorder(" Tìm sản phẩm"));
 
         txtSearch = new JTextField();
         txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -50,11 +48,9 @@ public class SalePanel extends JPanel {
         leftPanel.add(txtSearch, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(tblProducts), BorderLayout.CENTER);
 
-        // ======================================================
         // CENTER: CART
-        // ======================================================
         JPanel centerPanel = new JPanel(new BorderLayout(8, 8));
-        centerPanel.setBorder(BorderFactory.createTitledBorder("🛍️ Giỏ hàng"));
+        centerPanel.setBorder(BorderFactory.createTitledBorder(" Giỏ hàng"));
 
         tblCart = new JTable(new DefaultTableModel(
                 new Object[]{"Mã SP", "Tên", "SL", "Giá", "Thành tiền"},
@@ -70,14 +66,11 @@ public class SalePanel extends JPanel {
         centerPanel.add(new JScrollPane(tblCart), BorderLayout.CENTER);
         centerPanel.add(lblTotal, BorderLayout.SOUTH);
 
-        // ======================================================
         // RIGHT: CUSTOMER + PAYMENT
-        // ======================================================
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBorder(BorderFactory.createTitledBorder("💳 Thanh toán"));
 
-        // Only Button and label here
         btnSelectCustomer = new JButton(" Thêm / Chọn khách hàng");
         btnSelectCustomer.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         btnSelectCustomer.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -85,9 +78,16 @@ public class SalePanel extends JPanel {
         lblCustomerName = new JLabel("Khách hàng: Chưa chọn");
         lblCustomerName.setFont(new Font("Segoe UI", Font.ITALIC, 13));
         lblCustomerName.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblCustomerName.setBorder(new EmptyBorder(10, 0, 10, 0));
+        lblCustomerName.setBorder(new EmptyBorder(10, 0, 5, 0));
 
-        btnPay = new JButton(" Xác nhận thanh toán");
+        // ✅ THÊM LABEL ĐIỂM
+        lblCustomerPoints = new JLabel("Điểm: 0");
+        lblCustomerPoints.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblCustomerPoints.setForeground(new Color(34, 139, 34));
+        lblCustomerPoints.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblCustomerPoints.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+        btnPay = new JButton("Xác nhận thanh toán");
         btnPay.setBackground(new Color(0, 123, 255));
         btnPay.setForeground(Color.WHITE);
         btnPay.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -98,13 +98,12 @@ public class SalePanel extends JPanel {
         rightPanel.add(Box.createVerticalStrut(10));
         rightPanel.add(btnSelectCustomer);
         rightPanel.add(lblCustomerName);
+        rightPanel.add(lblCustomerPoints);  // ✅ THÊM
         rightPanel.add(Box.createVerticalGlue());
         rightPanel.add(btnPay);
         rightPanel.add(Box.createVerticalStrut(10));
 
-        // ======================================================
         // SIDE BUTTONS
-        // ======================================================
         JPanel actionPanel = new JPanel(new GridLayout(2, 1, 0, 8));
         actionPanel.setBorder(new EmptyBorder(120, 5, 120, 5));
 
@@ -117,9 +116,7 @@ public class SalePanel extends JPanel {
         actionPanel.add(btnAdd);
         actionPanel.add(btnRemove);
 
-        // ======================================================
         // SPLIT PANELS
-        // ======================================================
         JSplitPane splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, centerPanel);
         splitLeft.setResizeWeight(0.45);
 
@@ -130,7 +127,7 @@ public class SalePanel extends JPanel {
         add(splitMain, BorderLayout.CENTER);
     }
 
-    // GETTERS ======================================================
+    // GETTERS
     public JTable getProductTable() {
         return tblProducts;
     }
@@ -151,6 +148,11 @@ public class SalePanel extends JPanel {
         return lblCustomerName;
     }
 
+    // ✅ THÊM GETTER
+    public JLabel getLblCustomerPoints() {
+        return lblCustomerPoints;
+    }
+
     public JButton getBtnAdd() {
         return btnAdd;
     }
@@ -167,7 +169,7 @@ public class SalePanel extends JPanel {
         return lblTotal;
     }
 
-    // TABLE UPDATE ======================================================
+    // TABLE UPDATE
     public void updateProductTable(java.util.List<Object[]> rows) {
         DefaultTableModel model = (DefaultTableModel) tblProducts.getModel();
         model.setRowCount(0);

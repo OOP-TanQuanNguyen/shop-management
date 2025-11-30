@@ -15,10 +15,8 @@ public class BranchEditDialog extends BranchFormDialog {
             String phone,
             String address) {
 
-        super(owner, "✏️ Cập nhật chi nhánh");
+        super(owner, "Cập nhật chi nhánh");
         this.branchId = branchId;
-
-        System.out.println("[DEBUG][EditDialog] Open for ID = " + branchId);
 
         initComponents(name, phone, address);
         pack();
@@ -44,11 +42,29 @@ public class BranchEditDialog extends BranchFormDialog {
 
     @Override
     protected void onOkClicked() {
+
+        // ==========================
+        // VALIDATE: Tên chi nhánh
+        // ==========================
         if (txtName.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
                     "Vui lòng nhập tên chi nhánh!",
                     "Lỗi", JOptionPane.WARNING_MESSAGE);
             return;
+        }
+
+        // ==========================
+        // VALIDATE: SĐT 9–11 số
+        // ==========================
+        String phone = txtPhone.getText().trim().replaceAll("[^0-9]", "");
+
+        if (!phone.isEmpty()) {
+            if (phone.length() < 9 || phone.length() > 11) {
+                JOptionPane.showMessageDialog(this,
+                        "Số điện thoại phải từ 9 đến 11 số!",
+                        "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
         }
 
         System.out.println("[DEBUG][EditDialog] Confirm update for ID = " + branchId);

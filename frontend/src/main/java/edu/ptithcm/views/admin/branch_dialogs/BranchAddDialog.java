@@ -8,7 +8,7 @@ import java.util.Map;
 public class BranchAddDialog extends BranchFormDialog {
 
     public BranchAddDialog(Frame owner) {
-        super(owner, "➕ Thêm chi nhánh mới");
+        super(owner, " Thêm chi nhánh mới");
 
         initComponents();
 
@@ -43,11 +43,31 @@ public class BranchAddDialog extends BranchFormDialog {
     }
 
     private boolean validateInput() {
+
+        // ================================
+        // CHECK TÊN CHI NHÁNH
+        // ================================
         if (txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên chi nhánh!",
+            JOptionPane.showMessageDialog(this,
+                    "Vui lòng nhập tên chi nhánh!",
                     "Lỗi", JOptionPane.WARNING_MESSAGE);
             return false;
         }
+
+        // ================================
+        // VALIDATE SĐT GIỐNG EMPLOYEE
+        // ================================
+        String phone = txtPhone.getText().trim().replaceAll("[^0-9]", "");
+
+        if (!phone.isEmpty()) {
+            if (phone.length() < 9 || phone.length() > 11) {
+                JOptionPane.showMessageDialog(this,
+                        "Số điện thoại phải từ 9 đến 11 số!",
+                        "Lỗi", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }
+
         return true;
     }
 

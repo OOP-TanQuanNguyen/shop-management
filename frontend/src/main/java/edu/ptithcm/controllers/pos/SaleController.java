@@ -32,8 +32,7 @@ public class SaleController {
     private final InventoryService inventoryService;
     private final InvoiceService invoiceService;
     private final CustomerService customerService;
-
-    private final LoyaltyService loyaltyService;        // Loyalty
+    private final LoyaltyService loyaltyService;
 
     private List<ProductInfo> products = new ArrayList<>();
     private final Map<String, InventoryModel> inventoryMap = new HashMap<>();
@@ -41,6 +40,7 @@ public class SaleController {
 
     private String currentDraftId = null;
     private CustomerModel selectedCustomer = null;
+    private LoyaltyInfo currentLoyalty = null;
 
     private final ScheduledExecutorService scheduler
             = Executors.newSingleThreadScheduledExecutor();
@@ -146,9 +146,21 @@ public class SaleController {
                 currentDraftId = info.getInvoiceId();
             }
 
-            // clear auto messages
+            Object loyaltyObj = state.get("CustomerLoyalty");
+            if (loyaltyObj instanceof LoyaltyInfo loyalty) {
+                currentLoyalty = loyalty;
+                view.getLblCustomerPoints().setText(
+                        "Điểm: " + loyalty.getTotalPoints()
+                );
+            } else if (loyaltyObj == null) {
+                currentLoyalty = null;
+                view.getLblCustomerPoints().setText("Điểm: 0");
+            }
+
             state.set("InvoiceMessage", "");
             state.set("InvoiceError", "");
+            state.set("LoyaltyMessage", "");
+            state.set("LoyaltyError", "");
         });
     }
 
@@ -175,6 +187,9 @@ public class SaleController {
         view.updateProductTable(rows);
     }
 
+    // =====================================================================
+    // =====================  THÊM SỐ LƯỢNG (POPUP)  =======================
+    // =====================================================================
     private void handleAdd() {
 
         int row = view.getProductTable().getSelectedRow();
@@ -188,20 +203,56 @@ public class SaleController {
         InventoryModel inv = inventoryMap.get(id);
 
         if (prod == null || inv == null) {
+            JOptionPane.showMessageDialog(view, "Sản phẩm không hợp lệ");
+            return;
+        }
+
+        int maxQty = inv.getQuantity();
+        if (maxQty <= 0) {
+            JOptionPane.showMessageDialog(view, "Hết hàng trong kho!");
+            return;
+        }
+
+        // ===== Nhập số lượng =====
+        String input = JOptionPane.showInputDialog(
+                view,
+                "Nhập số lượng (Tồn: " + maxQty + "):",
+                "Chọn số lượng",
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (input == null) {
+            return;
+        }
+
+        int qty;
+        try {
+            qty = Integer.parseInt(input);
+            if (qty <= 0) {
+                JOptionPane.showMessageDialog(view, "Số lượng phải lớn hơn 0");
+                return;
+            }
+            if (qty > maxQty) {
+                JOptionPane.showMessageDialog(view, "Không đủ tồn kho!");
+                return;
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Số lượng không hợp lệ");
             return;
         }
 
         cart.compute(id, (key, item) -> {
             if (item == null) {
-                return new CartItem(prod, 1);
+                return new CartItem(prod, qty);
             }
 
-            if (item.quantity + 1 > inv.getQuantity()) {
-                JOptionPane.showMessageDialog(view, "Không đủ tồn kho");
+            int newQty = item.quantity + qty;
+            if (newQty > maxQty) {
+                JOptionPane.showMessageDialog(view, "Không đủ tồn kho!");
                 return item;
             }
 
-            item.quantity++;
+            item.quantity = newQty;
             return item;
         });
 
@@ -284,7 +335,6 @@ public class SaleController {
         List<CustomerModel> all
                 = (List<CustomerModel>) store.getAppState().get("Customers");
 
-        // khách đã có
         if (all != null) {
             for (CustomerModel c : all) {
                 if (c.getPhone().equals(input.getPhone())) {
@@ -293,7 +343,6 @@ public class SaleController {
             }
         }
 
-        // tạo khách hàng mới
         try {
             customerService.createCustomer(input.getName(), input.getPhone(), 0);
 
@@ -410,6 +459,9 @@ public class SaleController {
         }
     }
 
+    // =====================================================================
+    // ====================  RESET POS + RELOAD KHO  ========================
+    // =====================================================================
     private void handlePay() {
 
         if (currentDraftId == null) {
@@ -438,8 +490,28 @@ public class SaleController {
             cart.clear();
             currentDraftId = null;
             selectedCustomer = null;
+            currentLoyalty = null;
+
             view.getLblCustomerName().setText("Khách hàng: Chưa chọn");
+            view.getLblCustomerPoints().setText("Điểm: 0");
+
             refreshCart();
+            store.getAppState().set("CustomerLoyalty", null);
+            // ============================
+            // RELOAD KHO + SẢN PHẨM
+            // ============================
+            try {
+                productService.getAllProducts();
+
+                UserModel user = (UserModel) store.getAppState().get("user");
+                if (user != null) {
+                    inventoryService.getInventoriesByBranch(user.getBranchId());
+                }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(view,
+                        "Không thể tải lại kho:\n" + ex.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
 
             invoiceService.getInvoicesForEmployee();
 

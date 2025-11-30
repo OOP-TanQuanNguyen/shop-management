@@ -88,9 +88,26 @@ public class LoyaltyInfo {
         return o != null ? o.toString() : null;
     }
 
+    // FIX QUAN TRỌNG: parse mọi loại số → int
     private static int i(Object o) {
+        if (o == null) {
+            return 0;
+        }
+
         try {
-            return o == null ? 0 : Integer.parseInt(o.toString());
+            if (o instanceof Integer i) {
+                return i;
+            }
+            if (o instanceof Long l) {
+                return l.intValue();
+            }
+            if (o instanceof Double d) {
+                return d.intValue();
+            }
+            if (o instanceof Float f) {
+                return f.intValue();
+            }
+            return Integer.parseInt(o.toString());
         } catch (Exception e) {
             return 0;
         }

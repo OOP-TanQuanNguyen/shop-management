@@ -39,13 +39,11 @@ public class BranchController {
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
 
-        // ====== FIX QUAN TRỌNG: RESET SEARCH KHI RELOAD ======
         view.getBtnReload().addActionListener(e -> {
-            view.getTxtSearch().setText(""); // reset text search
+            view.getTxtSearch().setText("");
             loadBranches();
         });
 
-        // ========= FILTER =========
         view.getBtnFilter().addActionListener(e -> applyFilter());
     }
 
@@ -59,11 +57,7 @@ public class BranchController {
         }
     }
 
-    // ============================================================
-    // FILTER (Local filtering)
-    // ============================================================
     private void applyFilter() {
-
         if (currentBranches == null) {
             return;
         }
@@ -91,11 +85,114 @@ public class BranchController {
         dialog.setVisible(true);
 
         if (dialog.isConfirmed()) {
+
             Map<String, Object> data = dialog.toMap();
+
+            String name = ((String) data.get("name")).trim().toLowerCase();
+
+            // ================================
+            // CHECK TÊN KHÔNG ĐƯỢC TRÙNG
+            // ================================
+            if (isDuplicateName(name)) {
+                JOptionPane.showMessageDialog(view,
+                        "Tên chi nhánh đã tồn tại!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                dialog.dispose();
+                return;
+            }
+
+            // ================================
+            // CHECK SĐT KHÔNG ĐƯỢC TRÙNG
+            // ================================
+            String phone = (String) data.get("phone");
+            if (phone != null && !phone.isBlank()) {
+                String p = phone.replaceAll("[^0-9]", "");
+                if (isDuplicatePhone(p)) {
+                    JOptionPane.showMessageDialog(view,
+                            "Số điện thoại đã tồn tại cho chi nhánh khác!",
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    dialog.dispose();
+                    return;
+                }
+            }
+
             createBranch(data);
         }
 
         dialog.dispose();
+    }
+
+    // TÊN KHÔNG ĐƯỢC TRÙNG (ADD)
+    private boolean isDuplicateName(String name) {
+        if (currentBranches == null || name == null) {
+            return false;
+        }
+
+        name = name.toLowerCase().trim();
+
+        for (BranchInfo b : currentBranches) {
+            if (b.getName() != null
+                    && b.getName().trim().toLowerCase().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // SĐT KHÔNG ĐƯỢC TRÙNG (ADD)
+    private boolean isDuplicatePhone(String phone) {
+        if (currentBranches == null || phone == null) {
+            return false;
+        }
+
+        for (BranchInfo b : currentBranches) {
+            if (b.getPhone() != null) {
+                String existing = b.getPhone().replaceAll("[^0-9]", "");
+                if (existing.equals(phone)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isDuplicatePhoneForUpdate(String phone, String branchId) {
+        if (currentBranches == null || phone == null) {
+            return false;
+        }
+
+        for (BranchInfo b : currentBranches) {
+            if (b.getId().equals(branchId)) {
+                continue;
+            }
+            if (b.getPhone() != null) {
+                String existing = b.getPhone().replaceAll("[^0-9]", "");
+                if (existing.equals(phone)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isDuplicateNameForUpdate(String name, String branchId) {
+        if (currentBranches == null || name == null) {
+            return false;
+        }
+
+        name = name.toLowerCase().trim();
+
+        for (BranchInfo b : currentBranches) {
+            if (b.getId().equals(branchId)) {
+                continue;
+            }
+            if (b.getName() != null
+                    && b.getName().trim().toLowerCase().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void createBranch(Map<String, Object> data) {
@@ -134,8 +231,37 @@ public class BranchController {
         dialog.setVisible(true);
 
         if (dialog.isConfirmed()) {
+
             Map<String, Object> data = dialog.toMap();
             data.put("branchId", branch.getId());
+
+            String name = ((String) data.get("name")).trim().toLowerCase();
+
+            // ================================
+            // CHECK TÊN KHÔNG ĐƯỢC TRÙNG (UPDATE)
+            // ================================
+            if (isDuplicateNameForUpdate(name, branch.getId())) {
+                JOptionPane.showMessageDialog(view,
+                        "Tên chi nhánh đã tồn tại!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                dialog.dispose();
+                return;
+            }
+
+            // ================================
+            // CHECK SĐT KHÔNG ĐƯỢC TRÙNG
+            // ================================
+            String phone = ((String) data.get("phone")).replaceAll("[^0-9]", "");
+
+            if (!phone.isBlank()
+                    && isDuplicatePhoneForUpdate(phone, branch.getId())) {
+                JOptionPane.showMessageDialog(view,
+                        "Số điện thoại đã tồn tại cho chi nhánh khác!",
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                dialog.dispose();
+                return;
+            }
+
             updateBranch(data);
         }
 
@@ -207,7 +333,6 @@ public class BranchController {
 
             this.currentBranches = branches;
 
-            // Nếu đang search → giữ filter
             if (view.getTxtSearch().getText().trim().isEmpty()) {
                 view.updateTable(branches);
             } else {
@@ -225,7 +350,8 @@ public class BranchController {
         if (msg instanceof String m && !m.isEmpty()) {
             isShowingMessage = true;
             state.set("BranchMessage", "");
-            JOptionPane.showMessageDialog(view, m, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(view, m,
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             isShowingMessage = false;
         }
 
@@ -233,7 +359,8 @@ public class BranchController {
         if (err instanceof String e && !e.isEmpty()) {
             isShowingMessage = true;
             state.set("BranchError", "");
-            JOptionPane.showMessageDialog(view, e, "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, e,
+                    "Lỗi", JOptionPane.ERROR_MESSAGE);
             isShowingMessage = false;
         }
     }

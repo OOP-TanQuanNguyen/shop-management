@@ -2,6 +2,7 @@ package edu.ptithcm.routes.loyalty;
 
 import java.util.List;
 import java.util.Map;
+
 import edu.ptithcm.configs.Role;
 import edu.ptithcm.configs.TypeDTTP;
 import edu.ptithcm.controller.LoyaltyController;
@@ -11,8 +12,10 @@ import edu.ptithcm.middleware.AuthenMiddleWare;
 import edu.ptithcm.protocols.DTTP;
 import edu.ptithcm.protocols.DTTPStateManager;
 import edu.ptithcm.utils.ReplyUtils;
+import edu.ptithcm.utils.RequestUtil;
 
 public class LoyaltyRoute {
+
     private final DTTP server;
     private final DTTPStateManager manager;
     private final LoyaltyController controller;
@@ -24,84 +27,119 @@ public class LoyaltyRoute {
     }
 
     public void register() {
-        // ---------------- GET ALL ----------------
+
+        // GET ALL
         server.on(TypeDTTP.LOYALTY_GET_ALL.getValue(), args -> {
             try {
                 ResponseDTO<List<LoyaltyInfo>> response = controller.getAllLoyalty();
                 List<Map<String, Object>> loyalties = null;
+
                 if (response.getData() != null) {
-                    loyalties = response.getData().stream().map(LoyaltyInfo::toMap).toList();
+                    loyalties = response.getData()
+                            .stream()
+                            .map(LoyaltyInfo::toMap)
+                            .toList();
                 }
+
                 Map<String, Object> payload = Map.of("loyalties", loyalties);
-                args.reply(TypeDTTP.LOYALTY_GET_ALL.getValue(), payload, response.getStatus(), response.getMessage());
+
+                args.reply(
+                        TypeDTTP.LOYALTY_GET_ALL.getValue(),
+                        payload,
+                        response.getStatus(),
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.LOYALTY_GET_ALL.getValue(), e);
             }
         });
 
-        // ---------------- GET BY CUSTOMER ----------------
+        // GET BY CUSTOMER
         server.on(TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue()))
-                    return;
-
                 String customerId = (String) args.data.get("customerId");
-                ResponseDTO<LoyaltyInfo> response = controller.getLoyaltyByCustomer(customerId);
 
-                args.reply(TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue(),
+                ResponseDTO<LoyaltyInfo> response
+                        = controller.getLoyaltyByCustomer(customerId);
+
+                args.reply(
+                        TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.LOYALTY_GET_BY_CUSTOMER.getValue(), e);
             }
         });
 
-        // ---------------- CREATE ----------------
+        // CREATE
         server.on(TypeDTTP.LOYALTY_CREATE.getValue(), args -> {
             try {
                 String customerId = (String) args.data.get("customerId");
-                ResponseDTO<LoyaltyInfo> response = controller.createLoyalty(customerId);
 
-                args.reply(TypeDTTP.LOYALTY_CREATE.getValue(),
+                ResponseDTO<LoyaltyInfo> response
+                        = controller.createLoyalty(customerId);
+
+                args.reply(
+                        TypeDTTP.LOYALTY_CREATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.LOYALTY_CREATE.getValue(), e);
             }
         });
 
-        // ---------------- UPDATE ----------------
+        // UPDATE
         server.on(TypeDTTP.LOYALTY_UPDATE.getValue(), args -> {
             try {
-                String customerId = (String) args.data.get("customerId"); 
-                Integer pointsChange = (Integer) args.data.get("pointsChange");
-                if (pointsChange == null) pointsChange = 0;
-                ResponseDTO<LoyaltyInfo> response = controller.updateLoyalty(customerId, pointsChange);
+                String customerId = (String) args.data.get("customerId");
 
-                args.reply(TypeDTTP.LOYALTY_UPDATE.getValue(),
+                // FIX TẠI ĐÂY: DÙNG RequestUtil
+                int pointsChange = RequestUtil.toInt(args.data.get("pointsChange"), 0);
+
+                ResponseDTO<LoyaltyInfo> response
+                        = controller.updateLoyalty(customerId, pointsChange);
+
+                args.reply(
+                        TypeDTTP.LOYALTY_UPDATE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.LOYALTY_UPDATE.getValue(), e);
             }
         });
 
-        // ---------------- DELETE ----------------
+        // DELETE
         server.on(TypeDTTP.LOYALTY_DELETE.getValue(), args -> {
             try {
-                if (!AuthenMiddleWare.hasPermission(manager, server, Role.ADMIN.getValue(), args, TypeDTTP.LOYALTY_DELETE.getValue()))
+                if (!AuthenMiddleWare.hasPermission(
+                        manager, server, Role.ADMIN.getValue(),
+                        args, TypeDTTP.LOYALTY_DELETE.getValue()
+                )) {
                     return;
+                }
 
-                String customerId = (String) args.data.get("customerId"); 
-                ResponseDTO<LoyaltyInfo> response = controller.deleteLoyalty(customerId);
+                String customerId = (String) args.data.get("customerId");
 
-                args.reply(TypeDTTP.LOYALTY_DELETE.getValue(),
+                ResponseDTO<LoyaltyInfo> response
+                        = controller.deleteLoyalty(customerId);
+
+                args.reply(
+                        TypeDTTP.LOYALTY_DELETE.getValue(),
                         response.getData() != null ? response.getData().toMap() : null,
                         response.getStatus(),
-                        response.getMessage());
+                        response.getMessage()
+                );
+
             } catch (Exception e) {
                 ReplyUtils.replyError(args, TypeDTTP.LOYALTY_DELETE.getValue(), e);
             }

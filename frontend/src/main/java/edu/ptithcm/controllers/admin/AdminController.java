@@ -1,5 +1,7 @@
 package edu.ptithcm.controllers.admin;
 
+import java.io.IOException;
+
 import edu.ptithcm.app.AppState;
 import edu.ptithcm.app.store.Store;
 import edu.ptithcm.protocols.DTTP;
@@ -11,7 +13,7 @@ import edu.ptithcm.services.admin.BranchService;
 import edu.ptithcm.services.admin.CustomerService;
 import edu.ptithcm.services.admin.CategoryService;
 import edu.ptithcm.services.admin.InventoryService;
-import edu.ptithcm.services.admin.LoyaltyService;   // ★ thêm
+import edu.ptithcm.services.admin.LoyaltyService;
 
 import edu.ptithcm.services.pos.InvoiceService;
 
@@ -30,11 +32,8 @@ public class AdminController {
     private final DTTP client;
     private final Store store = Store.getInstance();
 
-    // Shared services
     private BranchService branchService;
     private CategoryService categoryService;
-
-    // ★ LoyaltyService dùng chung
     private LoyaltyService loyaltyService;
 
     public AdminController(AdminForm view, DTTP client) {
@@ -43,14 +42,20 @@ public class AdminController {
 
         registerEvent();
 
-        // ===== ORDER VERY IMPORTANT =====
+        // ==========================
+        // CHỈ SỬA THỨ TỰ TẠI ĐÂY
+        // ==========================
         initBranchModule();
         initCategoryModule();
-        initEmployeeModule();     // needs Branch
-        initProductModule();      // needs Category
-        initInventoryModule();    // needs Product & Category
-        initLoyaltyModule();      // ★ thêm module Loyalty
-        initCustomerModule();     // Customer dùng LoyaltyService
+
+        initEmployeeModule();
+        initProductModule();
+        initInventoryModule();
+
+        initLoyaltyModule();       // 1) Tạo LoyaltyService
+
+        initCustomerModule();     // 3) Sau đó mới load Customers + merge Loyalty
+
         initInvoiceModule();
 
         store.subcribe(this::handleState);
@@ -60,7 +65,6 @@ public class AdminController {
         view.getLogoutButton().addActionListener(e -> AdminService.handleLogout(this.view));
     }
 
-    // ==============================
     private void initBranchModule() {
         try {
             BranchPanel panel = view.getBranchPanel();
@@ -111,9 +115,6 @@ public class AdminController {
         }
     }
 
-    // ======================================================
-    // ★ NEW MODULE — LOYALTY SERVICE
-    // ======================================================
     private void initLoyaltyModule() {
         try {
             loyaltyService = new LoyaltyService(client);
@@ -128,24 +129,25 @@ public class AdminController {
             CustomerPanel panel = view.getCustomerPanel();
             CustomerService service = new CustomerService(client);
 
-            // ★ CustomerController giờ nhận LoyaltyService
             new CustomerController(panel, service, loyaltyService);
+
+            // ===== FIX IOException =====
+            try {
+                loyaltyService.getAllLoyalties();
+            } catch (IOException e) {
+                System.err.println("[ERROR] LOYALTY_GET_ALL failed: " + e.getMessage());
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // ======================================================
-    // INVOICE (không đổi cấu trúc)
-    // ======================================================
     private void initInvoiceModule() {
         try {
             AdminInvoicePanel panel = view.getAdminInvoicePanel();
             InvoiceService service = new InvoiceService(client);
-
             new AdminInvoiceController(panel, service);
-
         } catch (Exception e) {
             System.err.println("[ERROR] Failed to init InvoiceController: " + e.getMessage());
             e.printStackTrace();
@@ -153,6 +155,6 @@ public class AdminController {
     }
 
     private void handleState(AppState state) {
-        // nothing here yet
+        // nothing
     }
 }

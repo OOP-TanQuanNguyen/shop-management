@@ -33,6 +33,9 @@ public class LoyaltyService {
     @SuppressWarnings("unchecked")
     private void handleGetAll(DTTP.DTTPArgs args) {
 
+        System.out.println("===== LOYALTY_GET_ALL =====");
+        System.out.println("Status: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
             List<Map<String, Object>> list
                     = args.data == null ? List.of()
@@ -47,17 +50,29 @@ public class LoyaltyService {
 
     private void handleGetByCustomer(DTTP.DTTPArgs args) {
 
+        // ✅ THÊM LOG ĐẦY ĐỦ
+        System.out.println("===== LOYALTY_GET_BY_CUSTOMER =====");
+        System.out.println("Status: " + args.status);
+        System.out.println("Message: " + args.message);
+        System.out.println("Data: " + args.data);
+
         if (SUCCESS.equals(args.status)) {
             store.dispatch(LoyaltyAction.LOYALTY_GET_BY_CUSTOMER.toString(),
                     args.data);
         } else {
-            // khách chưa có loyalty → không được coi là lỗi
+            // Không có loyalty → không phải lỗi
+            System.out.println("Customer chưa có loyalty, set null");
             store.dispatch(LoyaltyAction.LOYALTY_GET_BY_CUSTOMER.toString(),
                     null);
         }
     }
 
     private void handleCreate(DTTP.DTTPArgs args) {
+
+        System.out.println("===== LOYALTY_CREATE =====");
+        System.out.println("Status: " + args.status);
+        System.out.println("Data: " + args.data);
+
         if (SUCCESS.equals(args.status)) {
             store.dispatch(LoyaltyAction.LOYALTY_CREATE.toString(), args.data);
         } else {
@@ -66,6 +81,11 @@ public class LoyaltyService {
     }
 
     private void handleUpdate(DTTP.DTTPArgs args) {
+
+        System.out.println("===== LOYALTY_UPDATE =====");
+        System.out.println("Status: " + args.status);
+        System.out.println("Data: " + args.data);
+
         if (SUCCESS.equals(args.status)) {
             store.dispatch(LoyaltyAction.LOYALTY_UPDATE.toString(), args.data);
         } else {
@@ -74,6 +94,10 @@ public class LoyaltyService {
     }
 
     private void handleDelete(DTTP.DTTPArgs args) {
+
+        System.out.println("===== LOYALTY_DELETE =====");
+        System.out.println("Status: " + args.status);
+
         if (SUCCESS.equals(args.status)) {
             store.dispatch(LoyaltyAction.LOYALTY_DELETE.toString(), null);
         } else {
@@ -81,11 +105,11 @@ public class LoyaltyService {
         }
     }
 
-    // ============================================================
     // REQUEST METHODS
-    // ============================================================
     public void getAllLoyalties() throws IOException {
         ensureClient();
+
+        System.out.println("[REQUEST] LOYALTY_GET_ALL");
 
         Map<String, Object> req = new HashMap<>();
         client.send("LOYALTY_GET_ALL", req, REQUEST, "Lấy danh sách loyalty");
@@ -93,6 +117,9 @@ public class LoyaltyService {
 
     public void getLoyaltyByCustomer(String customerId) throws IOException {
         ensureClient();
+
+        // ✅ THÊM LOG
+        System.out.println("[REQUEST] LOYALTY_GET_BY_CUSTOMER: " + customerId);
 
         Map<String, Object> req = new HashMap<>();
         req.put("customerId", customerId);
@@ -104,6 +131,8 @@ public class LoyaltyService {
     public void createLoyalty(String customerId) throws IOException {
         ensureClient();
 
+        System.out.println("[REQUEST] LOYALTY_CREATE: " + customerId);
+
         Map<String, Object> req = new HashMap<>();
         req.put("customerId", customerId);
 
@@ -112,6 +141,8 @@ public class LoyaltyService {
 
     public void updateLoyalty(String customerId, int pointsChange) throws IOException {
         ensureClient();
+
+        System.out.println("[REQUEST] LOYALTY_UPDATE: " + customerId + ", points: " + pointsChange);
 
         Map<String, Object> req = new HashMap<>();
         req.put("customerId", customerId);
@@ -122,6 +153,8 @@ public class LoyaltyService {
 
     public void deleteLoyalty(String customerId) throws IOException {
         ensureClient();
+
+        System.out.println("[REQUEST] LOYALTY_DELETE: " + customerId);
 
         Map<String, Object> req = new HashMap<>();
         req.put("customerId", customerId);

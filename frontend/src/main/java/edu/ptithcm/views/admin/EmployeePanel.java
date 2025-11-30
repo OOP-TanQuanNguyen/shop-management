@@ -12,7 +12,6 @@ public class EmployeePanel extends JPanel {
     private JTable table;
     private JButton btnAdd, btnEdit, btnDelete, btnReload, btnFilter;
 
-    // ĐÃ GIỮ LẠI: Role – Status – Branch
     private JComboBox<String> cbRole, cbStatus, cbBranch;
 
     private DefaultTableModel model;
@@ -27,7 +26,7 @@ public class EmployeePanel extends JPanel {
         add(title, BorderLayout.NORTH);
 
         // =========================================================
-        // FILTER BAR (KHÔNG CÒN Ô SEARCH THEO TÊN/USERNAME)
+        // FILTER BAR
         // =========================================================
         JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
@@ -86,7 +85,32 @@ public class EmployeePanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
+    // ======================================================================
+    // NORMALIZE & VALIDATE PHONE (Không bôi đỏ)
+    // ======================================================================
+    private String normalizePhone(String phone) {
+
+        if (phone == null) {
+            return "SĐT phải 9–11 số";
+        }
+
+        // Giữ lại số
+        phone = phone.trim().replaceAll("[^0-9]", "");
+
+        if (phone.isEmpty()) {
+            return "SĐT phải 9–11 số";
+        }
+
+        if (phone.length() < 9 || phone.length() > 11) {
+            return "SĐT phải 9–11 số";
+        }
+
+        return phone;
+    }
+
+    // ======================================================================
     // GETTERS
+    // ======================================================================
     public JTable getTable() {
         return table;
     }
@@ -123,7 +147,9 @@ public class EmployeePanel extends JPanel {
         return cbBranch;
     }
 
+    // ======================================================================
     // UPDATE BRANCH LIST
+    // ======================================================================
     public void updateBranchList(List<String> branchNames) {
         cbBranch.removeAllItems();
         cbBranch.addItem("Tất cả");
@@ -135,7 +161,9 @@ public class EmployeePanel extends JPanel {
         }
     }
 
+    // ======================================================================
     // UPDATE TABLE
+    // ======================================================================
     public void updateTable(List<UserModel> employees) {
         model.setRowCount(0);
         if (employees == null) {
@@ -143,14 +171,16 @@ public class EmployeePanel extends JPanel {
         }
 
         for (UserModel emp : employees) {
+
+            String phone = normalizePhone(emp.getPhone());  // validate
+
             model.addRow(new Object[]{
                 emp.getName(),
                 emp.getUsername(),
                 emp.getRole(),
                 emp.getBranch() != null ? emp.getBranch() : "N/A",
-                emp.getPhone(),
+                phone,
                 emp.getHireDate() != null ? emp.getHireDate() : "N/A",
-                //emp.getEndDate() != null ? emp.getEndDate() : "N/A",
                 Boolean.TRUE.equals(emp.getStatus()) ? "Đang làm việc" : "Đã nghỉ"
             });
         }

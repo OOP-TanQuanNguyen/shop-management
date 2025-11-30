@@ -22,7 +22,6 @@ public class CustomerPanel extends JPanel {
     private final JTable table;
     private final JButton btnAdd, btnEdit, btnDelete, btnReload;
 
-    // ===== Search bar =====
     private final JTextField txtSearch;
     private final JButton btnFilter;
 
@@ -33,12 +32,10 @@ public class CustomerPanel extends JPanel {
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        // ===== TITLE =====
         JLabel title = new JLabel(" Quản lý khách hàng", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 20));
         add(title, BorderLayout.NORTH);
 
-        // ===== SEARCH BAR =====
         JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         txtSearch = new JTextField(20);
@@ -52,12 +49,16 @@ public class CustomerPanel extends JPanel {
 
         add(searchBar, BorderLayout.NORTH);
 
-        // ===== BUTTON BAR =====
         JPanel btnBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         btnAdd = new JButton(" Thêm");
         btnEdit = new JButton(" Sửa");
         btnDelete = new JButton(" Xóa");
         btnReload = new JButton(" Tải lại");
+
+        // =================================================================
+        // ẨN NÚT THÊM — KHÔNG XOÁ KHỎI CODE ĐỂ GIỮ STRUCTURE
+        // =================================================================
+        btnAdd.setVisible(false);
 
         btnBar.add(btnAdd);
         btnBar.add(btnEdit);
@@ -65,7 +66,6 @@ public class CustomerPanel extends JPanel {
         btnBar.add(btnReload);
         add(btnBar, BorderLayout.SOUTH);
 
-        // ===== TABLE =====
         model = new DefaultTableModel(
                 new String[]{"Tên khách hàng", "Số điện thoại", "Điểm tích lũy"},
                 0
@@ -82,7 +82,6 @@ public class CustomerPanel extends JPanel {
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    // ===== GETTERS =====
     public JTable getTable() {
         return table;
     }
@@ -111,7 +110,23 @@ public class CustomerPanel extends JPanel {
         return btnFilter;
     }
 
-    // ===== UPDATE TABLE =====
+    // ============================================================
+    // VALIDATE SỐ ĐIỆN THOẠI giống Employee
+    // ============================================================
+    private String normalizePhone(String phone) {
+        if (phone == null) {
+            return "";
+        }
+
+        phone = phone.replaceAll("[^0-9]", "");
+
+        if (phone.length() < 9 || phone.length() > 11) {
+            return "SĐT phải 9–11 số";
+        }
+
+        return phone;
+    }
+
     public void updateTable(List<CustomerModel> list) {
         model.setRowCount(0);
         if (list == null) {
@@ -119,11 +134,27 @@ public class CustomerPanel extends JPanel {
         }
 
         for (CustomerModel c : list) {
+
+            String phone = normalizePhone(c.getPhone());
+
             model.addRow(new Object[]{
                 c.getName(),
-                c.getPhone(),
+                phone,
                 c.getPoint()
             });
+        }
+    }
+
+    public void setCustomerPoints(String customerId, int points, List<CustomerModel> list) {
+        if (list == null) {
+            return;
+        }
+
+        for (CustomerModel c : list) {
+            if (c.getId().equals(customerId)) {
+                c.setPoint(points);
+                break;
+            }
         }
     }
 }

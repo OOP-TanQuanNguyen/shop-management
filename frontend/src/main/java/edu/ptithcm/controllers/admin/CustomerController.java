@@ -22,16 +22,13 @@ public class CustomerController {
 
     private final CustomerPanel view;
     private final CustomerService service;
-    private final LoyaltyService loyaltyService;   // ★ thêm vào đây
+    private final LoyaltyService loyaltyService;
 
     private final Store store = Store.getInstance();
 
     private boolean isShowingMessage = false;
     private List<CustomerModel> currentCustomers;
 
-    // ============================================================
-    // ★★★ CONSTRUCTOR ĐÃ SỬA – NHẬN LoyaltyService TỪ NGOÀI ★★★
-    // ============================================================
     public CustomerController(
             CustomerPanel view,
             CustomerService service,
@@ -39,7 +36,7 @@ public class CustomerController {
     ) {
         this.view = view;
         this.service = service;
-        this.loyaltyService = loyaltyService; // ★ gán vào
+        this.loyaltyService = loyaltyService;
 
         registerEvents();
         store.subcribe(this::onStateChanged);
@@ -47,22 +44,16 @@ public class CustomerController {
         loadCustomers();
     }
 
-    // ============================================================
-    // EVENTS
-    // ============================================================
     private void registerEvents() {
         view.getBtnAdd().addActionListener(e -> handleAdd());
         view.getBtnEdit().addActionListener(e -> handleEdit());
         view.getBtnDelete().addActionListener(e -> handleDelete());
         view.getBtnReload().addActionListener(e -> loadCustomers());
-
-        // FILTER
         view.getBtnFilter().addActionListener(e -> applyFilter());
     }
 
     private void loadCustomers() {
         view.getTxtSearch().setText("");
-
         try {
             service.getAllCustomers();
         } catch (IOException e) {
@@ -70,9 +61,6 @@ public class CustomerController {
         }
     }
 
-    // ============================================================
-    // FILTER (local)
-    // ============================================================
     private void applyFilter() {
 
         if (currentCustomers == null) {
@@ -89,11 +77,7 @@ public class CustomerController {
                 .filter(c -> {
                     String name = c.getName() != null ? c.getName().toLowerCase() : "";
                     String phone = c.getPhone() != null ? c.getPhone() : "";
-
-                    boolean matchName = name.contains(keyword);
-                    boolean matchPhone = phone.startsWith(keyword);
-
-                    return matchName || matchPhone;
+                    return name.contains(keyword) || phone.startsWith(keyword);
                 })
                 .collect(Collectors.toList());
 
@@ -101,23 +85,37 @@ public class CustomerController {
     }
 
     // ============================================================
-    // CRUD
+    // ADD CUSTOMER — FIXED LOYALTY LOGIC
     // ============================================================
     private void handleAdd() {
 
         CustomerAddDialog dl = new CustomerAddDialog(getParentFrame());
         dl.showDialog();
 
-        if (dl.isConfirmed()) {
-            try {
-                service.createCustomer(dl.getCustomerName(), dl.getPhone(), dl.getPoint());
+        if (!dl.isConfirmed()) {
+            return;
+        }
 
-                // ★ tạo loyalty ngay sau khi tạo customer
-                loyaltyService.createLoyalty(dl.getPhone());
+        try {
+            // 1. Tạo customer
+            service.createCustomer(dl.getCustomerName(), dl.getPhone(), dl.getPoint());
 
-            } catch (IOException e) {
-                AppMessageBox.showError("Lỗi: " + e.getMessage());
+            // 2. Chờ customer mới xuất hiện trong Store
+            CustomerModel newCustomer = waitForCustomerByPhone(dl.getPhone(), 3000);
+
+            if (newCustomer != null && newCustomer.getId() != null) {
+
+                // 3. Tạo Loyalty bằng customerId (KHÔNG dùng phone)
+                loyaltyService.createLoyalty(newCustomer.getId());
+
+            } else {
+                AppMessageBox.showWarning(
+                        "Không thể tạo Loyalty vì không lấy được ID khách hàng mới."
+                );
             }
+
+        } catch (IOException e) {
+            AppMessageBox.showError("Lỗi: " + e.getMessage());
         }
     }
 
@@ -176,8 +174,7 @@ public class CustomerController {
         if (dl.isConfirmed()) {
             try {
                 service.deleteCustomer(c.getId());
-                loyaltyService.deleteLoyalty(c.getId());  // ★ xóa luôn loyalty
-
+                loyaltyService.deleteLoyalty(c.getId());  // xóa loyalty luôn
             } catch (IOException e) {
                 AppMessageBox.showError("Lỗi xóa: " + e.getMessage());
             }
@@ -195,6 +192,7 @@ public class CustomerController {
     // ============================================================
     // STATE MANAGEMENT
     // ============================================================
+    @SuppressWarnings("unchecked")
     private void onStateChanged(AppState state) {
 
         SwingUtilities.invokeLater(() -> {
@@ -245,5 +243,37 @@ public class CustomerController {
 
     private Frame getParentFrame() {
         return (Frame) SwingUtilities.getWindowAncestor(view);
+    }
+
+    // ============================================================
+    // SUPPORT: CHỜ CUSTOMER MỚI XUẤT HIỆN TRONG STORE
+    // ============================================================
+    @SuppressWarnings("unchecked")
+    private CustomerModel waitForCustomerByPhone(String phone, long timeoutMs) {
+
+        long start = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - start < timeoutMs) {
+
+            Object listObj = store.getAppState().get("Customers");
+
+            if (listObj instanceof List<?> list) {
+                for (Object o : list) {
+                    CustomerModel c = (CustomerModel) o;
+                    if (phone.equals(c.getPhone())) {
+                        return c;
+                    }
+                }
+            }
+
+            try {
+                Thread.sleep(80);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        }
+
+        return null;
     }
 }
