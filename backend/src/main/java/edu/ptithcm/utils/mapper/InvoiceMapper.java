@@ -41,6 +41,11 @@ public class InvoiceMapper implements BaseMapper<InvoiceModel, InvoiceInfo> {
                     ? String.valueOf(entity.getBranch().getId())
                     : null
             )
+            .branchName(
+                entity.getBranch() != null
+                    ? entity.getBranch().getName()
+                    : null
+            )
             .customerId(
                 entity.getCustomer() != null
                     ? entity.getCustomer().getId()

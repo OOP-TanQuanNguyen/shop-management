@@ -11,6 +11,7 @@ public class InvoiceInfo {
     private final String invoiceId;
     private final String employeeId;
     private final String branchId;
+    private final String branchName;
     private final String customerId;
     private final String customerName;
     private final Timestamp createdAt;
@@ -24,6 +25,7 @@ public class InvoiceInfo {
         this.invoiceId = builder.invoiceId;
         this.employeeId = builder.employeeId;
         this.branchId = builder.branchId;
+        this.branchName = builder.branchName;
         this.customerId = builder.customerId;
         this.customerName = builder.customerName;
         this.createdAt = builder.createdAt;
@@ -40,6 +42,7 @@ public class InvoiceInfo {
         map.put("invoiceId", invoiceId);
         map.put("employeeId", employeeId);
         map.put("branchId", branchId);
+        map.put("branchName", branchName);
         map.put("customerId", customerId);
         map.put("customerName", customerName);
         map.put("createdAt", createdAt != null ? createdAt.getTime() : null);
@@ -62,6 +65,10 @@ public class InvoiceInfo {
 
     public String getBranchId() {
         return branchId;
+    }
+
+    public String getBranchName() {
+        return branchName;
     }
 
     public String getCustomerId() {
@@ -102,6 +109,7 @@ public class InvoiceInfo {
         private String invoiceId;
         private String employeeId;
         private String branchId;
+        private String branchName;
         private String customerId;
         private String customerName;
         private Timestamp createdAt;
@@ -123,6 +131,11 @@ public class InvoiceInfo {
 
         public Builder branchId(String branchId) {
             this.branchId = branchId;
+            return this;
+        }
+
+        public Builder branchName(String branchName) {
+            this.branchName = branchName;
             return this;
         }
 
