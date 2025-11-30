@@ -10,6 +10,7 @@ public class InvoiceInfo {
 
     private final String invoiceId;
     private final String employeeId;
+    private final String employeeName;
     private final String branchId;
     private final String branchName;
     private final String customerId;
@@ -24,6 +25,7 @@ public class InvoiceInfo {
     private InvoiceInfo(Builder builder) {
         this.invoiceId = builder.invoiceId;
         this.employeeId = builder.employeeId;
+        this.employeeName = builder.employeeName;
         this.branchId = builder.branchId;
         this.branchName = builder.branchName;
         this.customerId = builder.customerId;
@@ -41,6 +43,7 @@ public class InvoiceInfo {
         Map<String, Object> map = new HashMap<>();
         map.put("invoiceId", invoiceId);
         map.put("employeeId", employeeId);
+        map.put("employeeName", employeeName);
         map.put("branchId", branchId);
         map.put("branchName", branchName);
         map.put("customerId", customerId);
@@ -61,6 +64,10 @@ public class InvoiceInfo {
 
     public String getEmployeeId() {
         return employeeId;
+    }
+
+    public String getEmployeeName() {
+        return employeeName;
     }
 
     public String getBranchId() {
@@ -108,6 +115,7 @@ public class InvoiceInfo {
 
         private String invoiceId;
         private String employeeId;
+        private String employeeName;
         private String branchId;
         private String branchName;
         private String customerId;
@@ -126,6 +134,11 @@ public class InvoiceInfo {
 
         public Builder employeeId(String employeeId) {
             this.employeeId = employeeId;
+            return this;
+        }
+
+        public Builder employeeName(String employeeName) {
+            this.employeeName = employeeName;
             return this;
         }
 
