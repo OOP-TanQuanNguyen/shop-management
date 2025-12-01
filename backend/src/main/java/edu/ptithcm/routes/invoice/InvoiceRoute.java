@@ -29,10 +29,8 @@ public class InvoiceRoute {
     }
 
     public void register() {
-        // ---------------- GET ALL ----------------
         server.on(TypeDTTP.INVOICE_GET_ALL.getValue(), args -> {
             try {
-                System.out.println("Before verify : " + args.data);
                 if (
                     !AuthenMiddleWare.hasPermission(
                         manager,
@@ -44,8 +42,6 @@ public class InvoiceRoute {
                 ) {
                     return;
                 }
-
-                System.out.println("After verify : " + args.data);
 
                 ResponseDTO<List<InvoiceInfo>> response =
                     controller.getAllInvoices();
@@ -59,10 +55,6 @@ public class InvoiceRoute {
 
                 Map<String, Object> data = new HashMap<>();
                 data.put("invoices", invoices);
-
-                System.out.println(
-                    "invoice response route : " + data.get("invoices")
-                );
 
                 args.reply(
                     TypeDTTP.INVOICE_GET_ALL.getValue(),

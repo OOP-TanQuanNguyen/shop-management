@@ -1,13 +1,13 @@
 package edu.ptithcm.repository.inventory;
 
-import java.util.List;
-
-import org.hibernate.query.Query;
-
 import edu.ptithcm.models.InventoryModel;
 import edu.ptithcm.repository.BaseRepository;
+import java.util.List;
+import org.hibernate.query.Query;
 
-public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> implements InventoryRepository {
+public class InventoryRepositoryImpl
+    extends BaseRepository<InventoryModel>
+    implements InventoryRepository {
 
     @Override
     public void save(InventoryModel entity) {
@@ -20,12 +20,21 @@ public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> impl
     @Override
     public InventoryModel update(InventoryModel newData) {
         return execute(session -> {
-            InventoryModel managed = session.get(InventoryModel.class, newData.getId());
+            InventoryModel managed = session.get(
+                InventoryModel.class,
+                newData.getId()
+            );
             if (managed == null) return null;
 
-            if (newData.getQuantity() != 0) managed.setQuantity(newData.getQuantity());
-            if (newData.getBranch() != null) managed.setBranch(newData.getBranch());
-            if (newData.getProduct() != null) managed.setProduct(newData.getProduct());
+            if (newData.getQuantity() != 0) managed.setQuantity(
+                newData.getQuantity()
+            );
+            if (newData.getBranch() != null) managed.setBranch(
+                newData.getBranch()
+            );
+            if (newData.getProduct() != null) managed.setProduct(
+                newData.getProduct()
+            );
 
             return managed;
         });
@@ -49,9 +58,12 @@ public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> impl
     @Override
     public List<InventoryModel> findAll() {
         return execute(session ->
-            session.createQuery(
-                "FROM InventoryModel i ORDER BY i.updatedAt DESC", InventoryModel.class
-            ).list()
+            session
+                .createQuery(
+                    "FROM InventoryModel i ORDER BY i.updatedAt DESC",
+                    InventoryModel.class
+                )
+                .list()
         );
     }
 
@@ -60,23 +72,30 @@ public class InventoryRepositoryImpl extends BaseRepository<InventoryModel> impl
         return execute(session -> {
             Query<InventoryModel> query = session.createQuery(
                 "FROM InventoryModel i " +
-                "WHERE i.branch.id = :branchId " +
-                "ORDER BY i.updatedAt DESC", InventoryModel.class);
+                    "WHERE i.branch.id = :branchId " +
+                    "ORDER BY i.updatedAt DESC",
+                InventoryModel.class
+            );
             query.setParameter("branchId", branchId);
             return query.list();
         });
     }
 
     @Override
-    public InventoryModel findByBranchAndProduct(Integer branchId, String productId) {
-        return execute(session -> session.createQuery(
-                "FROM InventoryModel i WHERE i.branch.id = :branchId AND i.product.id = :productId",
-                InventoryModel.class
-            )
-            .setParameter("branchId", branchId)
-            .setParameter("productId", productId)
-            .setMaxResults(1)
-            .uniqueResult()
+    public InventoryModel findByBranchAndProduct(
+        Integer branchId,
+        String productId
+    ) {
+        return execute(session ->
+            session
+                .createQuery(
+                    "FROM InventoryModel i WHERE i.branch.id = :branchId AND i.product.id = :productId",
+                    InventoryModel.class
+                )
+                .setParameter("branchId", branchId)
+                .setParameter("productId", productId)
+                .setMaxResults(1)
+                .uniqueResult()
         );
     }
 }

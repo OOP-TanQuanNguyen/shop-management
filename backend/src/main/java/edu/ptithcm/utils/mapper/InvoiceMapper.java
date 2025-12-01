@@ -47,9 +47,7 @@ public class InvoiceMapper implements BaseMapper<InvoiceModel, InvoiceInfo> {
                     : null
             )
             .branchName(
-                entity.getBranch() != null
-                    ? entity.getBranch().getName()
-                    : null
+                entity.getBranch() != null ? entity.getBranch().getName() : null
             )
             .customerId(
                 entity.getCustomer() != null
@@ -76,7 +74,6 @@ public class InvoiceMapper implements BaseMapper<InvoiceModel, InvoiceInfo> {
         if (entities != null) {
             for (InvoiceModel e : entities) list.add(toDTO(e));
         }
-        System.out.println("InvoiceMapper - list : " + list.toString());
         return list;
     }
 }

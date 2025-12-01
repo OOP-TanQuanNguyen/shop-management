@@ -62,7 +62,6 @@ public class InvoiceService {
     // =====================================================================
     public ResponseDTO<List<InvoiceInfo>> getAllInvoices() {
         List<InvoiceModel> list = invoiceRepo.findAll();
-        System.out.println("Services get all invoice: " + list);
         return new SuccessResponse<>(
             "Lấy tất cả hóa đơn thành công",
             mapper.toDTOList(list)
