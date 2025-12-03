@@ -36,7 +36,6 @@ public class InventoryMapper
 
     @Override
     public List<InventoryInfo> toDTOList(List<InventoryModel> list) {
-        System.out.println("InventoryMapper.toDTOList : list " + list);
         if (list == null || list.isEmpty()) return Collections.emptyList();
         return list.stream().map(this::toDTO).collect(Collectors.toList());
     }
