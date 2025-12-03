@@ -28,7 +28,7 @@ public class InventoryRequestDTO {
         if (productId == null || productId.trim().isEmpty()) return false;
 
         if (quantity == null) return false;
-        return quantity >= 0;   // quantity < 0 → không cho phép
+        return quantity >= 0; 
     }
 
     public boolean validForUpdate() {
