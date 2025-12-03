@@ -24,16 +24,19 @@ public class InventoryRequestDTO {
 
     // Validate
     public boolean validForCreate() {
-        return branchId != null && !branchId.isEmpty()
-                && productId != null && !productId.isEmpty()
-                && quantity != null && quantity >= 0;
+        if (branchId == null || branchId.trim().isEmpty()) return false;
+        if (productId == null || productId.trim().isEmpty()) return false;
+
+        if (quantity == null) return false;
+        return quantity >= 0;   // quantity < 0 → không cho phép
     }
 
     public boolean validForUpdate() {
         if (id == null || id <= 0) return false;
-        return branchId != null
-                || productId != null
-                || quantity != null;
+        if (branchId == null) return false;
+        if (productId == null) return false;
+        if (quantity != null && quantity < 0) return false;
+        return true;
     }
 
     public boolean validForDelete() {
