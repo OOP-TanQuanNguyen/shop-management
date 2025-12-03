@@ -176,7 +176,7 @@ public class InvoiceService {
     }
 
     // =====================================================================
-    // XÁC NHẬN THANH TOÁN — CHỈ ở đây mới TRỪ TỒN KHO
+    // XÁC NHẬN THANH TOÁN
     // =====================================================================
     public ResponseDTO<InvoiceInfo> confirmInvoice(String invoiceId) {
         InvoiceModel draft = draftCache.confirmDraft(invoiceId);
@@ -286,7 +286,7 @@ public class InvoiceService {
     }
 
     // =====================================================================
-    // UPDATE DRAFT — KHÔNG trừ kho
+    // UPDATE DRAFT
     // =====================================================================
     public ResponseDTO<InvoiceInfo> updateInvoice(InvoiceRequestDTO req) {
         if (!req.validForUpdate()) {
@@ -298,8 +298,6 @@ public class InvoiceService {
             return new NotFoundResponse<>("Hóa đơn draft không tồn tại");
         }
 
-        // Không trừ kho ở update draft !!!
-        // Chỉ check thôi.
         if (req.getBranchId() != null) {
             draft.setBranch(branchRepo.findById(req.getBranchId()));
         }
@@ -342,7 +340,6 @@ public class InvoiceService {
                     );
                 }
 
-                // KHÔNG TRỪ KHO — draft không bao giờ trừ kho
                 BigDecimal unitPrice = BigDecimal.valueOf(
                     product.getSellPrice()
                 );

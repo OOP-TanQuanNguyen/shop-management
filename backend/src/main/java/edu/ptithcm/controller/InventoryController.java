@@ -24,7 +24,6 @@ public class InventoryController {
     }
 
     public ResponseDTO<List<InventoryInfo>> getAllInventories() {
-        System.out.println("GetAllInventory controller");
         return SafeExecutor.run(() -> service.getAllInventories());
     }
 

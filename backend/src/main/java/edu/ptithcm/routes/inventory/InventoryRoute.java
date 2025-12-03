@@ -32,9 +32,6 @@ public class InventoryRoute {
                 ResponseDTO<List<InventoryInfo>> response =
                     controller.getAllInventories();
 
-                System.out.println(
-                    "GetAllInventory route (response): " + response.toString()
-                );
                 List<Map<String, Object>> inventories = response.getData() !=
                     null
                     ? response
@@ -43,10 +40,6 @@ public class InventoryRoute {
                           .map(InventoryInfo::toMap)
                           .toList()
                     : null;
-
-                System.out.println(
-                    "GetAllInventory route : " + inventories.toString()
-                );
 
                 args.reply(
                     TypeDTTP.INVENTORY_GET_ALL.getValue(),
@@ -100,9 +93,6 @@ public class InventoryRoute {
             }
         });
 
-        /* ============================================================
-           UPDATE
-        ============================================================ */
         server.on(TypeDTTP.INVENTORY_UPDATE.getValue(), args -> {
             try {
                 if (
@@ -140,9 +130,6 @@ public class InventoryRoute {
             }
         });
 
-        /* ============================================================
-           DELETE
-        ============================================================ */
         server.on(TypeDTTP.INVENTORY_DELETE.getValue(), args -> {
             try {
                 if (
@@ -182,7 +169,6 @@ public class InventoryRoute {
 
         server.on(TypeDTTP.INVENTORY_GET_BY_BRANCH.getValue(), args -> {
             try {
-                // Parse branchId  → xử lý được: 3, "3", "3.0", 3.0
                 Integer branchId = RequestUtil.toInt(args.data.get("branchId"));
 
                 ResponseDTO<List<InventoryInfo>> response =
